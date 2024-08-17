@@ -46,6 +46,10 @@ build_production:
 
 # Job for deploying to staging
 deploy_staging:
+  image:
+    name: amazon/aws-cli:latest
+    entrypoint: 
+      - '/usr/bin/env'
   stage: deploy
   script:
     - echo "Deploying to Staging Environment"
@@ -60,6 +64,10 @@ deploy_staging:
 
 # Job for deploying to production
 deploy_production:
+  image:
+    name: amazon/aws-cli:latest
+    entrypoint: 
+      - '/usr/bin/env'
   stage: deploy
   script:
     - echo "Deploying to Production Environment"

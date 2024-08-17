@@ -53,6 +53,7 @@ deploy_staging:
   stage: deploy
   script:
     - echo "Deploying to Staging Environment"
+    - echo "Bucket name - $STAGING_S3_BUCKET"
     - aws s3 sync dist/ s3://$STAGING_S3_BUCKET/ --acl public-read --delete
     - aws cloudfront create-invalidation --distribution-id $STAGING_CLOUDFRONT_DISTRIBUTION --paths "/*"
   environment:

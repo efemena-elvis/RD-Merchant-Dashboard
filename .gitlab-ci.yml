@@ -71,7 +71,7 @@ deploy_production:
     entrypoint: 
       - '/usr/bin/env'
   stage: deploy
-   script:
+  script:
     - echo "Deploying to Production Environment"
     - aws configure set aws_access_key_id $AWS_ACCESS_KEY_ID --profile gitlab
     - aws configure set aws_secret_access_key $AWS_SECRET_ACCESS_KEY --profile gitlab

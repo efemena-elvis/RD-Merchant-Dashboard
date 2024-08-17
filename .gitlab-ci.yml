@@ -1,18 +1,42 @@
 stages:
+  - install
   - build
   - deploy
 
-# Job for building and testing
-build:
-  stage: build
+# Job for installing dependencies
+install:
+  stage: install
   script:
     - npm install --legacy-peer-deps
+  only:
+    - staging
+    - main
+
+# Job for building on staging environment
+build_staging:
+  stage: build
+  script:
+    - npm run build:staging
   artifacts:
     paths:
       - dist/
   only:
     - staging
+  needs:
+    - install
+
+# Job for building on production environment
+build_production:
+  stage: build
+  script:
+    - npm run build:prod
+  artifacts:
+    paths:
+      - dist/
+  only:
     - main
+  needs:
+    - install
 
 # Job for deploying to staging
 deploy_staging:
@@ -25,6 +49,8 @@ deploy_staging:
     name: staging
   only:
     - staging
+  needs:
+    - build_staging
 
 # Job for deploying to production
 deploy_production:
@@ -34,9 +60,11 @@ deploy_production:
     - aws s3 sync dist/ s3://$MAIN_S3_BUCKET/ --acl public-read --delete
     - aws cloudfront create-invalidation --distribution-id $MAIN_CLOUDFRONT_DISTRIBUTION --paths "/*"
   environment:
-    name: main
+    name: production
   only:
     - main
+  needs:
+    - build_production
 
 before_script:
   # Configure AWS CLI with environment variables

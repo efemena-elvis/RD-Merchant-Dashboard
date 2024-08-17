@@ -1,0 +1,17 @@
+const APP_URL = process.env.VUE_APP_REDSTONE_APP_BASE_URL;
+const API_BASE_URL = process.env.VUE_APP_REDSTONE_API_BASE_URL;
+const API_VERSION = process.env.VUE_APP_REDSTONE_API_VERSION;
+
+const LOCAL_DOMAIN = "http://localhost:8065";
+const IS_LOCAL_HOST = window.location.hostname === "localhost" ? true : false;
+
+const constants = {
+  REDSTONE_AUTH_USER: "REDSTONE_AUTH_USER",
+  REDSTONE_AUTH_TOKEN: "REDSTONE_AUTH_TOKEN",
+  REDSTONE_USER_TOKEN: "REDSTONE_USER_TOKEN",
+  REDSTONE_APP_URL: IS_LOCAL_HOST ? LOCAL_DOMAIN : APP_URL,
+  REDSTONE_API_URL: API_BASE_URL,
+  REDSTONE_API_VERSION: API_VERSION,
+};
+
+export default constants;

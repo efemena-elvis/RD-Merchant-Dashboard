@@ -1,0 +1,211 @@
+// ======================================================
+// ALL APPLICATION METHODS RELATED TO API HANDLING
+// ======================================================
+import axios, { AxiosError, AxiosRequestConfig, AxiosResponse } from "axios";
+import { useStorage } from "@/shared/composables/useStorage";
+import { useString } from "@/shared/composables/useString";
+import constants from "@/utilities/constants";
+
+const { getStorage } = useStorage();
+const { urlHash, decodeString, logOutUser } = useString();
+
+// Extend AxiosRequestConfig to include the _retry property
+interface CustomAxiosRequestConfig extends AxiosRequestConfig {
+  _retry?: boolean;
+}
+
+// ===============================
+// SERVICE API CLASS
+class ServiceApi {
+  API_BASE_URL: string = constants.REDSTONE_API_URL;
+  API_VERSION: string = constants.REDSTONE_API_VERSION;
+
+  // INSTANTIATE BASE API URL
+  constructor() {
+    axios.defaults.baseURL = `${this.API_BASE_URL}/${this.API_VERSION}/`;
+    this.injectTokenInterceptor();
+  }
+
+  // ===============================
+  // GET API REQUEST
+  async fetch<T>(
+    url: string,
+    option: { resolve?: boolean; payload?: any } = {
+      resolve: true,
+      payload: null,
+    }
+  ): Promise<T | AxiosResponse<T>> {
+    const hashed_url = urlHash(url);
+
+    try {
+      const response = await axios.get<T>(hashed_url, this.getHeaders());
+      return option.resolve ? response.data : response;
+    } catch (err) {
+      return this.handleErrors(err);
+    }
+  }
+
+  // ========================================
+  // GET API REQUEST FROM A CUSTOM BASE_URL
+  async fetchRaw<T>(url: string): Promise<T | AxiosResponse<T>> {
+    try {
+      const response = await axios.get<T>(url);
+      return response?.data;
+    } catch (err) {
+      return this.handleErrors(err);
+    }
+  }
+
+  // ===============================
+  // POST API REQUEST
+  async push<T>(
+    url: string,
+    {
+      payload = {},
+      resolve = true,
+      is_attach = false,
+    }: { payload?: any; resolve?: boolean; is_attach?: boolean }
+  ): Promise<T | AxiosResponse<T>> {
+    try {
+      let response = await axios.post<T>(
+        url,
+        payload,
+        this.getHeaders(is_attach)
+      );
+      return resolve ? response.data : response;
+    } catch (err) {
+      return this.handleErrors(err);
+    }
+  }
+
+  // ===============================
+  // UPDATE API REQUEST
+  async update<T>(
+    url: string,
+    {
+      payload = {},
+      resolve = true,
+      is_attach = false,
+    }: { payload?: any; resolve?: boolean; is_attach?: boolean }
+  ): Promise<T | AxiosResponse<T>> {
+    try {
+      let response = await axios.put<T>(
+        url,
+        payload,
+        this.getHeaders(is_attach)
+      );
+      return resolve ? response.data : response;
+    } catch (err) {
+      return this.handleErrors(err);
+    }
+  }
+
+  // ===============================
+  // PATCH API REQUEST
+  async patch<T>(
+    url: string,
+    {
+      payload = {},
+      resolve = true,
+      is_attach = false,
+    }: { payload?: any; resolve?: boolean; is_attach?: boolean }
+  ): Promise<T | AxiosResponse<T>> {
+    try {
+      let response = await axios.patch<T>(
+        url,
+        payload,
+        this.getHeaders(is_attach)
+      );
+      return resolve ? response.data : response;
+    } catch (err) {
+      return this.handleErrors(err);
+    }
+  }
+
+  // ===============================
+  // DELETE API REQUEST
+  async remove<T>(
+    url: string,
+    option: { payload?: any; resolve?: boolean } = {
+      payload: {},
+      resolve: true,
+    }
+  ): Promise<T | AxiosResponse<T>> {
+    try {
+      let response = await axios.delete<T>(url, {
+        data: option.payload,
+        ...this.getHeaders(),
+      });
+
+      return option.resolve ? response.data : response;
+    } catch (err) {
+      return this.handleErrors(err);
+    }
+  }
+
+  // ===============================
+  // HANDLE API REQUEST ERRORS
+  async handleErrors(err: any): Promise<any> {
+    return await err.response;
+  }
+
+  // ===============================
+  // SETUP REQUEST HEADERS
+  getHeaders(attach: boolean = false): AxiosRequestConfig {
+    const authUserToken =
+      getStorage({
+        storage_name: constants.REDSTONE_AUTH_TOKEN,
+      }) || null;
+
+    const api_keys = getStorage({
+      storage_name: constants.REDSTONE_USER_TOKEN,
+      storage_type: "object",
+    }) || { 0: "", 1: "" };
+
+    return attach
+      ? {
+          headers: {
+            "Content-Type": "multipart/form-data",
+            Authorization: `Bearer ${authUserToken}`,
+            // "V-PUBLIC-KEY": decodeString(api_keys[0]),
+            // "V-PRIVATE-KEY": decodeString(api_keys[1]),
+          },
+        }
+      : {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${authUserToken}`,
+            // "V-PUBLIC-KEY": decodeString(api_keys[0]),
+            // "V-PRIVATE-KEY": decodeString(api_keys[1]),
+          },
+        };
+  }
+
+  // ===============================
+  // REQUEST AXIOS INTERCEPTOR
+  async injectTokenInterceptor() {
+    axios.interceptors.request.use((config: any) => config);
+
+    axios.interceptors.response.use(
+      async (response: AxiosResponse) => response,
+
+      // ERROR RESPONSE
+      async (error: AxiosError) => {
+        const originalConfig = error.config as CustomAxiosRequestConfig;
+
+        if (originalConfig && error.response) {
+          if (error.response.status === 401 && !originalConfig._retry) {
+            originalConfig._retry = true;
+            logOutUser();
+
+            return axios(originalConfig);
+          }
+        }
+
+        return Promise.reject(error);
+      }
+    );
+  }
+}
+
+export default new ServiceApi();

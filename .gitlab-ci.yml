@@ -1,9 +1,5 @@
 image: node:16
 
-variables:
-  STAGING_S3_BUCKET: $STAGING_S3_BUCKET
-  STAGING_CLOUDFRONT_DISTRIBUTION: $STAGING_CLOUDFRONT_DISTRIBUTION
-
 stages:
   - install
   - build
@@ -23,7 +19,6 @@ build_staging:
   stage: build
   script:
     - npm ci --legacy-peer-deps
-    # - npm install env-cmd --legacy-peer-deps
     - npm run build:staging
   artifacts:
     paths:
@@ -38,7 +33,6 @@ build_production:
   stage: build
   script:
     - npm ci --legacy-peer-deps
-    # - npm install env-cmd --legacy-peer-deps
     - npm run build:prod
   artifacts:
     paths:
@@ -57,7 +51,7 @@ deploy_staging:
   stage: deploy
   script:
     - echo "Deploying to Staging Environment"
-    - echo "Bucket name - %STAGING_S3_BUCKET%"
+    - echo "$STAGING_S3_BUCKET"
     - aws s3 sync dist/ s3://$STAGING_S3_BUCKET/ --acl public-read --delete
     - aws cloudfront create-invalidation --distribution-id $STAGING_CLOUDFRONT_DISTRIBUTION --paths "/*"
   environment:

@@ -1,5 +1,9 @@
 image: node:16
 
+variables:
+  STAGING_S3_BUCKET: $STAGING_S3_BUCKET
+  STAGING_CLOUDFRONT_DISTRIBUTION: $STAGING_CLOUDFRONT_DISTRIBUTION
+
 stages:
   - install
   - build

@@ -1,5 +1,5 @@
 {
-  "name": "redstone-front-office",
+  "name": "merchant-dashboard",
   "version": "0.1.0",
   "private": true,
   "scripts": {
@@ -16,7 +16,6 @@
     "axios": "^1.7.4",
     "chart.js": "^4.4.3",
     "core-js": "^3.8.3",
-    "env-cmd": "^10.1.0",
     "mitt": "^3.0.1",
     "pinia": "^2.2.2",
     "vue": "^3.2.13",
@@ -37,6 +36,7 @@
     "@vue/eslint-config-standard": "^6.1.0",
     "@vue/eslint-config-typescript": "^9.1.0",
     "autoprefixer": "^10.4.19",
+    "env-cmd": "^10.1.0",
     "eslint": "^7.32.0",
     "eslint-config-prettier": "^9.1.0",
     "eslint-plugin-import": "^2.25.3",

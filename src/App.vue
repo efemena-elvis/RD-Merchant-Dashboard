@@ -8,10 +8,62 @@
       </transition>
     </router-view>
   </div>
+
+  <!-- TOAST ALERT CARD -->
+  <ToastCard
+    v-if="alertInfo.message"
+    :message="alertInfo.message"
+    :description="alertInfo.description"
+    :type="alertInfo.type"
+  />
 </template>
 
 <script lang="ts" setup>
+import { inject, onMounted, ref } from "vue";
+import { Emitter } from "mitt";
 import MetaData from "@/shared/components/seo-comps/meta-data.vue";
+import ToastCard from "@/shared/components/global-comps/toast-card.vue";
+import useEvents from "@/shared/composables/useEvents";
+
+type IAlertInfo = {
+  message: string;
+  description: string;
+  type: string;
+};
+
+// Define the type of the event bus
+type Events = {
+  triggerToastAlert: IAlertInfo;
+  closeToastAlert: void;
+};
+
+const eventBus = inject<Emitter<Events>>("eventBus");
+const { pushToastAlert } = useEvents();
+
+const alertInfo = ref<IAlertInfo>({
+  message: "",
+  description: "",
+  type: "",
+});
+
+const updateAlertPayload = (message = "", description = "", type = "") => {
+  alertInfo.value.message = message;
+  alertInfo.value.description = description;
+  alertInfo.value.type = type;
+};
+
+onMounted(() => {
+  eventBus?.on(
+    "triggerToastAlert",
+    ({ message, description, type }: IAlertInfo) => {
+      updateAlertPayload(message, description, type);
+    }
+  );
+
+  eventBus?.on("closeToastAlert", () => {
+    updateAlertPayload();
+  });
+});
 </script>
 
 <style lang="scss">

@@ -67,11 +67,12 @@ class ServiceApi {
     }: { payload?: any; resolve?: boolean; is_attach?: boolean }
   ): Promise<T | AxiosResponse<T>> {
     try {
-      let response = await axios.post<T>(
+      const response = await axios.post<T>(
         url,
         payload,
         this.getHeaders(is_attach)
       );
+
       return resolve ? response.data : response;
     } catch (err) {
       return this.handleErrors(err);
@@ -89,7 +90,7 @@ class ServiceApi {
     }: { payload?: any; resolve?: boolean; is_attach?: boolean }
   ): Promise<T | AxiosResponse<T>> {
     try {
-      let response = await axios.put<T>(
+      const response = await axios.put<T>(
         url,
         payload,
         this.getHeaders(is_attach)
@@ -111,7 +112,7 @@ class ServiceApi {
     }: { payload?: any; resolve?: boolean; is_attach?: boolean }
   ): Promise<T | AxiosResponse<T>> {
     try {
-      let response = await axios.patch<T>(
+      const response = await axios.patch<T>(
         url,
         payload,
         this.getHeaders(is_attach)
@@ -132,7 +133,7 @@ class ServiceApi {
     }
   ): Promise<T | AxiosResponse<T>> {
     try {
-      let response = await axios.delete<T>(url, {
+      const response = await axios.delete<T>(url, {
         data: option.payload,
         ...this.getHeaders(),
       });
@@ -146,7 +147,7 @@ class ServiceApi {
   // ===============================
   // HANDLE API REQUEST ERRORS
   async handleErrors(err: any): Promise<any> {
-    return await err.response;
+    return await err.response?.data;
   }
 
   // ===============================
@@ -157,10 +158,10 @@ class ServiceApi {
         storage_name: constants.REDSTONE_AUTH_TOKEN,
       }) || null;
 
-    const api_keys = getStorage({
-      storage_name: constants.REDSTONE_USER_TOKEN,
-      storage_type: "object",
-    }) || { 0: "", 1: "" };
+    // const api_keys = getStorage({
+    //   storage_name: constants.REDSTONE_AUTH_BUSINESS_TOKEN,
+    //   storage_type: "object",
+    // }) || { 0: "", 1: "" };
 
     return attach
       ? {

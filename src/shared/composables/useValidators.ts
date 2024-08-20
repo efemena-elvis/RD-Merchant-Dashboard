@@ -31,13 +31,33 @@ export function useValidator() {
     return emailRegex.test(trimmedInput) ? "" : message;
   };
 
+  const validateNumberEntry = (
+    input: string,
+    message: string = "Should not contain any number or a special character"
+  ) => {
+    const trimmedInput = trimInput(input);
+
+    return /^[0-9]+$/.test(trimmedInput) ? "" : message;
+  };
+
   const validatePhone = (
     input: string | number,
+    countryCode: string,
     message: string = "Please provide a valid phone number"
   ) => {
     const trimmedInput = trimInput(input);
-    const phoneRegex = /^[0-9]{10,15}$/;
-    return phoneRegex.test(trimmedInput) ? "" : message;
+
+    if (countryCode.length) {
+      if (trimmedInput.startsWith(countryCode || `+${countryCode}`)) {
+        // check for phone length
+        const phoneLength = trimmedInput.length - countryCode.length;
+        return phoneLength >= 9 && phoneLength <= 11 ? "" : message;
+      } else {
+        return trimmedInput.length >= 10 && trimmedInput.length <= 12
+          ? ""
+          : message;
+      }
+    } else return "No country code has been selected";
   };
 
   const validatePasswordStrength = (input: string) => {
@@ -96,12 +116,38 @@ export function useValidator() {
     else return "";
   };
 
+  const validateDateRange = (
+    input: string,
+    range: number,
+    message: string = "Input value should be outside of the range"
+  ) => {
+    const providedDate = new Date(input);
+    const today = new Date();
+
+    // Calculate period
+    let period = today.getFullYear() - providedDate.getFullYear();
+    const monthDiff = today.getMonth() - providedDate.getMonth();
+
+    // Adjust period if the provided month hasn't occurred yet this year
+    if (
+      monthDiff < 0 ||
+      (monthDiff === 0 && today.getDate() < providedDate.getDate())
+    ) {
+      period--;
+    }
+
+    // Return true if period is 18 or more, otherwise false
+    return period >= range ? "" : message;
+  };
+
   return {
     validateRequired,
     validateEmail,
+    validateNumberEntry,
     validatePhone,
     validatePasswordStrength,
     validateFullName,
     validateSingleName,
+    validateDateRange,
   };
 }

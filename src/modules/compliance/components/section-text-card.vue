@@ -3,7 +3,7 @@
     <div class="content-card-text">{{ title }}</div>
 
     <div class="content-card-option">
-      <div class="text">{{ completed ? "Continue" : "View" }}</div>
+      <div class="text">{{ completed ? "Manage" : "View" }}</div>
 
       <div class="check-wrapper">
         <div class="icon icon-arrow-right"></div>
@@ -18,7 +18,7 @@ import { useRouter } from "vue-router";
 interface IContentCardType {
   title: string;
   sectionRoute: string;
-  completed: boolean;
+  completed?: boolean;
 }
 
 const props = withDefaults(defineProps<IContentCardType>(), {

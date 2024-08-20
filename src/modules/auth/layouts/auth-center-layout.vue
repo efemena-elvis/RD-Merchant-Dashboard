@@ -1,19 +1,16 @@
 <template>
   <div
-    class="auth-layout relative h-screen py-[50px] px-[100px] md:px-[50px] sm:px-[30px]"
+    class="auth-layout relative h-screen py-[50px] px-[100px] xl:px-[66px] lg:px-[50px] md:px-7 sm:px-3"
   >
-    <a
-      href="https://redstonepgs.com"
-      class="brand-logo relative block mx-auto w-max mb-14"
-    >
+    <a href="/" class="brand-logo relative block mx-auto w-max mb-14">
       <RedstoneLogo />
     </a>
 
     <div class="flex justify-center items-start mt-10">
-      <div class="w-[38%]">
-        <transition name="fade" mode="out-in">
-          <router-view />
-        </transition>
+      <div class="w-[38%] lg:w-[50%] md:w-[75%] sm:w-[90%] xs:w-full">
+        <router-view v-slot="{ Component }">
+          <component :is="Component" />
+        </router-view>
       </div>
     </div>
 

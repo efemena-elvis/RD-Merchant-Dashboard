@@ -19,7 +19,7 @@
             ref="togglerRef"
             @click="toggleDropdown(!showDropdown)"
           >
-            <div class="selected-text">+234</div>
+            <div class="selected-text">+{{ countryCode }}</div>
             <div
               class="toggler-icon icon-caret-down"
               :class="showDropdown && 'rotate-180'"
@@ -42,6 +42,8 @@
 
                   <input
                     type="search"
+                    v-model="searchCountry"
+                    @input="searchCountryList"
                     class="form-control search-input"
                     placeholder="Search country..."
                   />
@@ -51,7 +53,8 @@
                 <div class="option-list">
                   <div
                     class="option-list-item"
-                    v-for="(country, index) in countries"
+                    @click="updateCountryCode(country.dialing_code)"
+                    v-for="(country, index) in countryList"
                     :key="index"
                   >
                     <div class="primary-text">{{ country.country }}</div>
@@ -69,22 +72,41 @@
       <input
         type="number"
         :id="labelId"
-        :class="['form-control', inputBaseColor]"
+        v-model="formValue"
+        :class="[
+          'form-control',
+          inputBaseColor,
+          !isInputValid && 'form-control-error',
+        ]"
         :placeholder="inputPlaceholder"
         :defaultValue="inputValue"
         :required="isRequired"
         :disabled="isDisabled"
         @input="handleFormInput"
+        @paste="handleFormInput"
+        @change="handleFormInput"
+        @keydown.enter="handleFormInput"
       />
     </div>
+
+    <!-- VALIDATOR MESSAGE -->
+    <div class="validator-message" v-if="formErrorMsg">{{ formErrorMsg }}</div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref } from "vue";
+import { ref, computed } from "vue";
 import { IPhoneInputField } from "@/models/form-type";
+import { useValidator } from "@/shared/composables/useValidators";
 import useClickOutside from "@/shared/composables/useClickOutside";
 import countries from "@/shared/constants/country-list";
+import { IInputValidator } from "@/models/form-type";
+
+const emits = defineEmits([
+  "inputChanged",
+  "countryCodeChanged",
+  "inputValidated",
+]);
 
 const props = withDefaults(defineProps<IPhoneInputField>(), {
   labelId: "",
@@ -97,9 +119,70 @@ const props = withDefaults(defineProps<IPhoneInputField>(), {
   hasBottomPadding: true,
 });
 
-const handleFormInput = (event: Event) => {
-  const target = event.target as HTMLInputElement;
-  if (props.onInputChange) props.onInputChange(target.value);
+// Set a default value for errorHandler if it's not provided
+const errorHandler = props.errorHandler || { validator: "", message: "" };
+
+const { validateRequired, validatePhone } = useValidator();
+
+const formValue = ref<string | number>(props.inputValue);
+const formErrorMsg = ref<string>("");
+
+const isInputValid = computed(() => {
+  const isValid = formErrorMsg.value.length ? false : true;
+  emits("inputValidated", isValid);
+  return isValid;
+});
+
+const countryListRepo = ref([...countries]);
+const countryList = ref([...countries]);
+
+const countryCode = ref<string>("260");
+const searchCountry = ref<string>("");
+
+// UPDATE CHANGE IN COUNTRY CODE
+const updateCountryCode = (selectedCountryCode: string) => {
+  countryCode.value = selectedCountryCode;
+  countryList.value = countryListRepo.value;
+  searchCountry.value = "";
+
+  emits("countryCodeChanged", countryCode.value);
+  toggleDropdown(false);
+};
+
+// SEARCH COUNTRY DATASET
+const searchCountryList = () => {
+  if (searchCountry.value.length) {
+    countryList.value = countryListRepo.value.filter((country) =>
+      country.country.toLowerCase().includes(searchCountry.value.toLowerCase())
+    );
+  } else countryList.value = countryListRepo.value;
+};
+
+const handleFormInput = () => {
+  errorHandler.validator && validateInputFields(errorHandler);
+  emits("inputChanged", formValue.value);
+};
+
+const validateInputFields = (errorHandler: IInputValidator) => {
+  const { validator, message } = errorHandler;
+
+  switch (validator) {
+    case "validateRequired":
+      formErrorMsg.value = validateRequired(formValue.value, message);
+      break;
+
+    case "validatePhone":
+      formErrorMsg.value = validatePhone(
+        formValue.value,
+        countryCode.value,
+        message
+      );
+      break;
+
+    default:
+      formErrorMsg.value = "";
+      break;
+  }
 };
 
 // SETUP DROPDOWN FUNCTIONALITY
@@ -194,6 +277,10 @@ useClickOutside(dialogRef, togglerRef, toggleDropdown);
         }
       }
     }
+  }
+
+  .validator-message {
+    @apply pl-0.5 mt-0.5 text-red-500 font-medium text-[13px];
   }
 }
 </style>

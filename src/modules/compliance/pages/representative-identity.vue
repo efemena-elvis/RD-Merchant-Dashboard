@@ -3,8 +3,9 @@
     title="Identify your business representative"
     description="Provide the identification document of your business representative."
     showActionRow
+    :isPrimaryActionDisabled="isActionReady"
     @onBackClick="router.push({ name: 'RedstoneRepresentativeProfile' })"
-    @onContinueClick="router.push({ name: 'RedstoneRepresentativeAddress' })"
+    @onContinueClick="handleRepresentativeIdentityUpdate"
   >
     <div class="content-block mb-10">
       <SelectFieldInput
@@ -12,20 +13,26 @@
         labelTitle="Select Identification Document"
         inputPlaceholder="Select identification document"
         inputBaseColor="bg-grey-10"
-        inputValue=""
+        :inputValue="businessPayload.type"
         :selectData="documentList"
         isRequired
         @onSelectionChange="handleSelectChange"
       />
 
-      <div v-if="selectedDocumentName">
+      <template v-if="selectedDocumentName">
         <TextFieldInput
           labelId="documentNumber"
           :labelTitle="selectedDocumentName"
           :inputType="IInputType.Text"
+          :inputValue="businessPayload.value"
           :inputPlaceholder="`Provide ${selectedDocumentName.toLowerCase()} data`"
           inputBaseColor="bg-grey-10"
           :isRequired="true"
+          @inputChanged="businessPayload.value = $event"
+          :errorHandler="{
+            validator: 'validateRequired',
+            message: 'Document number is a required field',
+          }"
         />
 
         <div class="mt-12">
@@ -42,15 +49,19 @@
 
         <!-- DOCUMENT FIELD UPLOAD -->
         <div class="mb-14">
-          <FileUploadInput showSkip skipRoute="RedstoneRepresentativeAddress" />
+          <FileUploadInput
+            showSkip
+            skipRoute="RedstoneRepresentativeAddress"
+            @onDocumentUploaded="businessPayload.url = $event"
+          />
         </div>
-      </div>
+      </template>
     </div>
   </ComplianceDisplayBlock>
 </template>
 
 <script lang="ts" setup>
-import { ref } from "vue";
+import { ref, computed } from "vue";
 import { useRouter } from "vue-router";
 import { IInputType } from "@/models/form-type";
 import ComplianceDisplayBlock from "@/modules/compliance/components/compliance-display-block.vue";
@@ -59,7 +70,19 @@ import TextFieldInput from "@/shared/components/form-comps/text-field-input.vue"
 import UploadGuidelines from "@/modules/compliance/components/upload-guidelines.vue";
 import FileUploadInput from "@/shared/components/form-comps/file-upload-input.vue";
 
+type IBusinessType = {
+  type: string;
+  value: string;
+  url: string;
+};
+
 const router = useRouter();
+
+const businessPayload = ref<IBusinessType>({
+  type: "",
+  value: "",
+  url: "",
+});
 
 const documentList = ref<{ value: string; name: string }[]>([
   { value: "drivers_license", name: "Driver's License" },
@@ -71,15 +94,32 @@ const documentList = ref<{ value: string; name: string }[]>([
   { value: "passport", name: "International Passport" },
 ]);
 
-const selectedDocument = ref<string>("");
 const selectedDocumentName = ref<string>("");
 
 const handleSelectChange = (value: string): void => {
-  selectedDocument.value = value;
+  const selected = documentList.value.find((doc) => doc.value === value);
 
-  const selected = documentList.value.find((doc) => doc.value === value)?.name;
+  businessPayload.value.type = selected ? selected.value : "";
+  selectedDocumentName.value = selected ? selected.name : "";
+};
 
-  selectedDocumentName.value = selected ? selected : "";
+const isActionReady = computed(() => {
+  return businessPayload.value.type &&
+    businessPayload.value.value &&
+    businessPayload.value.url
+    ? false
+    : true;
+});
+
+const getBusinessPayload = computed(() => {
+  const { type, value, url } = businessPayload.value;
+  return { doc: { type, value, url } };
+});
+
+const handleRepresentativeIdentityUpdate = () => {
+  // router.push({ name: 'RedstoneRepresentativeAddress' })
+
+  console.log("PAYLOAD", getBusinessPayload.value);
 };
 </script>
 

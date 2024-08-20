@@ -4,6 +4,7 @@
     description="Please ensure the information you submitted are accurate. Incomplete information or documents can delay the activation of your business."
     primaryActionText="Activate my business"
     showActionRow
+    :isPrimaryActionDisabled="isActionReady"
     @onBackClick="router.push({ name: 'RedstoneAgreementSignature' })"
     @onContinueClick=""
   >
@@ -32,30 +33,78 @@
         class="section-block incomplete-content"
         v-if="activeTab === 'incomplete'"
       >
-        <SectionTextCard title="Business Address Verification" completed />
-        <SectionTextCard title="Registration Verificationn" completed />
+        <template v-if="incompleteSections.length">
+          <SectionTextCard
+            :title="section.title"
+            :sectionRoute="section.route"
+            v-for="(section, index) in incompleteSections"
+            :key="index"
+          />
+        </template>
+
+        <template v-else>
+          <EmptyComplianceSection
+            title="Compliance sections completed"
+            description="Congratulations, you have completed all your compliance sections. Proceed to activate my business"
+          />
+        </template>
       </div>
 
       <!-- COMPLETE SECTIONS -->
       <div class="section-block" v-if="activeTab === 'complete'">
-        <SectionTextCard title="Business Profile" />
-        <SectionTextCard title="Business Contact" />
+        <template v-if="completedSections.length">
+          <SectionTextCard
+            :title="section.title"
+            :sectionRoute="section.route"
+            completed
+            v-for="(section, index) in completedSections"
+            :key="index"
+          />
+        </template>
+
+        <template v-else>
+          <EmptyComplianceSection
+            title="No completed sections"
+            description="You haven't kick started your compliance journey yet. Navigate to
+              business section to get started."
+          />
+        </template>
       </div>
     </div>
   </ComplianceDisplayBlock>
 </template>
 
 <script lang="ts" setup>
-import { ref } from "vue";
+import { ref, computed } from "vue";
 import { useRouter } from "vue-router";
 import ComplianceDisplayBlock from "@/modules/compliance/components/compliance-display-block.vue";
 import SectionTextCard from "@/modules/compliance/components/section-text-card.vue";
+import EmptyComplianceSection from "@/modules/compliance/components/empty-compliance-section.vue";
+import {
+  IComplianceSectionType,
+  complianceSections,
+} from "@/modules/compliance/constant/compliance-navigation-list";
 
 const router = useRouter();
 
 const activeTab = ref<string>("incomplete");
-
 const toggleTab = (selection: string) => (activeTab.value = selection);
+
+const complianceSectionList = ref<IComplianceSectionType[]>([
+  ...complianceSections,
+]);
+
+const completedSections = computed(() =>
+  complianceSectionList.value.filter((section) => section.completed)
+);
+
+const incompleteSections = computed(() =>
+  complianceSectionList.value.filter((section) => !section.completed)
+);
+
+const isActionReady = computed(() =>
+  incompleteSections.value.length === 0 ? false : true
+);
 </script>
 
 <style lang="scss" scoped>

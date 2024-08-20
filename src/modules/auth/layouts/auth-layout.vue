@@ -1,9 +1,9 @@
 <template>
   <div
-    class="auth-layout relative h-screen py-[50px] px-[100px] xl:px-[66px] lg:px-[50px] md:px-[28px] sm:px-[18px]"
+    class="auth-layout relative h-screen py-[50px] px-[100px] xl:px-[66px] lg:px-[50px] md:px-7 sm:px-3"
   >
     <div class="logo-wrapper w-full flex md:justify-center mb-10 md:mb-12">
-      <a href="https://redstonepgs.com" class="brand-logo relative md:mx-auto">
+      <a href="/" class="brand-logo relative md:mx-auto">
         <RedstoneLogo />
       </a>
     </div>

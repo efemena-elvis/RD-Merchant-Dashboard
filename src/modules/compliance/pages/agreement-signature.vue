@@ -4,8 +4,9 @@
     description="Kindly read through and accept the merchant service agreement."
     primaryActionText="Accept agreement"
     showActionRow
+    :isPrimaryActionDisabled="isActionReady"
     @onBackClick="router.push({ name: 'RedstoneSignatoryConfirm' })"
-    @onContinueClick="router.push({ name: 'RedstoneComplianceSummary' })"
+    @onContinueClick="handleMerchantAgreementUpdate"
   >
     <div class="content-block mb-12">
       <!-- AGREEMENT ALERT -->
@@ -65,7 +66,13 @@
             for="acceptAgreement"
             class="flex justify-start items-center gap-x-3 cursor-pointer"
           >
-            <input type="checkbox" class="sm-size" id="acceptAgreement" />
+            <input
+              type="checkbox"
+              class="sm-size"
+              id="acceptAgreement"
+              v-model="isSigned"
+              @change="businessPayload.signed_agreement = isSigned"
+            />
             <div class="text-grey-900 font-medium text-sm">
               I accept the Merchant Terms & Agreement
             </div>
@@ -77,10 +84,35 @@
 </template>
 
 <script lang="ts" setup>
+import { computed, ref } from "vue";
 import { useRouter } from "vue-router";
 import ComplianceDisplayBlock from "@/modules/compliance/components/compliance-display-block.vue";
 
+type IBusinessType = {
+  signed_agreement: boolean;
+};
+
 const router = useRouter();
+
+const isSigned = ref<boolean>(false);
+const businessPayload = ref<IBusinessType>({
+  signed_agreement: false,
+});
+
+const isActionReady = computed(() => {
+  return businessPayload.value.signed_agreement ? false : true;
+});
+
+const getBusinessPayload = computed(() => {
+  const { signed_agreement } = businessPayload.value;
+  return { signed_agreement };
+});
+
+const handleMerchantAgreementUpdate = () => {
+  // router.push({ name: 'RedstoneComplianceSummary' })
+
+  console.log("Payload", getBusinessPayload.value);
+};
 </script>
 
 <style lang="scss" scoped>

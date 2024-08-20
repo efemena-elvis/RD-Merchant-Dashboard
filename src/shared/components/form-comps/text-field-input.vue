@@ -52,7 +52,9 @@
 
         <!-- SUFFIX ITEM FOR EMAIL VEIFY FIELD TYPE -->
         <div
-          v-if="inputType === IInputType.Email && showVerifyEmail"
+          v-if="
+            inputType === IInputType.Email && showVerifyEmail && isInputValid
+          "
           class="suffix-item"
         >
           <CheckMarkIocn v-if="isEmailVerified" />
@@ -82,9 +84,14 @@
           inputBaseColor,
           formErrorMsg ? 'form-control-error' : '',
         ]"
+        v-model="formValue"
         :placeholder="inputPlaceholder"
         :required="isRequired"
         :disabled="isDisabled"
+        @input="handleFormInput"
+        @paste="handleFormInput"
+        @change="handleFormInput"
+        @keydown.enter="handleFormInput"
       ></textarea>
     </div>
 
@@ -124,15 +131,20 @@ const props = withDefaults(defineProps<ITextInputField>(), {
 });
 
 // Set a default value for errorHandler if it's not provided
-const errorHandler = props.errorHandler || { validator: "", message: "" };
+const errorHandler = props.errorHandler || {
+  validator: "",
+  range: 0,
+  message: "",
+};
 
 const {
   validateRequired,
   validateEmail,
-  validatePhone,
+  validateNumberEntry,
   validatePasswordStrength,
   validateFullName,
   validateSingleName,
+  validateDateRange,
 } = useValidator();
 
 const getInputType = computed(() => {
@@ -174,8 +186,13 @@ const getInputTypeView = () => {
   return props.isTextArea ? typeView.textarea : typeView[props.inputType];
 };
 
+const handleFormInput = () => {
+  errorHandler.validator && validateInputFields(errorHandler);
+  emits("inputChanged", formValue.value);
+};
+
 const validateInputFields = (errorHandler: IInputValidator) => {
-  const { validator, message } = errorHandler;
+  const { validator, range, message } = errorHandler;
 
   switch (validator) {
     case "validateRequired":
@@ -186,8 +203,11 @@ const validateInputFields = (errorHandler: IInputValidator) => {
       formErrorMsg.value = validateEmail(formValue.value as string, message);
       break;
 
-    case "validatePhone":
-      formErrorMsg.value = validatePhone(formValue.value, message);
+    case "validateNumberEntry":
+      formErrorMsg.value = validateNumberEntry(
+        formValue.value as string,
+        message
+      );
       break;
 
     case "validatePasswordStrength":
@@ -205,15 +225,18 @@ const validateInputFields = (errorHandler: IInputValidator) => {
       );
       break;
 
+    case "validateDateRange":
+      formErrorMsg.value = validateDateRange(
+        formValue.value as string,
+        range as number,
+        message
+      );
+      break;
+
     default:
       formErrorMsg.value = "";
       break;
   }
-};
-
-const handleFormInput = () => {
-  errorHandler.validator && validateInputFields(errorHandler);
-  emits("inputChanged", formValue.value);
 };
 
 const toggleHidden = () => {

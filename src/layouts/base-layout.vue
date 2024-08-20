@@ -69,7 +69,7 @@ onMounted(() => {
   @apply w-full flex justify-between items-start;
 
   .sidebar-area {
-    @apply fixed w-[16%] xl:w-[20%] lg:w-[24%] mdLg:w-0 mdLg:hidden h-full top-0 left-0;
+    @apply fixed w-[17%] xl:w-[20%] lg:w-[24%] mdLg:w-0 mdLg:hidden h-full top-0 left-0;
   }
 
   .visible-sidebar-area {
@@ -82,10 +82,10 @@ onMounted(() => {
   }
 
   .main-content-area {
-    @apply relative w-[84%] xl:w-[80%] lg:w-[76%] mdLg:w-full left-[16%] xl:left-[20%] lg:left-[24%] mdLg:left-0;
+    @apply relative w-[83%] xl:w-[80%] lg:w-[76%] mdLg:w-full left-[17%] xl:left-[20%] lg:left-[24%] mdLg:left-0;
 
     .topbar-area {
-      @apply fixed top-0 w-[84%] xl:w-[80%] lg:w-[76%] mdLg:w-full bg-neutral-10 z-30 shadow-sm;
+      @apply fixed top-0 w-[83%] xl:w-[80%] lg:w-[76%] mdLg:w-full bg-neutral-10 z-30 shadow-sm border;
     }
 
     .main-content {

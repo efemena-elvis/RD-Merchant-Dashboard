@@ -78,6 +78,28 @@ export function useString() {
           ?.toUpperCase()}`;
   };
 
+  const formatPhoneNumber = (
+    phoneNumber: string,
+    countryCode: string
+  ): string => {
+    // Ensure phoneNumber is a string
+    phoneNumber = String(phoneNumber);
+
+    // Check if the phone number starts with +
+    if (phoneNumber.startsWith("+")) {
+      // Remove the + sign
+      phoneNumber = phoneNumber.slice(1);
+    }
+
+    // Check if the phone number starts with the country code
+    if (phoneNumber.startsWith(countryCode)) {
+      return phoneNumber;
+    } else {
+      // Catenate the country code with the phone number
+      return countryCode + phoneNumber;
+    }
+  };
+
   const formatNumber = (value: number): string => {
     if (value >= 1000000) {
       // Format for 1 million and above
@@ -135,6 +157,7 @@ export function useString() {
     decodeString,
     renderImg,
     getStringInitials,
+    formatPhoneNumber,
     formatNumber,
     getBoldTableText,
     getStatus,

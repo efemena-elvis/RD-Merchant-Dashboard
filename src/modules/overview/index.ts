@@ -14,7 +14,7 @@ const dashboardRoutes: IRouteType[] = [
             /* webpackChunkName: "dashboard-module" */ "@/modules/overview/pages/overview.vue"
           ),
         meta: {
-          guest: true,
+          requiresAuth: true,
           title: "Overview",
           pageMeta: {
             title: "Dashboard Overview",

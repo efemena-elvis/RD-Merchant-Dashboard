@@ -1,17 +1,53 @@
 <template>
-  <div class="upload-field-input">
+  <!-- UPLOADED VIEW -->
+  <div class="doc-uploaded-view" v-if="isDocUploaded">
+    <!-- FILE INFO DETAILS -->
+    <div class="file-info">
+      <div class="file-img">
+        <img :src="renderImg('file-binders.png')" alt="uploadedFile" />
+      </div>
+
+      <div class="flex flex-col gap-y-0.5 sm:gap-y-0">
+        <div class="file-name">{{ docPayload.name }}</div>
+        <div class="file-size">File size: {{ docPayload.size }}</div>
+      </div>
+    </div>
+
+    <!-- TRIGGER FILE REMOVE -->
+    <div class="file-remove" title="Remove file" @click="removeUploadedFile">
+      <div class="icon icon-trash"></div>
+    </div>
+  </div>
+
+  <!-- EMPTY VIEW -->
+  <div class="upload-field-input" v-else>
     <label :for="id">
       <div class="flex justify-center items-center gap-x-2">
-        <div class="icon icon-upload text-xl text-grey-600/80"></div>
-        <div>Click here to upload your file</div>
+        <!-- UPLOADING STATE -->
+        <template v-if="isUploading">
+          <div
+            class="icon icon-spinner-ios text-2xl text-grey-600/80 animate-spin"
+          ></div>
+          <div class="select-none">
+            Please wait, uploading your file...
+          </div></template
+        >
+
+        <!-- NOT UPLOADED STATE -->
+        <template v-else>
+          <div class="icon icon-upload text-xl text-grey-600/80"></div>
+          <div class="select-none">Click here to upload your file</div>
+        </template>
       </div>
     </label>
 
     <input
       type="file"
       :id="id"
-      ref="fileUpload"
+      ref="fileUploadRef"
       class="hidden"
+      :disabled="isUploading"
+      @change="processDocumentUpload"
       accept=".jpg, .jpeg, .png, .pdf"
     />
   </div>
@@ -19,17 +55,23 @@
   <!-- SKIP ROW -->
   <div class="skip-row" v-if="showSkip">
     Don’t have these documents ready?
-    <span @click="goToSkipRoute">Skip and upload later</span>
+    <span @click="router.push({ name: props.skipRoute })"
+      >Skip and upload later</span
+    >
   </div>
 </template>
 
 <script lang="ts" setup>
+import { ref } from "vue";
 import { useRouter } from "vue-router";
+import { useString } from "@/shared/composables/useString";
+import { useGeneralStore } from "@/store/general";
+import useEvents from "@/shared/composables/useEvents";
 
 interface IFileUploadType {
-  id: string;
-  showSkip: boolean;
-  skipRoute: string;
+  id?: string;
+  showSkip?: boolean;
+  skipRoute?: string;
 }
 
 const props = withDefaults(defineProps<IFileUploadType>(), {
@@ -38,17 +80,157 @@ const props = withDefaults(defineProps<IFileUploadType>(), {
   skipRoute: "",
 });
 
-const router = useRouter();
+const emits = defineEmits(["onDocumentUploaded"]);
 
-const goToSkipRoute = () => router.push({ name: props.skipRoute });
+const router = useRouter();
+const { renderImg } = useString();
+const { pushToastAlert, processAPIRequest } = useEvents();
+const { uploadFile } = useGeneralStore();
+
+const fileUploadRef = ref<HTMLInputElement | null>(null);
+const allowedFiles = ref<string[]>(["pdf", "jpeg", "jpg", "png"]);
+
+const isDocUploaded = ref<boolean>(false);
+const isUploading = ref<boolean>(false);
+const docPayload = ref<{ name: string; size: string }>({ name: "", size: "" });
+
+const processFileType = (name: string) => {
+  const fileType = name.split(".").at(-1) as string;
+  return allowedFiles.value.includes(fileType) ? true : false;
+};
+
+const processFileSize = (size: number) => {
+  if (size > 5000000) return false;
+
+  return size.toString().length >= 6
+    ? `${(size / 1000000).toFixed(1)}mb`
+    : `${(size / 1000).toFixed(1)}kb`;
+};
+
+const getFileSize = (size: number): string => {
+  return size.toString().length >= 6
+    ? `${(size / 1000000).toFixed(1)}mb`
+    : `${(size / 1000).toFixed(1)}kb`;
+};
+
+const processDocumentUpload = async ($event: Event) => {
+  const inputElement = $event.target as HTMLInputElement;
+  const uploadedFile = inputElement.files ? inputElement.files[0] : null;
+
+  if (!uploadedFile) return;
+
+  isUploading.value = true;
+
+  if (!processFileType(uploadedFile.name)) {
+    pushToastAlert({
+      message: "File type is not supported!",
+      description: "Document file type should either be jpg, jpeg, png or pdf",
+      type: "warning",
+    });
+
+    isUploading.value = false;
+    inputElement.value = "";
+    return false;
+  }
+
+  if (!processFileSize(uploadedFile.size)) {
+    pushToastAlert({
+      message: "Upload a maximum file size of 5mb",
+      type: "warning",
+    });
+
+    isUploading.value = false;
+    inputElement.value = "";
+    return false;
+  }
+
+  // UPLOAD FILE TO BUCKET
+  const payload = new FormData();
+  payload.append("files", uploadedFile);
+
+  const response = await processAPIRequest({
+    action: uploadFile,
+    payload,
+    alertHandler: {
+      201: {
+        message: "Document uploaded successfully",
+        type: "success",
+      },
+
+      400: {
+        message: "Document upload failed",
+        type: "error",
+      },
+    },
+  });
+
+  if (response.code == 201) {
+    docPayload.value = response.data;
+    isDocUploaded.value = true;
+
+    inputElement.value = "";
+    isUploading.value = false;
+
+    docPayload.value.name = uploadedFile.name;
+    docPayload.value.size = getFileSize(uploadedFile.size);
+
+    emits("onDocumentUploaded", response.data[0].file_url);
+  }
+
+  // FAILED STATE
+  else {
+    inputElement.value = "";
+    isUploading.value = false;
+    isDocUploaded.value = false;
+  }
+};
+
+const removeUploadedFile = () => {
+  isDocUploaded.value = false;
+  docPayload.value = { name: "", size: "" };
+
+  emits("onDocumentUploaded", null);
+};
 </script>
 
 <style lang="scss" scoped>
 .upload-field-input {
-  @apply relative rounded-lg border border-dotted border-grey-500/85 cursor-pointer h-20 transition duration-300 ease-in-out hover:bg-green-50 hover:border-green-500;
+  @apply relative rounded-lg border border-dotted border-grey-500/85 cursor-pointer h-[76px] transition duration-300 ease-in-out hover:bg-green-50 hover:border-green-500;
 
   label {
     @apply absolute inset-0 w-full h-full text-sm text-grey-600 cursor-pointer flex justify-center items-center;
+  }
+}
+
+.doc-uploaded-view {
+  @apply relative rounded-xl p-4 sm:px-3 sm:py-3.5 border border-grey-300/60 h-auto flex justify-between items-center gap-x-3 transition duration-300 ease-in-out hover:bg-green-50/90;
+
+  .file-info {
+    @apply flex justify-start items-center gap-x-3 xs:gap-x-2.5;
+
+    .file-img {
+      @apply size-11 sm:size-10 min-h-11 sm:min-h-10 min-w-11 sm:min-w-10 rounded-2xl bg-green-200/40 border border-grey-200/40 shadow-sm flex justify-center items-center;
+
+      img {
+        @apply size-6 sm:size-5;
+      }
+    }
+
+    .file-name {
+      @apply font-medium line-clamp-1 text-teal-800 text-[14.75px] sm:text-[14.5px] xs:text-[14.25px];
+    }
+
+    .file-size {
+      @apply text-grey-600/80 text-[13.25px] sm:text-[12.75px];
+    }
+  }
+
+  .file-remove {
+    @apply cursor-pointer size-10 min-h-10 min-w-10 rounded-full bg-red-200/30 flex justify-center items-center transition duration-300 ease-in-out hover:bg-red-200/50;
+
+    .icon {
+      @apply text-red-500 text-[22px] xs:text-xl;
+    }
   }
 }
 

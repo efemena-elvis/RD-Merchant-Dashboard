@@ -42,7 +42,7 @@
 
 <script lang="ts" setup>
 import { IInputType } from "@/models/form-type";
-import ModalDialog from "../../../shared/components/global-comps/modal-dialog.vue";
+import ModalDialog from "@/shared/components/global-comps/modal-dialog.vue";
 import TextFieldInput from "@/shared/components/form-comps/text-field-input.vue";
 </script>
 

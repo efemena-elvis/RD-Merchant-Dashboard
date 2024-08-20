@@ -5,17 +5,14 @@
   >
     <!-- TITLE TEXT -->
     <div
-      class="text-2xl lg:text-xl md:text-lg font-medium text-grey-800/85"
-      :class="[
-        center_title ? 'text-center' : '',
-        meta_text ? 'mb-4' : 'mb-10 md:mb-9',
-      ]"
+      class="text-[22px] lg:text-xl md:text-lg font-semibold sm:font-medium text-grey-800/90"
+      :class="[center_title ? 'text-center' : '', meta_text ? 'mb-4' : 'mb-9']"
     >
       {{ title_text }}
     </div>
 
     <div
-      class="text-[14.5px] text-grey-700 mb-8"
+      class="text-[14.5px] sm:text-[13.75px] text-grey-700 mb-8"
       :class="center_title ? 'text-center' : ''"
       v-if="meta_text"
       v-html="meta_text"

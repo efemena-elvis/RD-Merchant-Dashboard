@@ -16,32 +16,19 @@
     <div class="topbar--right">
       <!-- MODE TOGGLER -->
       <div class="relative">
-        <div
-          class="mode-toggler"
-          ref="togglerModeRef"
-          @click="toggleModeDropdown(!showModeDropdown)"
-        >
+        <div class="mode-toggler" ref="togglerModeRef" @click="toggleModeDropdown(!showModeDropdown)">
           <div class="icon icon-regulator"></div>
           <!-- <div class="mode-toggler-control">
             <div class="mode-toggler-control-pin"></div>
           </div> -->
 
-          <div
-            class="text"
-            :class="activeMode === 'test' ? 'text-red-500' : 'text-green-600'"
-          >
+          <div class="text" :class="activeMode === 'test' ? 'text-red-500' : 'text-green-600'">
             {{ activeMode }} Mode
           </div>
         </div>
 
         <!-- MODE DROPDOWN -->
-        <div
-          class="app-dropdown"
-          ref="dialogModeRef"
-          v-if="showModeDropdown"
-          role="dialog"
-          aria-modal="true"
-        >
+        <div class="app-dropdown" ref="dialogModeRef" v-if="showModeDropdown" role="dialog" aria-modal="true">
           <div class="dropdown-wrapper">
             <div class="app-dropdown-item" @click="updateActiveMode('test')">
               <div class="icon icon-shield-slash text-base"></div>
@@ -90,21 +77,12 @@
 
       <!-- USER PROFILE -->
       <div class="relative">
-        <div
-          class="icon-wrapper"
-          ref="togglerProfileRef"
-          @click="toggleProfileDropdown(!showProfileDropdown)"
-        >
+        <div class="icon-wrapper" ref="togglerProfileRef" @click="toggleProfileDropdown(!showProfileDropdown)">
           <div class="icon-user"></div>
         </div>
 
-        <div
-          class="app-dropdown profile-dropdown"
-          ref="dialogProfileRef"
-          v-if="showProfileDropdown"
-          role="dialog"
-          aria-modal="true"
-        >
+        <div class="app-dropdown profile-dropdown" ref="dialogProfileRef" v-if="showProfileDropdown" role="dialog"
+          aria-modal="true">
           <div class="dropdown-wrapper">
             <router-link to="/settings/profile" class="app-dropdown-item">
               <div class="icon icon-user text-base"></div>
@@ -126,7 +104,7 @@
               <div class="text">Help & Support</div>
             </router-link> -->
 
-            <div class="app-dropdown-item">
+            <div class="app-dropdown-item" @click="logoutUser">
               <div class="icon icon-logout text-lg text-red-600"></div>
               <div class="text text-red-600">Sign Out</div>
             </div>
@@ -142,6 +120,7 @@ import { ref, watch, inject } from "vue";
 import { useRoute } from "vue-router";
 import NavNotificationItem from "./nav-notification-item.vue";
 import useClickOutside from "@/shared/composables/useClickOutside";
+import { useAuthStore } from "@/modules/auth/store";
 import { Emitter } from "mitt";
 
 // Define the type of the event bus
@@ -151,6 +130,7 @@ type Events = {
 
 const route = useRoute();
 const eventBus = inject<Emitter<Events>>("eventBus");
+const { logoutUser } = useAuthStore();
 
 const pageTitle = ref<string>("");
 const pageDescription = ref<string>("");

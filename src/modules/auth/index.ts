@@ -61,6 +61,28 @@ const authRoutes: IRouteType[] = [
       },
     ],
   },
+
+  {
+    path: "/verify-account",
+    component: () =>
+      import(
+        /* webpackChunkName: "auth-layout" */ "@/modules/auth/layouts/auth-center-layout.vue"
+      ),
+    children: [
+      {
+        path: "",
+        name: "RedstoneVerifyEmail",
+        component: () =>
+          import(
+            /* webpackChunkName: "auth-module" */ "@/modules/auth/pages/verify-account.vue"
+          ),
+        meta: {
+          guest: true,
+          title: "Verify Account",
+        },
+      },
+    ],
+  },
 ];
 
 export default authRoutes;

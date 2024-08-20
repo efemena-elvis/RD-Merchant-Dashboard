@@ -14,6 +14,7 @@ export enum ISelectType {
 
 export interface IInputValidator {
   validator: string;
+  range?: number;
   message?: string;
 }
 
@@ -38,19 +39,19 @@ export interface ITextInputField {
 export interface IPhoneInputField {
   labelId: string;
   labelTitle?: string;
-  inputValue: string;
+  inputValue: string | number;
   inputPlaceholder?: string;
   inputBaseColor?: string;
   isRequired?: boolean;
   isDisabled?: boolean;
   hasBottomPadding?: boolean;
-  onInputChange?: (value: string) => void;
+  errorHandler?: IInputValidator;
 }
 
 export interface ISelectInputField {
   labelId?: string;
   labelTitle?: string;
-  inputValue: string;
+  inputValue?: string;
   inputPlaceholder?: string;
   inputBaseColor?: string;
   isRequired?: boolean;

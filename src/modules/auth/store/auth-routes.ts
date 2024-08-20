@@ -1,6 +1,10 @@
+const nameSpace: string = "auth";
+
 export const authRoutes = {
-  login: "auth/login",
-  signup: "auth/signup",
-  passwordRequest: "auth/password-request",
-  passwordReset: "auth/reset-password",
+  login: `${nameSpace}/login`,
+  signup: `${nameSpace}/signup`,
+  passwordRequest: `${nameSpace}/password-request`,
+  passwordReset: `${nameSpace}/reset-password`,
+  sendVerifyEmail: `${nameSpace}/send-verify-email`,
+  verifyEmail: `${nameSpace}/verify-email`,
 };

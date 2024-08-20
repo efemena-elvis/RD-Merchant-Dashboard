@@ -2,11 +2,11 @@ import { ISidebarRouteType, ISideNavType } from "../../models/route-type";
 
 export const sidebarRoutes: ISidebarRouteType = {
   home: [
-    // {
-    //   link: "/overview",
-    //   title: "Overview",
-    //   icon: "icon-home",
-    // },
+    {
+      link: "/overview",
+      title: "Overview",
+      icon: "icon-home",
+    },
     {
       link: "/compliance/documents",
       title: "Compliance",

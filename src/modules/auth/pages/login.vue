@@ -15,6 +15,7 @@
         }"
       />
 
+      <!-- PASSWORD -->
       <TextFieldInput
         labelId="userPassword"
         labelTitle="Password"
@@ -38,7 +39,11 @@
         </div>
       </div>
 
-      <button class="btn btn-primary w-full" :disabled="isLoginReady">
+      <button
+        class="btn btn-primary w-full"
+        ref="loginBtnRef"
+        :disabled="isLoginReady"
+      >
         Login to your dashboard
       </button>
 
@@ -55,9 +60,10 @@
 </template>
 
 <script lang="ts" setup>
-import { computed, ref } from "vue";
+import { ref, computed } from "vue";
 import { IInputType } from "@/models/form-type";
 import { useAuthStore } from "@/modules/auth/store";
+import useEvents from "@/shared/composables/useEvents";
 import AuthWrapper from "@/modules/auth/components/auth-wrapper.vue";
 import TextFieldInput from "@/shared/components/form-comps/text-field-input.vue";
 
@@ -72,8 +78,10 @@ const loginPayload = ref<ILoginInputType>({
 });
 
 const emailValidity = ref<boolean>(false);
+const loginBtnRef = ref(null);
 
 const { loginUser } = useAuthStore();
+const { processAPIRequest } = useEvents();
 
 const isLoginReady = computed(() => {
   return loginPayload.value.email &&
@@ -83,9 +91,34 @@ const isLoginReady = computed(() => {
     : true;
 });
 
-const handleUserLogin = async () => {
+const getLoginPayload = computed(() => {
   const { email, password } = loginPayload.value;
+  return { email, password };
+});
 
-  await loginUser({ email, password });
+const handleUserLogin = async () => {
+  const response = await processAPIRequest({
+    action: loginUser,
+    payload: getLoginPayload.value,
+    btnRef: loginBtnRef,
+    btnText: "Login to your dashboard",
+    alertHandler: {
+      200: {
+        message: "Merchant login successful",
+        description: "You are being redirected to your merchant dashboard",
+        type: "success",
+      },
+
+      400: {
+        message: "Merchant login failed",
+        description: "Incorrect email address or password combination",
+        type: "error",
+      },
+    },
+  });
+
+  if (response.code === 200) {
+    setTimeout(() => (location.href = "/overview"), 1200);
+  }
 };
 </script>

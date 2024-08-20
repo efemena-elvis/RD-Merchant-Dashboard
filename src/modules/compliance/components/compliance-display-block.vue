@@ -8,37 +8,98 @@
       </div>
     </div>
 
-    <div class="content-area mb-8">
-      <slot></slot>
-    </div>
+    <template v-if="isComplianceLoading">
+      <SkeletonDisplay />
+    </template>
 
-    <div class="btn-action-row" v-if="showActionRow">
-      <button class="btn btn-sm btn-secondary" @click="$emit('onBackClick')">
-        Back
-      </button>
+    <template v-else>
+      <div class="content-area mb-8">
+        <slot :key="componentKey"></slot>
+      </div>
 
-      <button class="btn btn-sm btn-primary" @click="$emit('onContinueClick')">
-        {{ primaryActionText }}
-      </button>
-    </div>
+      <div class="btn-action-row" v-if="showActionRow">
+        <button class="btn btn-sm btn-secondary" @click="$emit('onBackClick')">
+          Back
+        </button>
+
+        <button
+          class="btn btn-sm btn-primary"
+          ref="btnRef"
+          :disabled="isPrimaryActionDisabled"
+          @click="triggerPrimaryActionClick"
+        >
+          {{ primaryActionText }}
+        </button>
+      </div>
+    </template>
   </div>
 </template>
 
 <script lang="ts" setup>
+import { ref, computed, onMounted, watch } from "vue";
+import { useComplianceStore } from "@/modules/compliance/store";
+import useEvents from "@/shared/composables/useEvents";
+import SkeletonDisplay from "@/modules/compliance/components/skeleton-display.vue";
+
 interface IComplianceInfoType {
   title: string;
   description: string;
-  showActionRow: boolean;
-  primaryActionText: string;
+  showActionRow?: boolean;
+  primaryActionText?: string;
+  isPrimaryActionDisabled?: boolean;
+  stopClickHandler?: boolean;
 }
 
-defineEmits(["onBackClick", "onContinueClick"]);
+const emits = defineEmits(["onBackClick", "onContinueClick"]);
 
-withDefaults(defineProps<IComplianceInfoType>(), {
+const props = withDefaults(defineProps<IComplianceInfoType>(), {
   title: "Document title",
   description: "Document description",
   showActionRow: false,
   primaryActionText: "Continue",
+  isPrimaryActionDisabled: false,
+  stopClickHandler: false,
+});
+
+const { processAPIRequest, clickHandler } = useEvents();
+const { getCompliance, mutateCompliance } = useComplianceStore();
+
+const btnRef = ref(null);
+const isComplianceLoading = ref<boolean>(true);
+
+const componentKey = ref<number>(0);
+const remountComponent = () => {
+  componentKey.value += 1;
+};
+
+const triggerPrimaryActionClick = () => {
+  clickHandler(btnRef);
+  emits("onContinueClick");
+};
+
+watch(
+  props,
+  () => {
+    if (props.stopClickHandler)
+      clickHandler(btnRef, props.primaryActionText, false);
+  },
+  { deep: true }
+);
+
+// Fetch all compliance data
+onMounted(async () => {
+  const response = await processAPIRequest({
+    action: getCompliance,
+    payload: {},
+    showAlert: false,
+  });
+
+  if ([200, 400].includes(response.code)) {
+    isComplianceLoading.value = false;
+    mutateCompliance(response);
+
+    remountComponent();
+  }
 });
 </script>
 

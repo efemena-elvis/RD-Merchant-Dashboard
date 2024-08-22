@@ -36,8 +36,8 @@ export function useAuthActions() {
 
   const logoutUser = () => {
     localStorage.clear();
-    location.href= "/"
-  }
+    location.href = "/";
+  };
 
   return {
     loginUser,
@@ -46,6 +46,6 @@ export function useAuthActions() {
     resetUserPassword,
     sendVerifyEmail,
     verifyEmail,
-    logoutUser
+    logoutUser,
   };
 }

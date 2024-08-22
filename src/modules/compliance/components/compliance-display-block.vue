@@ -14,7 +14,7 @@
 
     <template v-else>
       <div class="content-area mb-8">
-        <slot :key="componentKey"></slot>
+        <slot></slot>
       </div>
 
       <div class="btn-action-row" v-if="showActionRow">
@@ -67,11 +67,6 @@ const { getCompliance, mutateCompliance } = useComplianceStore();
 const btnRef = ref(null);
 const isComplianceLoading = ref<boolean>(true);
 
-const componentKey = ref<number>(0);
-const remountComponent = () => {
-  componentKey.value += 1;
-};
-
 const triggerPrimaryActionClick = () => {
   clickHandler(btnRef);
   emits("onContinueClick");
@@ -87,7 +82,7 @@ watch(
 );
 
 // Fetch all compliance data
-onMounted(async () => {
+const fetchComplianceData = async () => {
   const response = await processAPIRequest({
     action: getCompliance,
     payload: {},
@@ -97,10 +92,10 @@ onMounted(async () => {
   if ([200, 400].includes(response.code)) {
     isComplianceLoading.value = false;
     mutateCompliance(response);
-
-    remountComponent();
   }
-});
+};
+
+fetchComplianceData();
 </script>
 
 <style lang="scss" scoped>

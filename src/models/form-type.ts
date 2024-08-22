@@ -44,6 +44,7 @@ export interface IPhoneInputField {
   inputBaseColor?: string;
   isRequired?: boolean;
   isDisabled?: boolean;
+  activeCountryCode?: string;
   hasBottomPadding?: boolean;
   errorHandler?: IInputValidator;
 }

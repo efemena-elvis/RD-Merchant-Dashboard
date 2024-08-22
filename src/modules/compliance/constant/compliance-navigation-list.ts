@@ -134,6 +134,12 @@ export const complianceSections: IComplianceSectionType[] = [
     completed: false,
   },
   {
+    id: "representative_verification",
+    title: "Representative Verification",
+    route: "RedstoneRepresentativeConfirm",
+    completed: false,
+  },
+  {
     id: "bank_account",
     title: "Bank Account",
     route: "RedstoneBankAccount",

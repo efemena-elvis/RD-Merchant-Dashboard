@@ -8,6 +8,7 @@ export interface IRouteType {
   meta?: {
     title: string;
     guest?: boolean;
+    open?: boolean;
     requiresAuth?: boolean;
     description?: string;
     pageMeta?: {
@@ -21,9 +22,11 @@ export interface IRouteType {
 }
 
 export interface IRouteGroupType {
+  slug?: string;
   link: string;
   title: string;
   icon: string;
+  active: boolean;
 }
 
 export interface ISidebarRouteType {

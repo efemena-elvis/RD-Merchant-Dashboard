@@ -4,6 +4,7 @@
     description="Provide the residential address details of your business representative."
     showActionRow
     :isPrimaryActionDisabled="isActionReady"
+    :stopClickHandler="stopClickHandler"
     @onBackClick="router.push({ name: 'RedstoneRepresentativeIdentity' })"
     @onContinueClick="handleRepresentativeAddressUpdate"
   >
@@ -64,13 +65,16 @@
 </template>
 
 <script lang="ts" setup>
-import { computed, ref } from "vue";
+import { computed, ref, watch } from "vue";
 import { useRouter } from "vue-router";
 import { IInputType } from "@/models/form-type";
 import ComplianceDisplayBlock from "@/modules/compliance/components/compliance-display-block.vue";
 import TextFieldInput from "@/shared/components/form-comps/text-field-input.vue";
 import SelectFieldInput from "@/shared/components/form-comps/select-field-input.vue";
 import zambiaProvinceList from "@/shared/constants/zambia-provinces";
+import { useComplianceUtil } from "../composable/useComplianceUtil";
+import { storeToRefs } from "pinia";
+import { useComplianceStore } from "../store";
 
 type IBusinessType = {
   first_address: string;
@@ -80,13 +84,17 @@ type IBusinessType = {
 };
 
 const router = useRouter();
+const stopClickHandler = ref<boolean>(false);
 const zambianProvinces = ref([...zambiaProvinceList]);
 
+const { handleComplianceRequest } = useComplianceUtil();
+const { getComplianceRepresentative } = storeToRefs(useComplianceStore());
+
 const businessPayload = ref<IBusinessType>({
-  first_address: "",
-  second_address: "",
-  city: "",
-  state: "",
+  first_address: getComplianceRepresentative.value?.[0]?.first_address || "",
+  second_address: getComplianceRepresentative.value?.[0]?.second_address || "",
+  city: getComplianceRepresentative.value?.[0]?.city || "",
+  state: getComplianceRepresentative.value?.[0]?.state || "",
 });
 
 const isActionReady = computed(() => {
@@ -102,15 +110,31 @@ const getBusinessPayload = computed(() => {
   return { first_address, second_address, city, state };
 });
 
-const handleRepresentativeAddressUpdate = () => {
-  // router.push({ name: 'RedstoneRepresentativeConfirm' })
-
-  console.log("Payload", getBusinessPayload.value);
+const handleRepresentativeAddressUpdate = async () => {
+  await handleComplianceRequest({
+    payload: getBusinessPayload,
+    redirectRoute: "RedstoneRepresentativeConfirm",
+    stopClickHandler,
+    succesMsg: "Representative address submitted",
+    errorMsg: "Representative update failed",
+    payloadType: "representatives",
+  });
 };
+
+watch(
+  getComplianceRepresentative,
+  (newValue) => {
+    if (newValue && newValue.length > 0) {
+      businessPayload.value = {
+        first_address: newValue[0]?.first_address || "",
+        second_address: newValue[0]?.second_address || "",
+        city: newValue[0]?.city || "",
+        state: newValue[0]?.state || "",
+      };
+    }
+  },
+  { immediate: true }
+);
 </script>
 
-<style lang="scss" scoped>
-.content-block {
-  // @apply ;
-}
-</style>
+<style lang="scss" scoped></style>

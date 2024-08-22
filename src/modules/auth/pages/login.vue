@@ -118,7 +118,12 @@ const handleUserLogin = async () => {
   });
 
   if (response.code === 200) {
-    setTimeout(() => (location.href = "/overview"), 1200);
+    // Check if user email is verified
+    setTimeout(() => {
+      location.href = response.data.is_email_verified
+        ? "/transfers/balance"
+        : `/verify-account?email=${encodeURIComponent(getLoginPayload.value.email)}`;
+    }, 1200);
   }
 };
 </script>

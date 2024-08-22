@@ -142,7 +142,7 @@ export default function useEvents() {
       btnRef && clickHandler(btnRef, btnText, false);
 
       // Handle any network or unexpected errors
-      console.error("A network error occurred:", typeof error);
+      console.error("A network error occurred:", error);
 
       if (hasAlertHandler) {
         showAlert &&

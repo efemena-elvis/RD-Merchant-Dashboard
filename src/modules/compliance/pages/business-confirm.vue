@@ -4,6 +4,7 @@
     description="Provide any of the listed relevant document below to help us verify your business address."
     showActionRow
     :isPrimaryActionDisabled="isActionReady"
+    :stopClickHandler="stopClickHandler"
     @onBackClick="router.push({ name: 'RedstoneBusinessAddress' })"
     @onContinueClick="handleBusinessConfirmUpdate"
   >
@@ -41,6 +42,8 @@
         <FileUploadInput
           showSkip
           skipRoute="RedstoneRegistrationInformation"
+          :hasDocumentUploaded="!!uploadedDocument"
+          :uploadedDocumentContent="getUploadedDocumentContent"
           @onDocumentUploaded="uploadedDocument = $event"
         />
       </div>
@@ -49,14 +52,15 @@
 </template>
 
 <script lang="ts" setup>
-import { computed, ref } from "vue";
+import { computed, ref, watch } from "vue";
 import { useRouter } from "vue-router";
 import ComplianceDisplayBlock from "@/modules/compliance/components/compliance-display-block.vue";
 import UploadGuidelines from "@/modules/compliance/components/upload-guidelines.vue";
 import FileUploadInput from "@/shared/components/form-comps/file-upload-input.vue";
 import SelectFieldInput from "@/shared/components/form-comps/select-field-input.vue";
-import useEvents from "@/shared/composables/useEvents";
 import { useComplianceStore } from "../store";
+import { useComplianceUtil } from "../composable/useComplianceUtil";
+import { storeToRefs } from "pinia";
 
 type IBusinessType = {
   doc_type: string;
@@ -65,27 +69,31 @@ type IBusinessType = {
 const router = useRouter();
 const stopClickHandler = ref<boolean>(false);
 
-const { processAPIRequest } = useEvents();
-const {
-  uploadCompliance,
-  getComplianceBusiness,
-  getComplianceRegistration,
-  getComplianceRepresentative,
-  getComplianceBankAccount,
-  getComplianceBusinessSignatory,
-  getComplianceAgreement,
-} = useComplianceStore();
+const { handleComplianceRequest } = useComplianceUtil();
+const { getComplianceBusiness } = storeToRefs(useComplianceStore());
 
 const businessPayload = ref<IBusinessType>({
-  doc_type: getComplianceBusiness?.doc_type || "",
+  doc_type: getComplianceBusiness.value?.doc_type || "",
 });
 
 const computeBusinessAddress = computed(() => {
-  return `${getComplianceBusiness?.first_address}, ${getComplianceBusiness?.city}`;
+  if (getComplianceBusiness.value?.first_address?.length)
+    return getComplianceBusiness.value.first_address;
+
+  return "----";
 });
 
 const businessAddress = ref<string>(computeBusinessAddress.value || "");
-const uploadedDocument = ref<string>(getComplianceBusiness?.doc_url || "");
+const uploadedDocument = ref<string>(
+  getComplianceBusiness.value?.doc_url || ""
+);
+
+const getUploadedDocumentContent = computed(() => {
+  return {
+    name: getComplianceBusiness.value?.doc_type?.split("_").join(" "),
+    link: getComplianceBusiness.value?.doc_url,
+  };
+});
 
 const documentTypes = ref<{ value: string; name: string }[]>([
   {
@@ -116,45 +124,30 @@ const getBusinessPayload = computed(() => {
 });
 
 const handleBusinessConfirmUpdate = async () => {
-  const response = await processAPIRequest({
-    action: uploadCompliance,
-    payload: {
-      business: { ...getComplianceBusiness, ...getBusinessPayload.value },
-      getComplianceRegistration,
-      getComplianceRepresentative,
-      getComplianceBankAccount,
-      getComplianceBusinessSignatory,
-      getComplianceAgreement,
-    },
-    alertHandler: {
-      200: {
-        message: "Business address document submitted",
-        type: "success",
-      },
-
-      400: {
-        message: "Document update failed",
-        type: "error",
-      },
-    },
+  await handleComplianceRequest({
+    payload: getBusinessPayload,
+    redirectRoute: "RedstoneRegistrationInformation",
+    stopClickHandler,
+    succesMsg: "Business address document submitted",
+    errorMsg: "Business update failed",
+    payloadType: "business",
   });
-
-  if (response.code === 200) {
-    stopClickHandler.value = true;
-    setTimeout(
-      () => router.push({ name: "RedstoneRegistrationInformation" }),
-      2000
-    );
-  }
-
-  // ON FAILED UPDATE STOP PROCESSING
-  else {
-    stopClickHandler.value = true;
-  }
 };
+
+watch(
+  getComplianceBusiness,
+  (newValue) => {
+    if (newValue) {
+      businessPayload.value = {
+        doc_type: newValue.doc_type || "",
+      };
+
+      businessAddress.value = newValue.first_address;
+      uploadedDocument.value = newValue.doc_url;
+    }
+  },
+  { immediate: true }
+);
 </script>
 
-<style lang="scss" scoped>
-.content-block {
-}
-</style>
+<style lang="scss" scoped></style>

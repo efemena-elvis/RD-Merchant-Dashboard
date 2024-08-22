@@ -364,6 +364,26 @@ const complianceRoutes: IRouteType[] = [
           },
         ],
       },
+
+      {
+        path: "submitted/:complianceId",
+        name: "RedstoneComplianceSubmission",
+        component: () =>
+          import(
+            /* webpackChunkName: "compliance-module" */ "@/modules/compliance/pages/compliance-submitted.vue"
+          ),
+        meta: {
+          requiresAuth: true,
+          title: "Compliance Submitted",
+          pageMeta: {
+            title: "Compliance Submitted",
+            description:
+              "Compliance documents is currently undergoing review process",
+            basePath: "Documents",
+            basePathIcon: "icon-file",
+          },
+        },
+      },
     ],
   },
 ];

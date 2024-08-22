@@ -5,27 +5,28 @@
 
     <!-- SIDEBAR ITEMS AREA -->
     <div class="sidebar-items-area">
-      <div class="sidebar-item-group" v-if="sidebarRoutes.home.length">
-        <router-link
-          :to="route.link"
-          activeClass="bg-teal-900/15"
-          exactActiveClass="bg-teal-900/15"
-          class="sidebar-item"
-          :class="
-            appRoute.path.startsWith('/compliance') &&
-            route.link.includes('compliance')
-              ? 'bg-teal-900/15'
-              : ''
-          "
-          v-for="(route, index) in sidebarRoutes.home"
-          :key="index"
-        >
-          <div class="icon" :class="route.icon"></div>
-          <div class="sidebar-text">{{ route.title }}</div>
-        </router-link>
+      <div class="sidebar-item-group" v-if="sidebarRouteList.home.length">
+        <template v-for="route in sidebarRouteList.home">
+          <router-link
+            :to="route.link"
+            v-if="route.active"
+            activeClass="bg-teal-900/15"
+            exactActiveClass="bg-teal-900/15"
+            class="sidebar-item"
+            :class="
+              appRoute.path.startsWith('/compliance') &&
+              route.link.includes('compliance')
+                ? 'bg-teal-900/15'
+                : ''
+            "
+          >
+            <div class="icon" :class="route.icon"></div>
+            <div class="sidebar-text">{{ route.title }}</div>
+          </router-link>
+        </template>
       </div>
 
-      <div class="sidebar-item-group" v-if="sidebarRoutes.payments.length">
+      <div class="sidebar-item-group" v-if="sidebarRouteList.payments.length">
         <div class="sidebar-item-group-title">PAYMENTS</div>
 
         <router-link
@@ -33,7 +34,7 @@
           activeClass="bg-teal-900/15"
           exactActiveClass="bg-teal-900/15"
           class="sidebar-item"
-          v-for="(route, index) in sidebarRoutes.payments"
+          v-for="(route, index) in sidebarRouteList.payments"
           :key="index"
         >
           <div class="icon" :class="route.icon"></div>
@@ -41,7 +42,7 @@
         </router-link>
       </div>
 
-      <div class="sidebar-item-group" v-if="sidebarRoutes.transfers.length">
+      <div class="sidebar-item-group" v-if="sidebarRouteList.transfers.length">
         <div class="sidebar-item-group-title">TRANSFERS</div>
 
         <router-link
@@ -49,7 +50,7 @@
           activeClass="bg-teal-900/15"
           exactActiveClass="bg-teal-900/15"
           class="sidebar-item"
-          v-for="(route, index) in sidebarRoutes.transfers"
+          v-for="(route, index) in sidebarRouteList.transfers"
           :key="index"
         >
           <div class="icon" :class="route.icon"></div>
@@ -57,7 +58,7 @@
         </router-link>
       </div>
 
-      <div class="sidebar-item-group" v-if="sidebarRoutes.commerce.length">
+      <div class="sidebar-item-group" v-if="sidebarRouteList.commerce.length">
         <div class="sidebar-item-group-title">COMMERCE</div>
 
         <router-link
@@ -65,7 +66,7 @@
           activeClass="bg-teal-900/15"
           exactActiveClass="bg-teal-900/15"
           class="sidebar-item"
-          v-for="(route, index) in sidebarRoutes.commerce"
+          v-for="(route, index) in sidebarRouteList.commerce"
           :key="index"
         >
           <div class="icon" :class="route.icon"></div>
@@ -77,7 +78,7 @@
     <!-- SIDEBAR BASE -->
     <div
       class="sidebar-bottom-area text-white text-xs"
-      v-if="sidebarRoutes.settings.length"
+      v-if="sidebarRouteList.settings.length"
     >
       <router-link
         :to="route.link"
@@ -90,7 +91,7 @@
             ? 'bg-teal-900/15'
             : ''
         "
-        v-for="(route, index) in sidebarRoutes.settings"
+        v-for="(route, index) in sidebarRouteList.settings"
         :key="index"
       >
         <div class="icon" :class="route.icon"></div>
@@ -103,11 +104,38 @@
 </template>
 
 <script lang="ts" setup>
+import { reactive, toRaw, watch } from "vue";
 import { useRoute } from "vue-router";
 import { sidebarRoutes } from "@/shared/constants/sidebar-routes";
+import { useProfile } from "@/shared/composables/useProfile";
+import { ISidebarRouteType } from "@/models/route-type";
 import BaseClientArea from "@/shared/components/global-comps/base-client-area.vue";
 
 const appRoute = useRoute();
+const { getBusinessActivatedStatus } = useProfile();
+
+const sidebarRouteList = reactive<ISidebarRouteType>(sidebarRoutes);
+
+watch(
+  () => appRoute,
+  () => {
+    const complianceRoute = sidebarRouteList.home.find(
+      (route) => route.slug === "compliance"
+    ) || {
+      slug: "compliance",
+      link: "/compliance/documents",
+      title: "Compliance",
+      icon: "icon-shield-tick",
+      active: true,
+    };
+
+    console.log("----", toRaw(complianceRoute));
+    console.log("?????", getBusinessActivatedStatus());
+
+    if (getBusinessActivatedStatus() === "true") complianceRoute.active = false;
+  },
+  { immediate: true }
+);
 </script>
 
 <style lang="scss" scoped>

@@ -65,15 +65,16 @@
 </template>
 
 <script lang="ts" setup>
-import { computed, ref } from "vue";
+import { computed, ref, watch } from "vue";
 import { useRouter } from "vue-router";
 import { IInputType } from "@/models/form-type";
 import { useComplianceStore } from "@/modules/compliance/store";
-import useEvents from "@/shared/composables/useEvents";
+import { useComplianceUtil } from "../composable/useComplianceUtil";
 import ComplianceDisplayBlock from "@/modules/compliance/components/compliance-display-block.vue";
 import TextFieldInput from "@/shared/components/form-comps/text-field-input.vue";
 import SelectFieldInput from "@/shared/components/form-comps/select-field-input.vue";
 import zambiaProvinceList from "@/shared/constants/zambia-provinces";
+import { storeToRefs } from "pinia";
 
 type IBusinessType = {
   first_address: string;
@@ -86,22 +87,14 @@ const router = useRouter();
 const zambianProvinces = ref([...zambiaProvinceList]);
 const stopClickHandler = ref<boolean>(false);
 
-const { processAPIRequest } = useEvents();
-const {
-  uploadCompliance,
-  getComplianceBusiness,
-  getComplianceRegistration,
-  getComplianceRepresentative,
-  getComplianceBankAccount,
-  getComplianceBusinessSignatory,
-  getComplianceAgreement,
-} = useComplianceStore();
+const { handleComplianceRequest } = useComplianceUtil();
+const { getComplianceBusiness } = storeToRefs(useComplianceStore());
 
 const businessPayload = ref<IBusinessType>({
-  first_address: getComplianceBusiness?.first_address || "",
-  second_address: getComplianceBusiness?.second_address || "",
-  city: getComplianceBusiness?.city || "",
-  state: getComplianceBusiness?.state || "",
+  first_address: getComplianceBusiness.value?.first_address || "",
+  second_address: getComplianceBusiness.value?.second_address || "",
+  city: getComplianceBusiness.value?.city || "",
+  state: getComplianceBusiness.value?.state || "",
 });
 
 const isActionReady = computed(() => {
@@ -118,43 +111,30 @@ const getBusinessPayload = computed(() => {
 });
 
 const handleBusinessAddressUpdate = async () => {
-  const response = await processAPIRequest({
-    action: uploadCompliance,
-    payload: {
-      business: { ...getComplianceBusiness, ...getBusinessPayload.value },
-      getComplianceRegistration,
-      getComplianceRepresentative,
-      getComplianceBankAccount,
-      getComplianceBusinessSignatory,
-      getComplianceAgreement,
-    },
-    alertHandler: {
-      200: {
-        message: "Business address submitted",
-        type: "success",
-      },
-
-      400: {
-        message: "Business address update failed",
-        type: "error",
-      },
-    },
+  await handleComplianceRequest({
+    payload: getBusinessPayload,
+    redirectRoute: "RedstoneBusinessConfirm",
+    stopClickHandler,
+    succesMsg: "Business address submitted",
+    errorMsg: "Business update failed",
+    payloadType: "business",
   });
-
-  if (response.code === 200) {
-    stopClickHandler.value = true;
-    setTimeout(() => router.push({ name: "RedstoneBusinessConfirm" }), 2000);
-  }
-
-  // ON FAILED UPDATE STOP PROCESSING
-  else {
-    stopClickHandler.value = true;
-  }
 };
+
+watch(
+  getComplianceBusiness,
+  (newValue) => {
+    if (newValue) {
+      businessPayload.value = {
+        first_address: newValue.first_address || "",
+        second_address: newValue.second_address || "",
+        city: newValue.city || "",
+        state: newValue.state || "",
+      };
+    }
+  },
+  { immediate: true }
+);
 </script>
 
-<style lang="scss" scoped>
-.content-block {
-  // @apply ;
-}
-</style>
+<style lang="scss" scoped></style>

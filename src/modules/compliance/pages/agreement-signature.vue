@@ -5,6 +5,7 @@
     primaryActionText="Accept agreement"
     showActionRow
     :isPrimaryActionDisabled="isActionReady"
+    :stopClickHandler="stopClickHandler"
     @onBackClick="router.push({ name: 'RedstoneSignatoryConfirm' })"
     @onContinueClick="handleMerchantAgreementUpdate"
   >
@@ -53,8 +54,8 @@
         <div class="agreement-copy-section">
           <div class="decription-text text-grey-900 font-semibold">
             By signing this agreement, I am accepting this agreement on behalf
-            of Vesicash Innovative Technologies. I represent and warrant that
-            (a) I have the full legal authority to bind the entity to this
+            of {{ getBusinessProfile.businessName }}. I represent and warrant
+            that (a) I have the full legal authority to bind the entity to this
             Agreement, (b) I have read and understand this Agreement, and (c) I
             agree to all the terms and conditions of this Agreement on behalf of
             the entity that I represent.
@@ -70,8 +71,7 @@
               type="checkbox"
               class="sm-size"
               id="acceptAgreement"
-              v-model="isSigned"
-              @change="businessPayload.signed_agreement = isSigned"
+              v-model="businessPayload.signed_agreement"
             />
             <div class="text-grey-900 font-medium text-sm">
               I accept the Merchant Terms & Agreement
@@ -84,19 +84,29 @@
 </template>
 
 <script lang="ts" setup>
-import { computed, ref } from "vue";
+import { computed, ref, watch } from "vue";
 import { useRouter } from "vue-router";
 import ComplianceDisplayBlock from "@/modules/compliance/components/compliance-display-block.vue";
+import { useComplianceUtil } from "../composable/useComplianceUtil";
+import { useComplianceStore } from "../store";
+import { storeToRefs } from "pinia";
+import { useProfile } from "@/shared/composables/useProfile";
 
 type IBusinessType = {
   signed_agreement: boolean;
 };
 
 const router = useRouter();
+const stopClickHandler = ref<boolean>(false);
 
-const isSigned = ref<boolean>(false);
+const { getBusiness } = useProfile();
+const getBusinessProfile = computed(() => getBusiness());
+
+const { handleComplianceRequest } = useComplianceUtil();
+const { getComplianceAgreement } = storeToRefs(useComplianceStore());
+
 const businessPayload = ref<IBusinessType>({
-  signed_agreement: false,
+  signed_agreement: getComplianceAgreement.value?.signed_agreement || false,
 });
 
 const isActionReady = computed(() => {
@@ -108,11 +118,28 @@ const getBusinessPayload = computed(() => {
   return { signed_agreement };
 });
 
-const handleMerchantAgreementUpdate = () => {
-  // router.push({ name: 'RedstoneComplianceSummary' })
-
-  console.log("Payload", getBusinessPayload.value);
+const handleMerchantAgreementUpdate = async () => {
+  await handleComplianceRequest({
+    payload: getBusinessPayload,
+    redirectRoute: "RedstoneComplianceSummary",
+    stopClickHandler,
+    succesMsg: "Merchant agreement submitted",
+    errorMsg: "Merchant agreement update failed",
+    payloadType: "terms",
+  });
 };
+
+watch(
+  getComplianceAgreement,
+  (newValue) => {
+    if (newValue) {
+      businessPayload.value = {
+        signed_agreement: newValue.signed_agreement || false,
+      };
+    }
+  },
+  { immediate: true }
+);
 </script>
 
 <style lang="scss" scoped>

@@ -8,8 +8,10 @@
       </div>
 
       <div class="flex flex-col gap-y-0.5 sm:gap-y-0">
-        <div class="file-name">{{ docPayload.name }}</div>
-        <div class="file-size">File size: {{ docPayload.size }}</div>
+        <div class="file-name">
+          {{ capitalizeFirstLetter(docPayload.name) }}
+        </div>
+        <a :href="docPayload.link" target="_blank" class="link">View file</a>
       </div>
     </div>
 
@@ -72,27 +74,39 @@ interface IFileUploadType {
   id?: string;
   showSkip?: boolean;
   skipRoute?: string;
+  hasDocumentUploaded?: boolean;
+  uploadedDocumentContent?: { name?: string; link?: string };
 }
 
 const props = withDefaults(defineProps<IFileUploadType>(), {
   id: "fileUpload",
   showSkip: false,
   skipRoute: "",
+  hasDocumentUploaded: false,
 });
+
+const alreadyUploadedDoc = props.uploadedDocumentContent || {
+  name: "",
+  link: "",
+};
 
 const emits = defineEmits(["onDocumentUploaded"]);
 
 const router = useRouter();
-const { renderImg } = useString();
+const { renderImg, capitalizeFirstLetter } = useString();
 const { pushToastAlert, processAPIRequest } = useEvents();
 const { uploadFile } = useGeneralStore();
 
 const fileUploadRef = ref<HTMLInputElement | null>(null);
 const allowedFiles = ref<string[]>(["pdf", "jpeg", "jpg", "png"]);
 
-const isDocUploaded = ref<boolean>(false);
+const isDocUploaded = ref<boolean>(props.hasDocumentUploaded || false);
 const isUploading = ref<boolean>(false);
-const docPayload = ref<{ name: string; size: string }>({ name: "", size: "" });
+
+const docPayload = ref<{ name: string; link: string }>({
+  name: alreadyUploadedDoc?.name || "",
+  link: alreadyUploadedDoc.link || "",
+});
 
 const processFileType = (name: string) => {
   const fileType = name.split(".").at(-1) as string;
@@ -102,12 +116,6 @@ const processFileType = (name: string) => {
 const processFileSize = (size: number) => {
   if (size > 5000000) return false;
 
-  return size.toString().length >= 6
-    ? `${(size / 1000000).toFixed(1)}mb`
-    : `${(size / 1000).toFixed(1)}kb`;
-};
-
-const getFileSize = (size: number): string => {
   return size.toString().length >= 6
     ? `${(size / 1000000).toFixed(1)}mb`
     : `${(size / 1000).toFixed(1)}kb`;
@@ -172,7 +180,7 @@ const processDocumentUpload = async ($event: Event) => {
     isUploading.value = false;
 
     docPayload.value.name = uploadedFile.name;
-    docPayload.value.size = getFileSize(uploadedFile.size);
+    docPayload.value.link = response.data[0].file_url;
 
     emits("onDocumentUploaded", response.data[0].file_url);
   }
@@ -187,7 +195,7 @@ const processDocumentUpload = async ($event: Event) => {
 
 const removeUploadedFile = () => {
   isDocUploaded.value = false;
-  docPayload.value = { name: "", size: "" };
+  docPayload.value = { name: "", link: "" };
 
   emits("onDocumentUploaded", null);
 };
@@ -220,8 +228,8 @@ const removeUploadedFile = () => {
       @apply font-medium line-clamp-1 text-teal-800 text-[14.75px] sm:text-[14.5px] xs:text-[14.25px];
     }
 
-    .file-size {
-      @apply text-grey-600/80 text-[13.25px] sm:text-[12.75px];
+    .btn {
+      @apply text-[13px] py-1 px-2.5 rounded-full h-auto;
     }
   }
 

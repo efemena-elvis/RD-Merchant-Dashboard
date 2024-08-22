@@ -2,7 +2,8 @@ import { useAuthStore } from "@/modules/auth/store";
 import { useString } from "@/shared/composables/useString";
 
 const { decodeString } = useString();
-const { getAuthUser, getAuthBusiness, getAuthBusinessToken } = useAuthStore();
+const { getAuthToken, getAuthUser, getAuthBusiness, getAuthBusinessToken } =
+  useAuthStore();
 
 interface IUserProfile {
   id: string;
@@ -24,15 +25,28 @@ interface IBusinessProfile {
   businessMode: string;
   businessName: string;
   businessSector: string;
+  activated: string;
   supportEmailAddress: string;
 }
 
 interface IAPIKeys {
   playground: any;
-  alcatraz: any;
+  alcatraz?: any;
 }
 
 export function useProfile() {
+  const getToken = () => {
+    return getAuthToken;
+  };
+
+  const isUserAuthenticated = () => {
+    if (typeof getAuthToken === "string") {
+      return getAuthToken.length ? true : false;
+    }
+
+    return false;
+  };
+
   const getUser = () => {
     return getAuthUser as IUserProfile;
   };
@@ -46,6 +60,11 @@ export function useProfile() {
       bankName: decodeString(bankName),
       ...business,
     };
+  };
+
+  const getBusinessActivatedStatus = () => {
+    const { activated } = getAuthBusiness as IBusinessProfile;
+    return decodeString(activated);
   };
 
   const getAPIKeys = (): {
@@ -67,8 +86,11 @@ export function useProfile() {
   };
 
   return {
+    getToken,
+    isUserAuthenticated,
     getUser,
     getBusiness,
+    getBusinessActivatedStatus,
     getAPIKeys,
   };
 }

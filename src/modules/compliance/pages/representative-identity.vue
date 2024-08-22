@@ -4,6 +4,7 @@
     description="Provide the identification document of your business representative."
     showActionRow
     :isPrimaryActionDisabled="isActionReady"
+    :stopClickHandler="stopClickHandler"
     @onBackClick="router.push({ name: 'RedstoneRepresentativeProfile' })"
     @onContinueClick="handleRepresentativeIdentityUpdate"
   >
@@ -52,6 +53,8 @@
           <FileUploadInput
             showSkip
             skipRoute="RedstoneRepresentativeAddress"
+            :hasDocumentUploaded="!!uploadedDocument"
+            :uploadedDocumentContent="getUploadedDocumentContent"
             @onDocumentUploaded="businessPayload.url = $event"
           />
         </div>
@@ -61,7 +64,7 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, computed } from "vue";
+import { ref, computed, watch } from "vue";
 import { useRouter } from "vue-router";
 import { IInputType } from "@/models/form-type";
 import ComplianceDisplayBlock from "@/modules/compliance/components/compliance-display-block.vue";
@@ -69,6 +72,9 @@ import SelectFieldInput from "@/shared/components/form-comps/select-field-input.
 import TextFieldInput from "@/shared/components/form-comps/text-field-input.vue";
 import UploadGuidelines from "@/modules/compliance/components/upload-guidelines.vue";
 import FileUploadInput from "@/shared/components/form-comps/file-upload-input.vue";
+import { useComplianceUtil } from "../composable/useComplianceUtil";
+import { useComplianceStore } from "../store";
+import { storeToRefs } from "pinia";
 
 type IBusinessType = {
   type: string;
@@ -77,11 +83,26 @@ type IBusinessType = {
 };
 
 const router = useRouter();
+const stopClickHandler = ref<boolean>(false);
+
+const { handleComplianceRequest } = useComplianceUtil();
+const { getComplianceRepresentative } = storeToRefs(useComplianceStore());
 
 const businessPayload = ref<IBusinessType>({
-  type: "",
-  value: "",
-  url: "",
+  type: getComplianceRepresentative.value?.[0]?.doc.type || "",
+  value: getComplianceRepresentative.value?.[0]?.doc.value || "",
+  url: getComplianceRepresentative.value?.[0]?.doc.url || "",
+});
+
+const uploadedDocument = ref<string>(
+  getComplianceRepresentative.value?.[0]?.doc.url || ""
+);
+
+const getUploadedDocumentContent = computed(() => {
+  return {
+    name: getComplianceRepresentative.value?.[0].doc.type?.split("_").join(" "),
+    link: getComplianceRepresentative.value?.[0].doc.url,
+  };
 });
 
 const documentList = ref<{ value: string; name: string }[]>([
@@ -94,7 +115,9 @@ const documentList = ref<{ value: string; name: string }[]>([
   { value: "passport", name: "International Passport" },
 ]);
 
-const selectedDocumentName = ref<string>("");
+const selectedDocumentName = ref<string>(
+  getComplianceRepresentative.value?.[0].doc.type?.split("_").join(" ") || ""
+);
 
 const handleSelectChange = (value: string): void => {
   const selected = documentList.value.find((doc) => doc.value === value);
@@ -116,15 +139,34 @@ const getBusinessPayload = computed(() => {
   return { doc: { type, value, url } };
 });
 
-const handleRepresentativeIdentityUpdate = () => {
-  // router.push({ name: 'RedstoneRepresentativeAddress' })
-
-  console.log("PAYLOAD", getBusinessPayload.value);
+const handleRepresentativeIdentityUpdate = async () => {
+  await handleComplianceRequest({
+    payload: getBusinessPayload,
+    redirectRoute: "RedstoneRepresentativeAddress",
+    stopClickHandler,
+    succesMsg: "Representative identity submitted",
+    errorMsg: "Representative update failed",
+    payloadType: "representatives",
+  });
 };
+
+watch(
+  getComplianceRepresentative,
+  (newValue) => {
+    if (newValue && newValue.length > 0) {
+      businessPayload.value = {
+        type: newValue[0]?.doc.type || "",
+        value: newValue[0]?.doc.value || "",
+        url: newValue[0]?.doc.url || "",
+      };
+
+      uploadedDocument.value = newValue[0]?.doc.url || "";
+      selectedDocumentName.value =
+        newValue[0]?.doc.type?.split("_").join(" ") || "";
+    }
+  },
+  { immediate: true }
+);
 </script>
 
-<style lang="scss" scoped>
-.content-block {
-  // @apply ;
-}
-</style>
+<style lang="scss" scoped></style>

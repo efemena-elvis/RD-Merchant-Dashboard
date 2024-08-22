@@ -75,6 +75,7 @@ export function useAuthMutations() {
       businessMode: business.mode,
       businessName: business.name,
       businessSector: business.sector,
+      activated: encodeString(business.business_activated),
       supportEmailAddress: business.support_email_address,
     };
 
@@ -89,27 +90,38 @@ export function useAuthMutations() {
   const mutateAuthBusinessToken = (payload: any) => {
     const { apikeys } = payload.user.business_users[0].business;
 
-    const testData = apikeys.find((key: any) => key.type === "test");
-    const liveData = apikeys.find((key: any) => key.type === "live");
+    const testData = apikeys.find((key: any) => key.type === "test") || {};
+    const liveData = apikeys.find((key: any) => key.type === "live") || {};
 
-    authBusinessToken.value = {
-      playground: {
+    const authToken: { playground?: any; alcatraz?: any } = {
+      playground: {},
+      alcatraz: {},
+    };
+
+    if (Object.keys(testData).length) {
+      authToken.playground = {
         nigeria: encodeString(testData.public_key), // public test key
         ghana: encodeString(`${getRandomString(30)}-#!${getRandomString(30)}`), // dummy
         unitedKingdom: encodeString(testData.secret_key), // secret test key
         unitedStateofAmerica: encodeString(
           `${getRandomString(25)}-@-${getRandomString(28)}`
         ), // dummy
-      },
-      alcatraz: {
+      };
+    }
+
+    if (Object.keys(liveData).length) {
+      authToken.alcatraz = {
         nigeria: encodeString(liveData.public_key), // public live key
         ghana: encodeString(`${getRandomString(30)}-${getRandomString(30)}`), // dummy
         unitedKingdom: encodeString(liveData.secret_key), // secret live key
         unitedStateofAmerica: encodeString(
           `${getRandomString(25)}-??-${getRandomString(28)}`
         ), // dummy
-      },
-    };
+      };
+    }
+
+    authBusinessToken.value = authToken;
+
     setStorage({
       storage_name: REDSTONE_AUTH_BUSINESS_TOKEN,
       storage_value: authBusinessToken.value,

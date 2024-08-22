@@ -117,6 +117,7 @@ const props = withDefaults(defineProps<IPhoneInputField>(), {
   isRequired: false,
   isDisabled: false,
   hasBottomPadding: true,
+  activeCountryCode: "",
 });
 
 // Set a default value for errorHandler if it's not provided
@@ -136,7 +137,7 @@ const isInputValid = computed(() => {
 const countryListRepo = ref([...countries]);
 const countryList = ref([...countries]);
 
-const countryCode = ref<string>("260");
+const countryCode = ref<string>(props.activeCountryCode || "260");
 const searchCountry = ref<string>("");
 
 // UPDATE CHANGE IN COUNTRY CODE

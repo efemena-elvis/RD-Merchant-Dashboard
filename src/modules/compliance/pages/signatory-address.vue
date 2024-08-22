@@ -4,6 +4,7 @@
     description="Provide the residential address details of your business signatory."
     showActionRow
     :isPrimaryActionDisabled="isActionReady"
+    :stopClickHandler="stopClickHandler"
     @onBackClick="router.push({ name: 'RedstoneSignatoryIdentity' })"
     @onContinueClick="handleSignatoryAddressUpdate"
   >
@@ -64,13 +65,16 @@
 </template>
 
 <script lang="ts" setup>
-import { computed, ref } from "vue";
+import { computed, ref, watch } from "vue";
 import { useRouter } from "vue-router";
 import { IInputType } from "@/models/form-type";
 import ComplianceDisplayBlock from "@/modules/compliance/components/compliance-display-block.vue";
 import TextFieldInput from "@/shared/components/form-comps/text-field-input.vue";
 import SelectFieldInput from "@/shared/components/form-comps/select-field-input.vue";
 import zambiaProvinceList from "@/shared/constants/zambia-provinces";
+import { useComplianceUtil } from "../composable/useComplianceUtil";
+import { useComplianceStore } from "../store";
+import { storeToRefs } from "pinia";
 
 type IBusinessType = {
   first_address: string;
@@ -81,12 +85,16 @@ type IBusinessType = {
 
 const router = useRouter();
 const zambianProvinces = ref([...zambiaProvinceList]);
+const stopClickHandler = ref<boolean>(false);
+
+const { handleComplianceRequest } = useComplianceUtil();
+const { getComplianceBusinessSignatory } = storeToRefs(useComplianceStore());
 
 const businessPayload = ref<IBusinessType>({
-  first_address: "",
-  second_address: "",
-  city: "",
-  state: "",
+  first_address: getComplianceBusinessSignatory.value?.first_address || "",
+  second_address: getComplianceBusinessSignatory.value?.second_address || "",
+  city: getComplianceBusinessSignatory.value?.city || "",
+  state: getComplianceBusinessSignatory.value?.state || "",
 });
 
 const isActionReady = computed(() => {
@@ -102,15 +110,31 @@ const getBusinessPayload = computed(() => {
   return { first_address, second_address, city, state };
 });
 
-const handleSignatoryAddressUpdate = () => {
-  // router.push({ name: 'RedstoneSignatoryConfirm' })
-
-  console.log("Payload", getBusinessPayload.value);
+const handleSignatoryAddressUpdate = async () => {
+  await handleComplianceRequest({
+    payload: getBusinessPayload,
+    redirectRoute: "RedstoneSignatoryConfirm",
+    stopClickHandler,
+    succesMsg: "Signatory address submitted",
+    errorMsg: "Signatory update failed",
+    payloadType: "business_signatory",
+  });
 };
+
+watch(
+  getComplianceBusinessSignatory,
+  (newValue) => {
+    if (newValue) {
+      businessPayload.value = {
+        first_address: newValue.first_address || "",
+        second_address: newValue.second_address || "",
+        city: newValue.city || "",
+        state: newValue.state || "",
+      };
+    }
+  },
+  { immediate: true }
+);
 </script>
 
-<style lang="scss" scoped>
-.content-block {
-  // @apply ;
-}
-</style>
+<style lang="scss" scoped></style>

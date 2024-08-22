@@ -4,6 +4,7 @@
     description="Provide the identification document of your business signatory."
     showActionRow
     :isPrimaryActionDisabled="isActionReady"
+    :stopClickHandler="stopClickHandler"
     @onBackClick="router.push({ name: 'RedstoneSignatoryProfile' })"
     @onContinueClick="handleSignatoryIdentityUpdate"
   >
@@ -52,6 +53,8 @@
           <FileUploadInput
             showSkip
             skipRoute="RedstoneSignatoryAddress"
+            :hasDocumentUploaded="!!uploadedDocument"
+            :uploadedDocumentContent="getUploadedDocumentContent"
             @onDocumentUploaded="businessPayload.url = $event"
           />
         </div>
@@ -61,7 +64,7 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, computed } from "vue";
+import { ref, computed, watch } from "vue";
 import { useRouter } from "vue-router";
 import { IInputType } from "@/models/form-type";
 import ComplianceDisplayBlock from "@/modules/compliance/components/compliance-display-block.vue";
@@ -69,6 +72,9 @@ import SelectFieldInput from "@/shared/components/form-comps/select-field-input.
 import TextFieldInput from "@/shared/components/form-comps/text-field-input.vue";
 import UploadGuidelines from "@/modules/compliance/components/upload-guidelines.vue";
 import FileUploadInput from "@/shared/components/form-comps/file-upload-input.vue";
+import { useComplianceUtil } from "../composable/useComplianceUtil";
+import { useComplianceStore } from "../store";
+import { storeToRefs } from "pinia";
 
 type IBusinessType = {
   type: string;
@@ -77,11 +83,26 @@ type IBusinessType = {
 };
 
 const router = useRouter();
+const stopClickHandler = ref<boolean>(false);
+
+const { handleComplianceRequest } = useComplianceUtil();
+const { getComplianceBusinessSignatory } = storeToRefs(useComplianceStore());
 
 const businessPayload = ref<IBusinessType>({
-  type: "",
-  value: "",
-  url: "",
+  type: getComplianceBusinessSignatory.value?.doc.type || "",
+  value: getComplianceBusinessSignatory.value?.doc.value || "",
+  url: getComplianceBusinessSignatory.value?.doc.url || "",
+});
+
+const uploadedDocument = ref<string>(
+  getComplianceBusinessSignatory.value?.doc.url || ""
+);
+
+const getUploadedDocumentContent = computed(() => {
+  return {
+    name: getComplianceBusinessSignatory.value?.doc.type?.split("_").join(" "),
+    link: getComplianceBusinessSignatory.value?.doc.url,
+  };
 });
 
 const documentList = ref<{ value: string; name: string }[]>([
@@ -94,7 +115,9 @@ const documentList = ref<{ value: string; name: string }[]>([
   { value: "passport", name: "International Passport" },
 ]);
 
-const selectedDocumentName = ref<string>("");
+const selectedDocumentName = ref<string>(
+  getComplianceBusinessSignatory.value?.doc.type?.split("_").join(" ") || ""
+);
 
 const handleSelectChange = (value: string): void => {
   const selected = documentList.value.find((doc) => doc.value === value);
@@ -116,15 +139,34 @@ const getBusinessPayload = computed(() => {
   return { doc: { type, value, url } };
 });
 
-const handleSignatoryIdentityUpdate = () => {
-  // router.push({ name: 'RedstoneSignatoryAddress' })
-
-  console.log("PAYLOAD", getBusinessPayload.value);
+const handleSignatoryIdentityUpdate = async () => {
+  await handleComplianceRequest({
+    payload: getBusinessPayload,
+    redirectRoute: "RedstoneSignatoryAddress",
+    stopClickHandler,
+    succesMsg: "Signatory identity submitted",
+    errorMsg: "Signatory update failed",
+    payloadType: "business_signatory",
+  });
 };
+
+watch(
+  getComplianceBusinessSignatory,
+  (newValue) => {
+    if (newValue) {
+      businessPayload.value = {
+        type: newValue?.doc.type || "",
+        value: newValue?.doc.value || "",
+        url: newValue?.doc.url || "",
+      };
+
+      uploadedDocument.value = newValue.doc.url || "";
+      selectedDocumentName.value =
+        newValue.doc.type?.split("_").join(" ") || "";
+    }
+  },
+  { immediate: true }
+);
 </script>
 
-<style lang="scss" scoped>
-.content-block {
-  // @apply ;
-}
-</style>
+<style lang="scss" scoped></style>

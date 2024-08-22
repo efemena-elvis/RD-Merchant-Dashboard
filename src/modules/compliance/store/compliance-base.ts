@@ -48,6 +48,8 @@ export interface IComplianceRepresentative {
 export interface IComplianceBankAcoount {
   name: string;
   account_number: string | number;
+  code: string;
+  account_holder_name: string;
 }
 
 export interface IComplianceSignatory {
@@ -140,6 +142,8 @@ export const complianceBase: IComplianceBaseType = {
   bank_account: {
     name: "",
     account_number: "",
+    code: "",
+    account_holder_name: "",
   },
 
   business_signatory: {

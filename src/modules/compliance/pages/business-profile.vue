@@ -90,16 +90,17 @@
 </template>
 
 <script lang="ts" setup>
-import { computed, ref } from "vue";
+import { computed, ref, watch } from "vue";
 import { useRouter } from "vue-router";
 import { IInputType } from "@/models/form-type";
 import { useProfile } from "@/shared/composables/useProfile";
 import { businessForms } from "@/modules/compliance/constant/compliance-navigation-list";
+import { useComplianceUtil } from "../composable/useComplianceUtil";
 import { useComplianceStore } from "@/modules/compliance/store";
-import useEvents from "@/shared/composables/useEvents";
 import ComplianceDisplayBlock from "@/modules/compliance/components/compliance-display-block.vue";
 import TextFieldInput from "@/shared/components/form-comps/text-field-input.vue";
 import SelectFieldInput from "@/shared/components/form-comps/select-field-input.vue";
+import { storeToRefs } from "pinia";
 
 type IBusinessType = {
   legal_name: string;
@@ -118,16 +119,8 @@ type IInputValidity = {
 };
 
 const router = useRouter();
-const { processAPIRequest } = useEvents();
-const {
-  uploadCompliance,
-  getComplianceBusiness,
-  getComplianceRegistration,
-  getComplianceRepresentative,
-  getComplianceBankAccount,
-  getComplianceBusinessSignatory,
-  getComplianceAgreement,
-} = useComplianceStore();
+const { handleComplianceRequest } = useComplianceUtil();
+const { getComplianceBusiness } = storeToRefs(useComplianceStore());
 
 const businessLegalForms = ref([...businessForms]);
 const stopClickHandler = ref<boolean>(false);
@@ -138,11 +131,11 @@ const getBusinessProfile = computed(() => getBusiness());
 const businessPayload = ref<IBusinessType>({
   legal_name: getBusinessProfile.value.businessName,
   trading_name:
-    getComplianceBusiness?.trading_name ||
+    getComplianceBusiness.value?.trading_name ||
     getBusinessProfile.value.businessName,
-  description: getComplianceBusiness?.description || "",
-  registration_date: getComplianceBusiness?.registration_date || "",
-  legal_form: getComplianceBusiness?.legal_form || "",
+  description: getComplianceBusiness.value?.description || "",
+  registration_date: getComplianceBusiness.value?.registration_date || "",
+  legal_form: getComplianceBusiness.value?.legal_form || "",
 });
 
 const payloadValidity = ref<IInputValidity>({
@@ -181,39 +174,32 @@ const getBusinessPayload = computed(() => {
 });
 
 const handleBusinessProfileUpdate = async () => {
-  const response = await processAPIRequest({
-    action: uploadCompliance,
-    payload: {
-      business: { ...getComplianceBusiness, ...getBusinessPayload.value },
-      getComplianceRegistration,
-      getComplianceRepresentative,
-      getComplianceBankAccount,
-      getComplianceBusinessSignatory,
-      getComplianceAgreement,
-    },
-    alertHandler: {
-      200: {
-        message: "Business profile submitted",
-        type: "success",
-      },
-
-      400: {
-        message: "Business profile update failed",
-        type: "error",
-      },
-    },
+  await handleComplianceRequest({
+    payload: getBusinessPayload,
+    redirectRoute: "RedstoneBusinessContact",
+    stopClickHandler,
+    succesMsg: "Business profile submitted",
+    errorMsg: "Business update failed",
+    payloadType: "business",
   });
-
-  if (response.code === 200) {
-    stopClickHandler.value = true;
-    setTimeout(() => router.push({ name: "RedstoneBusinessContact" }), 2000);
-  }
-
-  // ON FAILED UPDATE STOP PROCESSING
-  else {
-    stopClickHandler.value = true;
-  }
 };
+
+watch(
+  getComplianceBusiness,
+  (newValue) => {
+    if (newValue) {
+      businessPayload.value = {
+        legal_name: getBusinessProfile.value.businessName,
+        trading_name:
+          newValue.trading_name || getBusinessProfile.value.businessName,
+        description: newValue.description || "",
+        registration_date: newValue.registration_date || "",
+        legal_form: newValue.legal_form || "",
+      };
+    }
+  },
+  { immediate: true }
+);
 </script>
 
 <style lang="scss" scoped></style>

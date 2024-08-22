@@ -4,6 +4,7 @@
     description="Provide the relevant document to confirm your representative residential address."
     showActionRow
     :isPrimaryActionDisabled="isActionReady"
+    :stopClickHandler="stopClickHandler"
     @onBackClick="router.push({ name: 'RedstoneRepresentativeAddress' })"
     @onContinueClick="handleRepresentativeConfirmUpdate"
   >
@@ -41,6 +42,8 @@
         <FileUploadInput
           showSkip
           skipRoute="RedstoneBankAccount"
+          :hasDocumentUploaded="!!businessPayload.url"
+          :uploadedDocumentContent="getUploadedDocumentContent"
           @onDocumentUploaded="businessPayload.url = $event"
         />
       </div>
@@ -49,12 +52,15 @@
 </template>
 
 <script lang="ts" setup>
-import { computed, ref } from "vue";
+import { computed, ref, watch } from "vue";
 import { useRouter } from "vue-router";
 import ComplianceDisplayBlock from "@/modules/compliance/components/compliance-display-block.vue";
 import UploadGuidelines from "@/modules/compliance/components/upload-guidelines.vue";
 import FileUploadInput from "@/shared/components/form-comps/file-upload-input.vue";
 import SelectFieldInput from "@/shared/components/form-comps/select-field-input.vue";
+import { useComplianceUtil } from "../composable/useComplianceUtil";
+import { storeToRefs } from "pinia";
+import { useComplianceStore } from "../store";
 
 type IBusinessType = {
   type: string;
@@ -62,13 +68,33 @@ type IBusinessType = {
 };
 
 const router = useRouter();
+const { handleComplianceRequest } = useComplianceUtil();
+const { getComplianceRepresentative } = storeToRefs(useComplianceStore());
+
+const stopClickHandler = ref<boolean>(false);
 
 const businessPayload = ref<IBusinessType>({
-  type: "",
-  url: "",
+  type: getComplianceRepresentative.value?.[0]?.address_doc.type || "",
+  url: getComplianceRepresentative.value?.[0]?.address_doc.url || "",
 });
 
-const businessAddress = ref<string>("");
+const computeAddress = computed(() => {
+  if (getComplianceRepresentative.value?.[0]?.first_address?.length)
+    return getComplianceRepresentative.value?.[0]?.first_address;
+
+  return "----";
+});
+
+const businessAddress = ref<string>(computeAddress.value || "");
+
+const getUploadedDocumentContent = computed(() => {
+  return {
+    name: getComplianceRepresentative.value?.[0]?.address_doc.type
+      ?.split("_")
+      .join(" "),
+    link: getComplianceRepresentative.value?.[0]?.address_doc.url,
+  };
+});
 
 const documentTypes = ref<{ value: string; name: string }[]>([
   {
@@ -94,15 +120,31 @@ const getBusinessPayload = computed(() => {
   return { address_doc: { type, url } };
 });
 
-const handleRepresentativeConfirmUpdate = () => {
-  // router.push({ name: 'RedstoneBankAccount' })
-
-  console.log("Payload", getBusinessPayload.value);
+const handleRepresentativeConfirmUpdate = async () => {
+  await handleComplianceRequest({
+    payload: getBusinessPayload,
+    redirectRoute: "RedstoneBankAccount",
+    stopClickHandler,
+    succesMsg: "Representative address document submitted",
+    errorMsg: "Representative update failed",
+    payloadType: "representatives",
+  });
 };
+
+watch(
+  getComplianceRepresentative,
+  (newValue) => {
+    if (newValue && newValue.length > 0) {
+      businessPayload.value = {
+        type: newValue[0]?.address_doc.type || "",
+        url: newValue[0]?.address_doc.url || "",
+      };
+
+      businessAddress.value = newValue[0]?.first_address || "";
+    }
+  },
+  { immediate: true }
+);
 </script>
 
-<style lang="scss" scoped>
-.content-block {
-  // @apply ;
-}
-</style>
+<style lang="scss" scoped></style>

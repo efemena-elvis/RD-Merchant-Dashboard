@@ -48,7 +48,7 @@ const authRoutes: IRouteType[] = [
         },
       },
       {
-        path: "/password-reset",
+        path: "/password-reset/:token",
         name: "RedstonePasswordReset",
         component: () =>
           import(
@@ -77,7 +77,7 @@ const authRoutes: IRouteType[] = [
             /* webpackChunkName: "auth-module" */ "@/modules/auth/pages/verify-account.vue"
           ),
         meta: {
-          guest: true,
+          open: true,
           title: "Verify Account",
         },
       },

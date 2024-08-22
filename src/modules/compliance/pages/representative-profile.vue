@@ -4,6 +4,7 @@
     description="A business representative could either be an owner, director or shareholder of your business."
     showActionRow
     :isPrimaryActionDisabled="isActionReady"
+    :stopClickHandler="stopClickHandler"
     @onBackClick="router.push({ name: 'RedstoneRegistrationConfirm' })"
     @onContinueClick="handleRepresentativeProfileUpdate"
   >
@@ -71,7 +72,7 @@
         labelTitle="Business Role"
         inputPlaceholder="Select your representative business role"
         inputBaseColor="bg-grey-10"
-        :inputValueList="[]"
+        :inputValueList="businessPayload.business_role"
         :selectData="[
           { value: 'owner', name: 'Owner' },
           { value: 'director', name: 'Director' },
@@ -104,7 +105,7 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, onMounted, computed, toRaw } from "vue";
+import { ref, onMounted, computed, toRaw, watch } from "vue";
 import { useRouter } from "vue-router";
 import { IInputType } from "@/models/form-type";
 import countries from "@/shared/constants/country-list";
@@ -112,6 +113,9 @@ import ComplianceDisplayBlock from "@/modules/compliance/components/compliance-d
 import TextFieldInput from "@/shared/components/form-comps/text-field-input.vue";
 import SelectFieldInput from "@/shared/components/form-comps/select-field-input.vue";
 import MultiSelectFieldInput from "@/shared/components/form-comps/multi-select-field-input.vue";
+import { useComplianceUtil } from "../composable/useComplianceUtil";
+import { useComplianceStore } from "../store";
+import { storeToRefs } from "pinia";
 
 type IBusinessType = {
   legal_first_name: string;
@@ -119,7 +123,7 @@ type IBusinessType = {
   dob: string;
   nationality: string;
   business_role: string[];
-  percentage_ownership: number;
+  percentage_ownership: string;
 };
 
 type IInputValidity = {
@@ -127,15 +131,59 @@ type IInputValidity = {
 };
 
 const router = useRouter();
+const { handleComplianceRequest } = useComplianceUtil();
+const { getComplianceRepresentative } = storeToRefs(useComplianceStore());
+
 const countryList = ref<{ value: string; name: string }[]>([]);
+const stopClickHandler = ref<boolean>(false);
+
+const formatBusinessRoles = (
+  businessRoleData: string | string[] | undefined
+): string[] => {
+  try {
+    if (!businessRoleData) return []; // Return an empty array if undefined
+
+    if (Array.isArray(businessRoleData)) {
+      // Check if the first element of the array is a string with square brackets
+      const firstElement = businessRoleData[0];
+      if (
+        typeof firstElement === "string" &&
+        firstElement.startsWith("[") &&
+        firstElement.endsWith("]")
+      ) {
+        // If it has square brackets, parse the string as JSON
+        const parsedInnerArray = JSON.parse(firstElement);
+        return Array.isArray(parsedInnerArray) ? parsedInnerArray : [];
+      }
+      // Otherwise, return the array as is
+      return businessRoleData;
+    }
+
+    // If it's a string, attempt to parse it as JSON
+    const parsedString = JSON.parse(businessRoleData);
+
+    // Ensure the parsed string is an array
+    return Array.isArray(parsedString) ? parsedString : [];
+  } catch (error) {
+    console.error("Error parsing business roles:", error);
+    return []; // Return an empty array in case of error
+  }
+};
 
 const businessPayload = ref<IBusinessType>({
-  legal_first_name: "",
-  legal_last_name: "",
-  dob: "",
-  nationality: "",
-  business_role: [],
-  percentage_ownership: 0,
+  legal_first_name:
+    getComplianceRepresentative.value?.[0]?.legal_first_name || "",
+  legal_last_name:
+    getComplianceRepresentative.value?.[0]?.legal_last_name || "",
+  dob: getComplianceRepresentative.value?.[0]?.dob || "",
+  nationality: getComplianceRepresentative.value?.[0]?.nationality || "",
+  business_role:
+    formatBusinessRoles(
+      getComplianceRepresentative.value?.[0]?.business_role
+    ) || [],
+
+  percentage_ownership:
+    getComplianceRepresentative.value?.[0]?.percentage_ownership || "",
 });
 
 const payloadValidity = ref<IInputValidity>({
@@ -149,7 +197,7 @@ const percentageOwnershipProvided = computed(() => {
     business_role.includes("owner") ||
     business_role.includes("shareholder")
   ) {
-    return percentage_ownership > 0 ? true : false;
+    return parseFloat(percentage_ownership) > 0 ? true : false;
   }
 
   return true;
@@ -183,17 +231,39 @@ const getBusinessPayload = computed(() => {
     dob,
     nationality,
     business_role: toRaw(business_role),
-    percentage_ownership,
+    percentage_ownership: percentage_ownership.toString(),
   };
 });
 
-const handleRepresentativeProfileUpdate = () => {
-  // router.push({ name: 'RedstoneRepresentativeIdentity' })
-
-  console.log("PAYLOAD", getBusinessPayload.value);
+const handleRepresentativeProfileUpdate = async () => {
+  await handleComplianceRequest({
+    payload: getBusinessPayload,
+    redirectRoute: "RedstoneRepresentativeIdentity",
+    stopClickHandler,
+    succesMsg: "Representative profile submitted",
+    errorMsg: "Representative update failed",
+    payloadType: "representatives",
+  });
 };
 
-onMounted(() => {
+watch(
+  getComplianceRepresentative,
+  (newValue) => {
+    if (newValue && newValue.length > 0) {
+      businessPayload.value = {
+        legal_first_name: newValue[0]?.legal_first_name || "",
+        legal_last_name: newValue[0]?.legal_last_name || "",
+        dob: newValue[0]?.dob || "",
+        nationality: newValue[0]?.nationality || "",
+        business_role: formatBusinessRoles(newValue[0]?.business_role) || [],
+        percentage_ownership: newValue[0]?.percentage_ownership || "",
+      };
+    }
+  },
+  { immediate: true }
+);
+
+const loadCountryList = () => {
   countryList.value = countries.map(({ country }) => {
     const countryData = {
       value: country.toLowerCase(),
@@ -202,11 +272,9 @@ onMounted(() => {
 
     return countryData;
   });
-});
+};
+
+loadCountryList();
 </script>
 
-<style lang="scss" scoped>
-.content-block {
-  // @apply ;
-}
-</style>
+<style lang="scss" scoped></style>

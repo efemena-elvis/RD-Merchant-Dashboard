@@ -51,6 +51,7 @@ import { computed, ref, onMounted } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { IInputType } from "@/models/form-type";
 import { useAuthStore } from "../store";
+import { useProfile } from "@/shared/composables/useProfile";
 import useEvents from "@/shared/composables/useEvents";
 import AuthWrapper from "@/modules/auth/components/auth-wrapper.vue";
 import TextFieldInput from "@/shared/components/form-comps/text-field-input.vue";
@@ -62,6 +63,7 @@ type IVerifyInputType = {
 
 const route = useRoute();
 const router = useRouter();
+const { isUserAuthenticated } = useProfile();
 
 const userEmailAddress = ref<string | null>(null);
 const tokenValidity = ref<boolean>(false);
@@ -100,8 +102,7 @@ const handleUserEmailVerification = async () => {
     btnText: "Verify email address",
     alertHandler: {
       200: {
-        message: "Email address verified",
-        description: "Proceed to login and gain access to your dashboard",
+        message: "Email address is verified",
         type: "success",
       },
 
@@ -113,7 +114,10 @@ const handleUserEmailVerification = async () => {
   });
 
   if (response.code === 200) {
-    setTimeout(() => router.push({ name: "RedstoneLogin" }), 1200);
+    // Check if user is authenticated
+    setTimeout(() => {
+      router.push(isUserAuthenticated() ? "/transfers/balance" : "/login");
+    }, 2000);
   }
 };
 

@@ -9,7 +9,7 @@ const { logOutUser, checkAuthTimeout } = useString();
 class RouteGuard {
   sessionTime: number = 90;
   loginRoute: string = "RedstoneLogin";
-  dashboardRoute: string = "RedstoneOverview"; // "RedstoneBalance";
+  dashboardRoute: string = "RedstoneBalance"; // "RedstoneOverview";
 
   authToken: string | object | null = getStorage({
     storage_name: constants.REDSTONE_AUTH_TOKEN,

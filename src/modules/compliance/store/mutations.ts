@@ -45,7 +45,7 @@ export function useComplianceMutations() {
   };
 
   const mutateComplianceRepresentative = (
-    payload: IComplianceRepresentative
+    payload: IComplianceRepresentative[]
   ) => {
     complianceRepresentative.value = payload;
   };

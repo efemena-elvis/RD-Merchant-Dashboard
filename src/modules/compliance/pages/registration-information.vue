@@ -1,9 +1,10 @@
 <template>
   <ComplianceDisplayBlock
     title="Business registration information"
-    description="Provide your registered business details, so Redstone PGS can verify your business information."
+    description="Provide your registered business number, so Redstone can verify your business information."
     showActionRow
     :isPrimaryActionDisabled="isActionReady"
+    :stopClickHandler="stopClickHandler"
     @onBackClick="router.push({ name: 'RedstoneBusinessConfirm' })"
     @onContinueClick="handleRegistrationInformationUpdate"
   >
@@ -27,18 +28,27 @@
 </template>
 
 <script lang="ts" setup>
-import { computed, ref } from "vue";
+import { computed, ref, watch } from "vue";
 import { useRouter } from "vue-router";
 import { IInputType } from "@/models/form-type";
+import { useComplianceUtil } from "../composable/useComplianceUtil";
+import { useComplianceStore } from "@/modules/compliance/store";
 import ComplianceDisplayBlock from "@/modules/compliance/components/compliance-display-block.vue";
 import TextFieldInput from "@/shared/components/form-comps/text-field-input.vue";
+import { storeToRefs } from "pinia";
 
 type IBusinessType = {
   number: string;
 };
 
+const router = useRouter();
+const { handleComplianceRequest } = useComplianceUtil();
+const { getComplianceRegistration } = storeToRefs(useComplianceStore());
+
+const stopClickHandler = ref<boolean>(false);
+
 const businessPayload = ref<IBusinessType>({
-  number: "",
+  number: getComplianceRegistration.value?.number || "",
 });
 
 const isActionReady = computed(() => {
@@ -49,17 +59,28 @@ const getBusinessPayload = computed(() => {
   return { number: businessPayload.value.number };
 });
 
-const handleRegistrationInformationUpdate = () => {
-  // router.push({ name: 'RedstoneRegistrationConfirm' })
-
-  console.log("PAYLOAD", getBusinessPayload.value);
+const handleRegistrationInformationUpdate = async () => {
+  await handleComplianceRequest({
+    payload: getBusinessPayload,
+    redirectRoute: "RedstoneRegistrationConfirm",
+    stopClickHandler,
+    succesMsg: "Registration information submitted",
+    errorMsg: "Registration update failed",
+    payloadType: "registration",
+  });
 };
 
-const router = useRouter();
+watch(
+  getComplianceRegistration,
+  (newValue) => {
+    if (newValue) {
+      businessPayload.value = {
+        number: newValue.number || "",
+      };
+    }
+  },
+  { immediate: true }
+);
 </script>
 
-<style lang="scss" scoped>
-.content-block {
-  // @apply ;
-}
-</style>
+<style lang="scss" scoped></style>

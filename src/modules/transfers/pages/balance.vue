@@ -1,6 +1,6 @@
 <template>
   <!-- BALANCE AREA -->
-  <div class="balance-area">
+  <div class="balance-area" v-if="false">
     <BalanceOverview />
   </div>
 

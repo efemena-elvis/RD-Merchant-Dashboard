@@ -31,6 +31,7 @@
         inputPlaceholder="Provide a business phone number"
         inputBaseColor="bg-grey-10"
         :isRequired="true"
+        :activeCountryCode="phoneCountryCode"
         @countryCodeChanged="phoneCountryCode = $event"
         @inputChanged="businessPayload.phone_number = $event"
         @inputValidated="payloadValidity.phone_number = $event"
@@ -55,7 +56,7 @@
         labelTitle="Do you have social media accounts?"
         inputPlaceholder="Select if you have any social media profiles"
         inputBaseColor="bg-grey-10"
-        inputValue="no"
+        :inputValue="showSocialMediaSection ? 'yes' : 'no'"
         :selectData="[
           { value: 'no', name: 'No' },
           { value: 'yes', name: 'Yes' },
@@ -105,16 +106,17 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, computed, onMounted } from "vue";
+import { ref, computed, watch } from "vue";
 import { useRouter } from "vue-router";
 import { IInputType } from "@/models/form-type";
 import { useComplianceStore } from "../store";
-import useEvents from "@/shared/composables/useEvents";
 import { useString } from "@/shared/composables/useString";
+import { useComplianceUtil } from "../composable/useComplianceUtil";
 import ComplianceDisplayBlock from "@/modules/compliance/components/compliance-display-block.vue";
 import TextFieldInput from "@/shared/components/form-comps/text-field-input.vue";
 import SelectFieldInput from "@/shared/components/form-comps/select-field-input.vue";
 import PhoneFieldInput from "@/shared/components/form-comps/phone-field-input.vue";
+import { storeToRefs } from "pinia";
 
 type IBusinessType = {
   email: string;
@@ -131,34 +133,40 @@ type IInputValidity = {
 };
 
 const router = useRouter();
-const { processAPIRequest } = useEvents();
-const { formatPhoneNumber } = useString();
-const {
-  uploadCompliance,
-  getComplianceBusiness,
-  getComplianceRegistration,
-  getComplianceRepresentative,
-  getComplianceBankAccount,
-  getComplianceBusinessSignatory,
-  getComplianceAgreement,
-} = useComplianceStore();
+const { handleComplianceRequest } = useComplianceUtil();
+const { getComplianceBusiness } = storeToRefs(useComplianceStore());
 
-const showSocialMediaSection = ref<boolean>(false);
-const stopClickHandler = ref<boolean>(false);
+const { formatPhoneNumber } = useString();
+
+const computeSocialMediaDisplay = computed(() => {
+  return getComplianceBusiness.value?.facebook_username ||
+    getComplianceBusiness.value?.twitter_username ||
+    getComplianceBusiness.value?.instagram_username
+    ? true
+    : false;
+});
+
+const showSocialMediaSection = ref<boolean>(
+  computeSocialMediaDisplay.value || false
+);
 
 const handleSelectChange = (value: string): void => {
   showSocialMediaSection.value = value === "yes";
 };
 
-const phoneCountryCode = ref<string>("260");
+const stopClickHandler = ref<boolean>(false);
+
+const phoneCountryCode = ref<string>(
+  getComplianceBusiness.value?.phone_number?.split("-")[0] || "260"
+);
 
 const businessPayload = ref<IBusinessType>({
-  email: getComplianceBusiness?.email || "",
-  phone_number: getComplianceBusiness?.phone_number || "",
-  website: getComplianceBusiness?.website || "",
-  facebook_username: getComplianceBusiness?.facebook_username || "",
-  instagram_username: getComplianceBusiness?.instagram_username || "",
-  twitter_username: getComplianceBusiness?.twitter_username || "",
+  email: getComplianceBusiness.value?.email || "",
+  phone_number: getComplianceBusiness.value?.phone_number?.split("-")[1] || "",
+  website: getComplianceBusiness.value?.website || "",
+  facebook_username: getComplianceBusiness.value?.facebook_username || "",
+  instagram_username: getComplianceBusiness.value?.instagram_username || "",
+  twitter_username: getComplianceBusiness.value?.twitter_username || "",
 });
 
 const payloadValidity = ref<IInputValidity>({
@@ -195,51 +203,36 @@ const getBusinessPayload = computed(() => {
 });
 
 const handleBusinessContactUpdate = async () => {
-  const response = await processAPIRequest({
-    action: uploadCompliance,
-    payload: {
-      business: { ...getComplianceBusiness, ...getBusinessPayload.value },
-      getComplianceRegistration,
-      getComplianceRepresentative,
-      getComplianceBankAccount,
-      getComplianceBusinessSignatory,
-      getComplianceAgreement,
-    },
-    alertHandler: {
-      200: {
-        message: "Business contact submitted",
-        type: "success",
-      },
-
-      400: {
-        message: "Business contact update failed",
-        type: "error",
-      },
-    },
-  });
-
-  if (response.code === 200) {
-    stopClickHandler.value = true;
-    setTimeout(() => router.push({ name: "RedstoneBusinessAddress" }), 2000);
-  }
-
-  // ON FAILED UPDATE STOP PROCESSING
-  else {
-    stopClickHandler.value = true;
-  }
-
-  onMounted(() => {
-    console.log("LOG", getComplianceBusiness);
-
-    showSocialMediaSection.value =
-      getComplianceBusiness?.facebook_username ||
-      getComplianceBusiness?.twitter_username ||
-      getComplianceBusiness?.instagram_username
-        ? true
-        : false;
+  await handleComplianceRequest({
+    payload: getBusinessPayload,
+    redirectRoute: "RedstoneBusinessAddress",
+    stopClickHandler,
+    succesMsg: "Business contact submitted",
+    errorMsg: "Business update failed",
+    payloadType: "business",
   });
 };
+
+watch(
+  getComplianceBusiness,
+  (newValue) => {
+    if (newValue) {
+      businessPayload.value = {
+        email: newValue.email || "",
+        phone_number: newValue.phone_number?.split("-")[1] || "",
+        website: newValue.website || "",
+        facebook_username: newValue.facebook_username || "",
+        twitter_username: newValue.twitter_username || "",
+        instagram_username: newValue.instagram_username || "",
+      };
+
+      phoneCountryCode.value = newValue.phone_number?.split("-")[0] || "260";
+    }
+  },
+  { immediate: true }
+);
 </script>
+
 <style lang="scss" scoped>
 .content-block {
   .helper-text {

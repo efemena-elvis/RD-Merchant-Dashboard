@@ -11,6 +11,9 @@ export const uploadCompliance = async (payload: any) => {
   });
 };
 
-export const activateBusiness = async () => {
-  return await $api.push(complianceRoutes.activateBusiness, {});
+export const activateBusiness = async (payload: any) => {
+  return await $api.push(
+    `${complianceRoutes.activateBusiness}/${payload.complianceId}`,
+    {}
+  );
 };

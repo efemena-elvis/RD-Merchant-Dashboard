@@ -85,7 +85,8 @@ onMounted(() => {
     @apply relative w-[83%] xl:w-[80%] lg:w-[76%] mdLg:w-full left-[17%] xl:left-[20%] lg:left-[24%] mdLg:left-0;
 
     .topbar-area {
-      @apply fixed top-0 w-[83%] xl:w-[80%] lg:w-[76%] mdLg:w-full bg-neutral-10 z-30 shadow-sm border;
+      @apply fixed top-0 w-[83%] xl:w-[80%] lg:w-[76%] mdLg:w-full bg-neutral-10 shadow-sm border;
+      z-index: 2999;
     }
 
     .main-content {

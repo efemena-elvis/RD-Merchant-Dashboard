@@ -4,6 +4,7 @@
     description="A business signatory could either be an owner, director or shareholder of your business."
     showActionRow
     :isPrimaryActionDisabled="isActionReady"
+    :stopClickHandler="stopClickHandler"
     @onBackClick="router.push({ name: 'RedstoneBankAccount' })"
     @onContinueClick="handleSignatoryProfileUpdate"
   >
@@ -85,13 +86,16 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, onMounted, computed } from "vue";
+import { ref, onMounted, computed, watch } from "vue";
 import { useRouter } from "vue-router";
 import { IInputType } from "@/models/form-type";
 import countries from "@/shared/constants/country-list";
 import ComplianceDisplayBlock from "@/modules/compliance/components/compliance-display-block.vue";
 import TextFieldInput from "@/shared/components/form-comps/text-field-input.vue";
 import SelectFieldInput from "@/shared/components/form-comps/select-field-input.vue";
+import { useComplianceUtil } from "../composable/useComplianceUtil";
+import { useComplianceStore } from "../store";
+import { storeToRefs } from "pinia";
 
 type IBusinessType = {
   legal_first_name: string;
@@ -106,14 +110,20 @@ type IInputValidity = {
 };
 
 const router = useRouter();
+const stopClickHandler = ref<boolean>(false);
+
+const { handleComplianceRequest } = useComplianceUtil();
+const { getComplianceBusinessSignatory } = storeToRefs(useComplianceStore());
+
 const countryList = ref<{ value: string; name: string }[]>([]);
 
 const businessPayload = ref<IBusinessType>({
-  legal_first_name: "",
-  legal_last_name: "",
-  dob: "",
-  nationality: "",
-  job_title: "",
+  legal_first_name:
+    getComplianceBusinessSignatory.value?.legal_first_name || "",
+  legal_last_name: getComplianceBusinessSignatory.value?.legal_last_name || "",
+  dob: getComplianceBusinessSignatory.value?.dob || "",
+  nationality: getComplianceBusinessSignatory.value?.nationality || "",
+  job_title: getComplianceBusinessSignatory.value?.job_title || "",
 });
 
 const payloadValidity = ref<IInputValidity>({
@@ -144,13 +154,34 @@ const getBusinessPayload = computed(() => {
   };
 });
 
-const handleSignatoryProfileUpdate = () => {
-  // router.push({ name: 'RedstoneSignatoryIdentity' })
-
-  console.log("PAYLOAD", getBusinessPayload.value);
+const handleSignatoryProfileUpdate = async () => {
+  await handleComplianceRequest({
+    payload: getBusinessPayload,
+    redirectRoute: "RedstoneSignatoryIdentity",
+    stopClickHandler,
+    succesMsg: "Signatory profile submitted",
+    errorMsg: "Signatory update failed",
+    payloadType: "business_signatory",
+  });
 };
 
-onMounted(() => {
+watch(
+  getComplianceBusinessSignatory,
+  (newValue) => {
+    if (newValue) {
+      businessPayload.value = {
+        legal_first_name: newValue.legal_first_name || "",
+        legal_last_name: newValue.legal_last_name || "",
+        dob: newValue.dob || "",
+        nationality: newValue.nationality || "",
+        job_title: newValue.job_title || "",
+      };
+    }
+  },
+  { immediate: true }
+);
+
+const loadCountryList = () => {
   countryList.value = countries.map(({ country }) => {
     const countryData = {
       value: country.toLowerCase(),
@@ -159,11 +190,9 @@ onMounted(() => {
 
     return countryData;
   });
-});
+};
+
+loadCountryList();
 </script>
 
-<style lang="scss" scoped>
-.content-block {
-  // @apply ;
-}
-</style>
+<style lang="scss" scoped></style>

@@ -4,6 +4,7 @@
     description="Provide the relevant document to confirm your signatory residential address."
     showActionRow
     :isPrimaryActionDisabled="isActionReady"
+    :stopClickHandler="stopClickHandler"
     @onBackClick="router.push({ name: 'RedstoneSignatoryAddress' })"
     @onContinueClick="handleSignatoryConfirmUpdate"
   >
@@ -41,6 +42,8 @@
         <FileUploadInput
           showSkip
           skipRoute="RedstoneAgreementSignature"
+          :hasDocumentUploaded="!!uploadedDocument"
+          :uploadedDocumentContent="getUploadedDocumentContent"
           @onDocumentUploaded="businessPayload.url = $event"
         />
       </div>
@@ -49,12 +52,15 @@
 </template>
 
 <script lang="ts" setup>
-import { computed, ref } from "vue";
+import { computed, ref, watch } from "vue";
 import { useRouter } from "vue-router";
 import ComplianceDisplayBlock from "@/modules/compliance/components/compliance-display-block.vue";
 import UploadGuidelines from "@/modules/compliance/components/upload-guidelines.vue";
 import FileUploadInput from "@/shared/components/form-comps/file-upload-input.vue";
 import SelectFieldInput from "@/shared/components/form-comps/select-field-input.vue";
+import { useComplianceUtil } from "../composable/useComplianceUtil";
+import { useComplianceStore } from "../store";
+import { storeToRefs } from "pinia";
 
 type IBusinessType = {
   type: string;
@@ -62,13 +68,36 @@ type IBusinessType = {
 };
 
 const router = useRouter();
+const stopClickHandler = ref<boolean>(false);
+
+const { handleComplianceRequest } = useComplianceUtil();
+const { getComplianceBusinessSignatory } = storeToRefs(useComplianceStore());
 
 const businessPayload = ref<IBusinessType>({
-  type: "",
-  url: "",
+  type: getComplianceBusinessSignatory.value?.address_doc.type || "",
+  url: getComplianceBusinessSignatory.value?.address_doc.url || "",
 });
 
-const businessAddress = ref<string>("");
+const computeAddress = computed(() => {
+  if (getComplianceBusinessSignatory.value?.first_address?.length)
+    return getComplianceBusinessSignatory.value.first_address;
+
+  return "----";
+});
+
+const businessAddress = ref<string>(computeAddress.value || "");
+const uploadedDocument = ref<string>(
+  getComplianceBusinessSignatory.value?.address_doc.url || ""
+);
+
+const getUploadedDocumentContent = computed(() => {
+  return {
+    name: getComplianceBusinessSignatory.value?.address_doc.type
+      ?.split("_")
+      .join(" "),
+    link: getComplianceBusinessSignatory.value?.address_doc.url,
+  };
+});
 
 const documentTypes = ref<{ value: string; name: string }[]>([
   {
@@ -94,15 +123,32 @@ const getBusinessPayload = computed(() => {
   return { address_doc: { type, url } };
 });
 
-const handleSignatoryConfirmUpdate = () => {
-  // router.push({ name: 'RedstoneAgreementSignature' })
-
-  console.log("Payload", getBusinessPayload.value);
+const handleSignatoryConfirmUpdate = async () => {
+  await handleComplianceRequest({
+    payload: getBusinessPayload,
+    redirectRoute: "RedstoneAgreementSignature",
+    stopClickHandler,
+    succesMsg: "Signatory address document submitted",
+    errorMsg: "Signatory update failed",
+    payloadType: "business_signatory",
+  });
 };
+
+watch(
+  getComplianceBusinessSignatory,
+  (newValue) => {
+    if (newValue) {
+      businessPayload.value = {
+        type: newValue.address_doc.type || "",
+        url: newValue.address_doc.url || "",
+      };
+
+      businessAddress.value = newValue.first_address;
+      uploadedDocument.value = newValue.address_doc.url;
+    }
+  },
+  { immediate: true }
+);
 </script>
 
-<style lang="scss" scoped>
-.content-block {
-  // @apply ;
-}
-</style>
+<style lang="scss" scoped></style>

@@ -15,18 +15,30 @@
           <!-- MERCHANT ACCOUNT ID -->
           <div class="brand-id-row">
             <div class="brand-id">ID: {{ getBusinessProfile.businessId }}</div>
-            <div class="copy-action" @click="copyMerchantID">{{ copied ? 'Copied' : 'Click to Copy' }}</div>
+            <div class="copy-action" @click="copyMerchantID">
+              {{ copied ? "Copied" : "Click to Copy" }}
+            </div>
           </div>
         </div>
 
         <!-- CLIENT TOGGLER -->
-        <div class="client-toggler cursor-pointer" ref="togglerRef" @click="toggleDropdown(!showDropdown)">
+        <div
+          class="client-toggler cursor-pointer"
+          ref="togglerRef"
+          @click="toggleDropdown(!showDropdown)"
+        >
           <div class="icon-double-caret-fill cursor-pointer"></div>
         </div>
       </div>
     </div>
 
-    <div class="dropdown-area-wrapper" ref="dialogRef" v-if="showDropdown" role="dialog" aria-modal="true">
+    <div
+      class="dropdown-area-wrapper"
+      ref="dialogRef"
+      v-if="showDropdown"
+      role="dialog"
+      aria-modal="true"
+    >
       <div class="dropdown-area select-none" @click="logoutUser">
         <div class="dropdown-item">Sign Out</div>
       </div>
@@ -62,13 +74,13 @@ const getBrandInitials = (brandName: string): string =>
 const copied = ref<boolean>(false);
 
 const copyMerchantID = async () => {
-  const { businessId } = getBusiness()
+  const { businessId } = getBusiness();
   await navigator.clipboard.writeText(businessId);
 
   pushToastAlert({
     message: "Merchant ID copied successfully",
     type: "success",
-  })
+  });
 
   copied.value = true;
   setTimeout(() => (copied.value = false), 2000);

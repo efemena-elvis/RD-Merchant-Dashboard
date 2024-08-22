@@ -78,6 +78,17 @@ export function useString() {
           ?.toUpperCase()}`;
   };
 
+  const capitalizeFirstLetter = (string: string) => {
+    const words = string.split(" ");
+
+    if (words.length > 0) {
+      words[0] = words[0][0]?.toUpperCase() + words[0]?.substring(1);
+      return words?.join(" ");
+    }
+
+    return string;
+  };
+
   const formatPhoneNumber = (
     phoneNumber: string,
     countryCode: string
@@ -93,10 +104,10 @@ export function useString() {
 
     // Check if the phone number starts with the country code
     if (phoneNumber.startsWith(countryCode)) {
-      return phoneNumber;
+      return phoneNumber.slice(countryCode.length);
     } else {
       // Catenate the country code with the phone number
-      return countryCode + phoneNumber;
+      return `${countryCode}-${phoneNumber}`;
     }
   };
 
@@ -157,6 +168,7 @@ export function useString() {
     decodeString,
     renderImg,
     getStringInitials,
+    capitalizeFirstLetter,
     formatPhoneNumber,
     formatNumber,
     getBoldTableText,

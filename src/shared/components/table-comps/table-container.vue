@@ -20,6 +20,7 @@
                 </td>
               </tr>
             </thead>
+
             <tbody>
               <slot />
             </tbody>
@@ -109,7 +110,7 @@ thead tr td .table-header .table-sort-icon {
 }
 
 tbody {
-  @apply text-[13.5px] text-grey-800/85;
+  @apply text-[13.5px] text-grey-800/90;
 }
 
 tbody tr {

@@ -17,6 +17,7 @@
     <TableContainer
       :tableHeader="tableHeader"
       :tableBody="tableBody"
+      :isLoading="isLoading"
       :emptyData="{
         title: 'No balance history yet',
         description:
@@ -34,15 +35,30 @@
 </template>
 
 <script lang="ts" setup>
-import { ref } from "vue";
+import { ref, reactive, onMounted } from "vue";
 import { useString } from "@/shared/composables/useString";
+import { useTransferStore } from "@/modules/transfers/store/";
+import useDate from "@/shared/composables/useDate";
+import useEvents from "@/shared/composables/useEvents";
 import { TableHeaderType } from "@/models/dashboard-type";
 import PageContentWrapper from "@/shared/components/global-comps/page-content-wrapper.vue";
 import TableContainer from "@/shared/components/table-comps/table-container.vue";
 import TableContainerBody from "@/shared/components/table-comps/table-container-body.vue";
 import BalanceOverview from "@/modules/transfers/components/balance-overview.vue";
 
-const { getBoldTableText, transactionFlowIcon } = useString();
+const {
+  getBoldTableText,
+  transactionFlowIcon,
+  getStatus,
+  notAvailable,
+  capitalizeFirstLetter,
+  formatNumber,
+} = useString();
+
+const { getBalanceHistory } = useTransferStore();
+const { processAPIRequest } = useEvents();
+
+const isLoading = ref<boolean>(true);
 
 const tableHeader = ref<TableHeaderType[]>([
   { title: "", slug: "status" },
@@ -51,29 +67,10 @@ const tableHeader = ref<TableHeaderType[]>([
   { title: "Balance Before", slug: "balance_before" },
   { title: "Change", slug: "change" },
   { title: "Balance After", slug: "balance_after" },
-  { title: "Charge Fee", slug: "charge_fee" },
+  // { title: "Charge Fee", slug: "charge_fee" },
 ]);
 
-const tableBody: any[] = [
-  // {
-  //   status: transactionFlowIcon("receive"),
-  //   date_created: "Tue, 22nd July, 2024",
-  //   summary: "Payment from Checkout",
-  //   balance_before: "ZMW 5,600",
-  //   change: getBoldTableText("ZMW 1,200"),
-  //   balance_after: "ZMW 6,800",
-  //   charge_fee: "ZMW 0.00",
-  // },
-  // {
-  //   status: transactionFlowIcon("send"),
-  //   date_created: "Tue, 22nd July, 2024",
-  //   summary: "Payment from Checkout",
-  //   balance_before: "ZMW 5,600",
-  //   change: getBoldTableText("ZMW 1,200"),
-  //   balance_after: "ZMW 6,800",
-  //   charge_fee: "ZMW 0.00",
-  // },
-];
+const tableBody = reactive<any[]>([]);
 
 const activePeriod = ref<string>("This month");
 const periodList = ref<string[]>([
@@ -91,6 +88,41 @@ const processSearchEntry = (searchValue: string) => {
 const processFilterSelection = (selectedPeriod: string) => {
   console.log("FILTERING BY PERIOD", selectedPeriod);
 };
+
+const getTransactionDate = (date: string) => {
+  let { w2, m3, d3, y1 } = useDate.formatDate(date).getAll();
+  return `${w2}, ${d3} ${m3}, ${y1}`;
+};
+
+const fetchBalanceHistory = async () => {
+  const response = await processAPIRequest({
+    action: getBalanceHistory,
+    payload: {},
+    showAlert: false,
+  });
+
+  isLoading.value = false;
+
+  if (response.code === 200) {
+    response.data.map((data: any) => {
+      tableBody.push({
+        status: transactionFlowIcon("receive"),
+        date_created: getTransactionDate(data.balance_at),
+        summary: capitalizeFirstLetter(data.action.split("-").join(" ")),
+        balance_before: `ZMW ${formatNumber(data.balance_before)}`,
+        change: getBoldTableText(`ZMW ${formatNumber(data.amount)}`),
+        balance_after: `ZMW ${formatNumber(data.balance_after)}`,
+        // charge_fee: "ZMW 0.00",
+      });
+    });
+  } else {
+    // tableBody []
+  }
+};
+
+onMounted(() => {
+  fetchBalanceHistory();
+});
 </script>
 
 <style lang="scss" scoped>

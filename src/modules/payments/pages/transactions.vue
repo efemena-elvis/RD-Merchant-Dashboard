@@ -60,19 +60,7 @@ const tableHeader = ref<TableHeaderType[]>([
   { title: "Payment Mode", slug: "payment_mode" },
 ]);
 
-const tableBody = reactive<any[]>([
-  // {
-  //   status: getStatus("success"),
-  //   date_created: "Tue, 22nd July, 2024",
-  //   amount: getBoldTableText("ZMW 5,600"),
-  //   customer: "Efemena Elvis",
-  //   reference_id: "#bbd21047-1c00-2191",
-  //   type_of_transaction: "Collection",
-  //   payment_mode: "MTNMoney",
-  // },
-]);
-
-const emptyCustomer = ref<string>("00000000-0000-0000-0000-000000000000");
+const tableBody = reactive<any[]>([]);
 
 const activePeriod = ref<string>("This month");
 const periodList = ref<string[]>([
@@ -93,7 +81,7 @@ const processFilterSelection = (selectedPeriod: string) => {
 
 const getTransactionDate = (date: string) => {
   let { w2, m3, d3, y1 } = useDate.formatDate(date).getAll();
-  return `${w2}, ${d3} ${m3}, ${y1}`;
+  return `${d3} ${m3}, ${y1}`;
 };
 
 const fetchPaymentTransactions = async () => {
@@ -111,10 +99,9 @@ const fetchPaymentTransactions = async () => {
         amount: getBoldTableText(
           `${data.currency} ${formatNumber(data.amount)}`
         ),
-        customer:
-          data.customer_id === emptyCustomer.value
-            ? notAvailable("No customer")
-            : data.customer_id,
+        customer: data.customer
+          ? data.customer.email
+          : notAvailable("No customer info"),
         reference_id: data.reference,
         type_of_transaction: capitalizeFirstLetter(data.type),
         payment_mode: capitalizeFirstLetter(data.method),

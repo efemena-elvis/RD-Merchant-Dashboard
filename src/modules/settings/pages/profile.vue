@@ -9,13 +9,15 @@
       <!-- PROFILE BANNER AREA -->
       <div class="profile-banner-area">
         <div class="image-wrapper">
-          <div class="brand-initials">VI</div>
+          <div class="brand-initials">
+            {{ getBrandInitials(getBusinessProfile.businessName) }}
+          </div>
         </div>
 
         <div class="info-area">
-          <div class="title-text">Vesicash Innovative Technologies Limited</div>
+          <div class="title-text">{{ getBusinessProfile.businessName }}</div>
           <div class="description-row">
-            <div class="text">elvis@vesicash.com</div>
+            <div class="text">{{ getUserProfile.email }}</div>
             <!-- <div class="status">Verified</div> -->
           </div>
 
@@ -56,10 +58,24 @@
 </template>
 
 <script lang="ts" setup>
+import { computed, ref } from "vue";
 import { IInputType } from "@/models/form-type";
+import { useString } from "@/shared/composables/useString";
+import { useProfile } from "@/shared/composables/useProfile";
+import useEvents from "@/shared/composables/useEvents";
 import SettingsDisplayBlock from "@/modules/settings/components/settings-display-block.vue";
 import TextFieldInput from "@/shared/components/form-comps/text-field-input.vue";
 import PhoneFieldInput from "@/shared/components/form-comps/phone-field-input.vue";
+
+const { getBusiness, getUser } = useProfile();
+const getBusinessProfile = computed(() => getBusiness());
+const getUserProfile = computed(() => getUser());
+
+const { processAPIRequest } = useEvents();
+const { getStringInitials } = useString();
+
+const getBrandInitials = (brandName: string): string =>
+  getStringInitials(brandName);
 
 const saveChanges = () => {
   console.log("Saving changes");

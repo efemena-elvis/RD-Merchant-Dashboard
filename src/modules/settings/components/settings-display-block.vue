@@ -33,7 +33,7 @@ interface ISettingsInfoType {
   title: string;
   description: string;
   showActionRow: boolean;
-  primaryActionText: string;
+  primaryActionText?: string;
   showSecondaryAction: boolean;
   secondaryActionText: string;
 }

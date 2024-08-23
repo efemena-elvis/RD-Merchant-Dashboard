@@ -20,6 +20,7 @@
         labelId="textSecretKey"
         labelTitle="Test Secret Key"
         :inputType="IInputType.Password"
+        :inputValue="getKeys.secret"
         inputPlaceholder="Secret key"
         inputBaseColor="bg-grey-10"
         :isRequired="true"
@@ -29,6 +30,7 @@
         labelId="textPublicKey"
         labelTitle="Test Public Key"
         :inputType="IInputType.Text"
+        :inputValue="getKeys.public"
         inputPlaceholder="Public key"
         inputBaseColor="bg-grey-10"
         :isRequired="true"
@@ -56,9 +58,25 @@
 </template>
 
 <script lang="ts" setup>
+import { computed, ref } from "vue";
 import { IInputType } from "@/models/form-type";
+import { useProfile } from "@/shared/composables/useProfile";
+import useEvents from "@/shared/composables/useEvents";
 import SettingsDisplayBlock from "@/modules/settings/components/settings-display-block.vue";
 import TextFieldInput from "@/shared/components/form-comps/text-field-input.vue";
+
+const { getBusiness, getAPIKeys } = useProfile();
+
+const getBusinessProfile = computed(() => getBusiness());
+const getAPIProfile = computed(() => getAPIKeys());
+
+const { processAPIRequest } = useEvents();
+
+const getKeys = computed(() => {
+  if (getBusinessProfile.value.businessMode === "test") {
+    return getAPIProfile.value.test;
+  } else return getAPIProfile.value.live;
+});
 
 const saveChanges = () => {
   console.log("Saving changes");

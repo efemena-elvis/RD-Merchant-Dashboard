@@ -8,6 +8,7 @@ import dashboardRoutes from "@/modules/overview";
 import paymentRoutes from "@/modules/payments";
 import transferRoutes from "@/modules/transfers";
 import settingsRoutes from "@/modules/settings";
+import externalRoutes from "@/modules/external";
 
 const routes = [
   ...authRoutes,
@@ -16,6 +17,7 @@ const routes = [
   ...paymentRoutes,
   ...transferRoutes,
   ...settingsRoutes,
+  ...externalRoutes,
   {
     path: "/*",
     name: "NotFoundError",

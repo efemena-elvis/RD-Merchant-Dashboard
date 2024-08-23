@@ -14,6 +14,26 @@ interface CustomAxiosRequestConfig extends AxiosRequestConfig {
   _retry?: boolean;
 }
 
+interface IBusinessProfile {
+  businessAddress: string;
+  bankAccountNumber: string;
+  bankName: string;
+  disputeEmailAddress: string;
+  generalEmailAddress: string;
+  businessId: string;
+  businessLogo: string;
+  businessMode: string;
+  businessName: string;
+  businessSector: string;
+  activated: string;
+  supportEmailAddress: string;
+}
+
+interface IAPIKeys {
+  playground: any;
+  alcatraz?: any;
+}
+
 // ===============================
 // SERVICE API CLASS
 class ServiceApi {
@@ -150,6 +170,37 @@ class ServiceApi {
     return await err.response?.data;
   }
 
+  getUserAPIKeys() {
+    const authBusiness = getStorage({
+      storage_name: constants.REDSTONE_AUTH_BUSINESS,
+      storage_type: "object",
+    }) as IBusinessProfile;
+
+    const authBusinessToken = getStorage({
+      storage_name: constants.REDSTONE_AUTH_BUSINESS_TOKEN,
+      storage_type: "object",
+    }) as IAPIKeys;
+
+    if (Object.keys(authBusinessToken).length) {
+      if (authBusiness?.businessMode === "test") {
+        return {
+          publicKey: decodeString(authBusinessToken.playground.nigeria),
+          secretKey: decodeString(authBusinessToken.playground.unitedKingdom),
+        };
+      } else {
+        return {
+          publicKey: decodeString(authBusinessToken.alcatraz.nigeria),
+          secretKey: decodeString(authBusinessToken.alcatraz.unitedKingdom),
+        };
+      }
+    } else {
+      return {
+        publicKey: null,
+        secretKey: null,
+      };
+    }
+  }
+
   // ===============================
   // SETUP REQUEST HEADERS
   getHeaders(attach: boolean = false): AxiosRequestConfig {
@@ -158,26 +209,19 @@ class ServiceApi {
         storage_name: constants.REDSTONE_AUTH_TOKEN,
       }) || null;
 
-    // const api_keys = getStorage({
-    //   storage_name: constants.REDSTONE_AUTH_BUSINESS_TOKEN,
-    //   storage_type: "object",
-    // }) || { 0: "", 1: "" };
-
     return attach
       ? {
           headers: {
             "Content-Type": "multipart/form-data",
             Authorization: `Bearer ${authUserToken}`,
-            // "V-PUBLIC-KEY": decodeString(api_keys[0]),
-            // "V-PRIVATE-KEY": decodeString(api_keys[1]),
+            "public-key": this.getUserAPIKeys().publicKey,
           },
         }
       : {
           headers: {
             "Content-Type": "application/json",
             Authorization: `Bearer ${authUserToken}`,
-            // "V-PUBLIC-KEY": decodeString(api_keys[0]),
-            // "V-PRIVATE-KEY": decodeString(api_keys[1]),
+            "public-key": this.getUserAPIKeys().publicKey,
           },
         };
   }

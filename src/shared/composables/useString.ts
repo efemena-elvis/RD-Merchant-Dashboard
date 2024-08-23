@@ -135,6 +135,7 @@ export function useString() {
   const getStatus = (status: string): string => {
     const statusData: Record<string, string> = {
       success: "bg-green-400",
+      successful: "bg-green-400",
       pending: "bg-yellow-400",
       failed: "bg-red-400",
     };

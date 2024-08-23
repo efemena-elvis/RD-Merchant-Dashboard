@@ -33,19 +33,26 @@ import { ref, onMounted, reactive } from "vue";
 import { useString } from "@/shared/composables/useString";
 import { TableHeaderType } from "@/models/dashboard-type";
 import { usePaymentStore } from "../store";
+import useDate from "@/shared/composables/useDate";
 import useEvents from "@/shared/composables/useEvents";
 import PageContentWrapper from "@/shared/components/global-comps/page-content-wrapper.vue";
 import TableContainer from "@/shared/components/table-comps/table-container.vue";
 import TableContainerBody from "@/shared/components/table-comps/table-container-body.vue";
 
-const { getBoldTableText, getStatus } = useString();
+const {
+  getBoldTableText,
+  getStatus,
+  notAvailable,
+  capitalizeFirstLetter,
+  formatNumber,
+} = useString();
 
 const { getTransactions } = usePaymentStore();
 const { processAPIRequest } = useEvents();
 
 const tableHeader = ref<TableHeaderType[]>([
   { title: "", slug: "status" },
-  { title: "Paid On", slug: "date_created" },
+  { title: "Created On", slug: "date_created" },
   { title: "Amount Paid", slug: "amount" },
   { title: "Customer", slug: "customer" },
   { title: "Payment Reference", slug: "reference_id" },
@@ -65,6 +72,8 @@ const tableBody = reactive<any[]>([
   // },
 ]);
 
+const emptyCustomer = ref<string>("00000000-0000-0000-0000-000000000000");
+
 const activePeriod = ref<string>("This month");
 const periodList = ref<string[]>([
   "Today",
@@ -82,6 +91,11 @@ const processFilterSelection = (selectedPeriod: string) => {
   console.log("FILTERING BY PERIOD", selectedPeriod);
 };
 
+const getTransactionDate = (date: string) => {
+  let { w2, m3, d3, y1 } = useDate.formatDate(date).getAll();
+  return `${w2}, ${d3} ${m3}, ${y1}`;
+};
+
 const fetchPaymentTransactions = async () => {
   const response = await processAPIRequest({
     action: getTransactions,
@@ -93,12 +107,17 @@ const fetchPaymentTransactions = async () => {
     response.data.map((data: any) => {
       tableBody.push({
         status: getStatus(data.status),
-        date_created: data.created_at,
-        amount: getBoldTableText(data.amount),
-        customer: data.customer_id,
+        date_created: getTransactionDate(data.created_at),
+        amount: getBoldTableText(
+          `${data.currency} ${formatNumber(data.amount)}`
+        ),
+        customer:
+          data.customer_id === emptyCustomer.value
+            ? notAvailable("No customer")
+            : data.customer_id,
         reference_id: data.reference,
-        type_of_transaction: data.type,
-        payment_mode: data.method,
+        type_of_transaction: capitalizeFirstLetter(data.type),
+        payment_mode: capitalizeFirstLetter(data.method),
       });
     });
   }

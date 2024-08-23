@@ -124,7 +124,7 @@ export function useString() {
     } else {
       // Format for less than 1000
       //@ts-ignore
-      return value.toString();
+      return value?.toString();
     }
   };
 

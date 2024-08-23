@@ -129,9 +129,6 @@ watch(
       active: true,
     };
 
-    console.log("----", toRaw(complianceRoute));
-    console.log("?????", getBusinessActivatedStatus());
-
     if (getBusinessActivatedStatus() === "true") complianceRoute.active = false;
   },
   { immediate: true }

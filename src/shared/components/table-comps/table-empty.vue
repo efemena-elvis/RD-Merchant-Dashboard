@@ -34,7 +34,7 @@ const { renderImg } = useString();
 
 <style lang="scss" scoped>
 .table-empty {
-  @apply flex flex-col justify-center items-center gap-y-3 -mt-4 lg:-mt-1 sm:mt-3 mb-12 mdLg:mb-16;
+  @apply flex flex-col justify-center items-center gap-y-3 -mt-4 py-8 sm:py-6 lg:-mt-1 sm:mt-3 mb-12 mdLg:mb-16;
 
   .img-wrapper {
     img {

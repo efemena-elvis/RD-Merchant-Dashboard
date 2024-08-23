@@ -29,14 +29,19 @@
 </template>
 
 <script lang="ts" setup>
-import { ref } from "vue";
+import { ref, onMounted, reactive } from "vue";
 import { useString } from "@/shared/composables/useString";
 import { TableHeaderType } from "@/models/dashboard-type";
+import { usePaymentStore } from "../store";
+import useEvents from "@/shared/composables/useEvents";
 import PageContentWrapper from "@/shared/components/global-comps/page-content-wrapper.vue";
 import TableContainer from "@/shared/components/table-comps/table-container.vue";
 import TableContainerBody from "@/shared/components/table-comps/table-container-body.vue";
 
 const { getBoldTableText, getStatus } = useString();
+
+const { getTransactions } = usePaymentStore();
+const { processAPIRequest } = useEvents();
 
 const tableHeader = ref<TableHeaderType[]>([
   { title: "", slug: "status" },
@@ -48,7 +53,7 @@ const tableHeader = ref<TableHeaderType[]>([
   { title: "Payment Mode", slug: "payment_mode" },
 ]);
 
-const tableBody: any[] = [
+const tableBody = reactive<any[]>([
   // {
   //   status: getStatus("success"),
   //   date_created: "Tue, 22nd July, 2024",
@@ -58,16 +63,7 @@ const tableBody: any[] = [
   //   type_of_transaction: "Collection",
   //   payment_mode: "MTNMoney",
   // },
-  // {
-  //   status: getStatus("failed"),
-  //   date_created: "Wed, 26th July, 2024",
-  //   amount: getBoldTableText("ZMW 4,500"),
-  //   customer: "OluwaFunmi Joseph",
-  //   reference_id: "#ccd21047-2459-0121",
-  //   type_of_transaction: "Collection",
-  //   payment_mode: "AirtelMoney",
-  // },
-];
+]);
 
 const activePeriod = ref<string>("This month");
 const periodList = ref<string[]>([
@@ -85,6 +81,32 @@ const processSearchEntry = (searchValue: string) => {
 const processFilterSelection = (selectedPeriod: string) => {
   console.log("FILTERING BY PERIOD", selectedPeriod);
 };
+
+const fetchPaymentTransactions = async () => {
+  const response = await processAPIRequest({
+    action: getTransactions,
+    payload: {},
+    showAlert: false,
+  });
+
+  if (response.code === 200) {
+    response.data.map((data: any) => {
+      tableBody.push({
+        status: getStatus(data.status),
+        date_created: data.created_at,
+        amount: getBoldTableText(data.amount),
+        customer: data.customer_id,
+        reference_id: data.reference,
+        type_of_transaction: data.type,
+        payment_mode: data.method,
+      });
+    });
+  }
+};
+
+onMounted(() => {
+  fetchPaymentTransactions();
+});
 </script>
 
 <style lang="scss" scoped></style>

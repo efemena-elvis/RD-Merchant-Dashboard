@@ -53,7 +53,7 @@ export function useValidator() {
         const phoneLength = trimmedInput.length - countryCode.length;
         return phoneLength >= 9 && phoneLength <= 11 ? "" : message;
       } else {
-        return trimmedInput.length >= 10 && trimmedInput.length <= 12
+        return trimmedInput.length >= 9 && trimmedInput.length <= 12
           ? ""
           : message;
       }

@@ -8,6 +8,7 @@ export function useAuthActions() {
 
   const loginUser = async (payload: any): Promise<IAPIType> => {
     const response: any = await $api.push(authRoutes.login, { payload });
+
     response?.code === 200 && mutateUserData(response?.data);
     return response;
   };

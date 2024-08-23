@@ -50,15 +50,25 @@ class ServiceApi {
   // GET API REQUEST
   async fetch<T>(
     url: string,
-    option: { resolve?: boolean; payload?: any } = {
+    option: {
+      resolve?: boolean;
+      payload?: any;
+      is_attach?: boolean;
+      requiresPublicKey?: boolean;
+    } = {
       resolve: true,
       payload: null,
+      is_attach: false,
+      requiresPublicKey: false,
     }
   ): Promise<T | AxiosResponse<T>> {
     const hashed_url = urlHash(url);
 
     try {
-      const response = await axios.get<T>(hashed_url, this.getHeaders());
+      const response = await axios.get<T>(
+        hashed_url,
+        this.getHeaders(option.is_attach, option.requiresPublicKey)
+      );
       return option.resolve ? response.data : response;
     } catch (err) {
       return this.handleErrors(err);
@@ -84,13 +94,19 @@ class ServiceApi {
       payload = {},
       resolve = true,
       is_attach = false,
-    }: { payload?: any; resolve?: boolean; is_attach?: boolean }
+      requiresPublicKey = false,
+    }: {
+      payload?: any;
+      resolve?: boolean;
+      is_attach?: boolean;
+      requiresPublicKey?: boolean;
+    }
   ): Promise<T | AxiosResponse<T>> {
     try {
       const response = await axios.post<T>(
         url,
         payload,
-        this.getHeaders(is_attach)
+        this.getHeaders(is_attach, requiresPublicKey)
       );
 
       return resolve ? response.data : response;
@@ -107,13 +123,19 @@ class ServiceApi {
       payload = {},
       resolve = true,
       is_attach = false,
-    }: { payload?: any; resolve?: boolean; is_attach?: boolean }
+      requiresPublicKey = false,
+    }: {
+      payload?: any;
+      resolve?: boolean;
+      is_attach?: boolean;
+      requiresPublicKey?: boolean;
+    }
   ): Promise<T | AxiosResponse<T>> {
     try {
       const response = await axios.put<T>(
         url,
         payload,
-        this.getHeaders(is_attach)
+        this.getHeaders(is_attach, requiresPublicKey)
       );
       return resolve ? response.data : response;
     } catch (err) {
@@ -129,13 +151,19 @@ class ServiceApi {
       payload = {},
       resolve = true,
       is_attach = false,
-    }: { payload?: any; resolve?: boolean; is_attach?: boolean }
+      requiresPublicKey = false,
+    }: {
+      payload?: any;
+      resolve?: boolean;
+      is_attach?: boolean;
+      requiresPublicKey?: boolean;
+    }
   ): Promise<T | AxiosResponse<T>> {
     try {
       const response = await axios.patch<T>(
         url,
         payload,
-        this.getHeaders(is_attach)
+        this.getHeaders(is_attach, requiresPublicKey)
       );
       return resolve ? response.data : response;
     } catch (err) {
@@ -203,27 +231,51 @@ class ServiceApi {
 
   // ===============================
   // SETUP REQUEST HEADERS
-  getHeaders(attach: boolean = false): AxiosRequestConfig {
-    const authUserToken =
-      getStorage({
-        storage_name: constants.REDSTONE_AUTH_TOKEN,
-      }) || null;
+  getHeaders(
+    attach: boolean = false,
+    requiresPublicKey: boolean = false
+  ): AxiosRequestConfig {
+    const authUserToken = getStorage({
+      storage_name: constants.REDSTONE_AUTH_TOKEN,
+    }) as string | null;
+
+    if (requiresPublicKey) {
+      return this.getPublicKeyHeaderSetup(authUserToken, attach);
+    }
 
     return attach
       ? {
           headers: {
             "Content-Type": "multipart/form-data",
             Authorization: `Bearer ${authUserToken}`,
-            "public-key": this.getUserAPIKeys().publicKey,
           },
         }
       : {
           headers: {
             "Content-Type": "application/json",
             Authorization: `Bearer ${authUserToken}`,
-            "public-key": this.getUserAPIKeys().publicKey,
           },
         };
+  }
+
+  getPublicKeyHeaderSetup(userToken: string | null, hasAttachment: boolean) {
+    if (hasAttachment) {
+      return {
+        headers: {
+          "Content-Type": "multipart/form-data",
+          Authorization: `Bearer ${userToken}`,
+          "public-key": this.getUserAPIKeys().publicKey,
+        },
+      };
+    }
+
+    return {
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${userToken}`,
+        "public-key": this.getUserAPIKeys().publicKey,
+      },
+    };
   }
 
   // ===============================

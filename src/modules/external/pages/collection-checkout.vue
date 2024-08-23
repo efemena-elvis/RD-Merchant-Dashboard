@@ -122,11 +122,15 @@ const paymentDetails = ref({
   reference: "",
 });
 
+const getCustomerFullName = computed(() => {
+  return getPaymentDetails.value?.customer_first_name?.length
+    ? `${getPaymentDetails.value?.customer_first_name} ${getPaymentDetails.value.customer_last_name}`
+    : "";
+});
+
 const payload = ref<IPayloadInputType>({
-  full_name:
-    `${getPaymentDetails.value.customer_first_name} ${getPaymentDetails.value.customer_last_name}` ||
-    "",
-  email: getPaymentDetails.value.email || "",
+  full_name: getCustomerFullName.value || "",
+  email: getPaymentDetails.value?.email || "",
   phone_number: "",
 });
 
@@ -193,7 +197,10 @@ watch(
       paymentDetails.value = toRaw(payment);
       fetchingPaymentDetails.value = false;
 
-      payload.value.full_name = `${payment.customer_first_name} ${payment.customer_last_name}`;
+      if (payment.customer_first_name.length) {
+        payload.value.full_name = `${payment.customer_first_name} ${payment.customer_last_name}`;
+      }
+
       payload.value.email = payment.email;
     }
   },

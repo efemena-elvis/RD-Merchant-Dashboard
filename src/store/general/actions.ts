@@ -1,0 +1,29 @@
+import $api from "@/shared/composables/useServiceAPI";
+import { generalRoutes } from "./general-routes";
+import { useAuthMutations } from "@/modules/auth/store/mutations";
+
+export function useGeneralActions() {
+  const { mutateBusinessMode } = useAuthMutations();
+
+  const uploadFile = async (payload: any) => {
+    const response: any = await $api.push(generalRoutes.fileUpload, {
+      payload,
+      is_attach: true,
+    });
+    return response;
+  };
+
+  const switchAppMode = async (payload: any) => {
+    const response: any = await $api.push(generalRoutes.switchMode, {
+      payload,
+    });
+
+    mutateBusinessMode(payload.mode);
+    return response;
+  };
+
+  return {
+    uploadFile,
+    switchAppMode,
+  };
+}

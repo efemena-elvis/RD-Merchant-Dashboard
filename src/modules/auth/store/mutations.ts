@@ -86,6 +86,16 @@ export function useAuthMutations() {
     });
   };
 
+  const mutateBusinessMode = (mode: string) => {
+    authBusiness.value.businessMode = mode;
+
+    setStorage({
+      storage_name: REDSTONE_AUTH_BUSINESS,
+      storage_value: authBusiness.value,
+      storage_type: "object",
+    });
+  };
+
   // MUTATE AUTH BUSINESS TOKEN
   const mutateAuthBusinessToken = (payload: any) => {
     const { apikeys } = payload.user.business_users[0].business;
@@ -131,5 +141,6 @@ export function useAuthMutations() {
 
   return {
     mutateUserData,
+    mutateBusinessMode,
   };
 }

@@ -1,3 +1,4 @@
 export const generalRoutes = {
-  fileUpload: `/files`,
+  fileUpload: `files`,
+  switchMode: `switch-mode`,
 };

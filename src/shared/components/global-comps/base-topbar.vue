@@ -16,19 +16,28 @@
     <div class="topbar--right">
       <!-- MODE TOGGLER -->
       <div class="relative">
-        <div class="mode-toggler" ref="togglerModeRef" @click="toggleModeDropdown(!showModeDropdown)">
+        <div class="mode-toggler" ref="togglerModeRef" @click="canSwtchMode">
           <div class="icon icon-regulator"></div>
           <!-- <div class="mode-toggler-control">
             <div class="mode-toggler-control-pin"></div>
           </div> -->
 
-          <div class="text" :class="activeMode === 'test' ? 'text-red-500' : 'text-green-600'">
+          <div
+            class="text"
+            :class="activeMode === 'test' ? 'text-red-500' : 'text-green-600'"
+          >
             {{ activeMode }} Mode
           </div>
         </div>
 
         <!-- MODE DROPDOWN -->
-        <div class="app-dropdown" ref="dialogModeRef" v-if="showModeDropdown" role="dialog" aria-modal="true">
+        <div
+          class="app-dropdown"
+          ref="dialogModeRef"
+          v-if="showModeDropdown"
+          role="dialog"
+          aria-modal="true"
+        >
           <div class="dropdown-wrapper">
             <div class="app-dropdown-item" @click="updateActiveMode('test')">
               <div class="icon icon-shield-slash text-base"></div>
@@ -77,12 +86,21 @@
 
       <!-- USER PROFILE -->
       <div class="relative">
-        <div class="icon-wrapper" ref="togglerProfileRef" @click="toggleProfileDropdown(!showProfileDropdown)">
+        <div
+          class="icon-wrapper"
+          ref="togglerProfileRef"
+          @click="toggleProfileDropdown(!showProfileDropdown)"
+        >
           <div class="icon-user"></div>
         </div>
 
-        <div class="app-dropdown profile-dropdown" ref="dialogProfileRef" v-if="showProfileDropdown" role="dialog"
-          aria-modal="true">
+        <div
+          class="app-dropdown profile-dropdown"
+          ref="dialogProfileRef"
+          v-if="showProfileDropdown"
+          role="dialog"
+          aria-modal="true"
+        >
           <div class="dropdown-wrapper">
             <router-link to="/settings/profile" class="app-dropdown-item">
               <div class="icon icon-user text-base"></div>
@@ -116,11 +134,14 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, watch, inject } from "vue";
+import { ref, watch, inject, computed } from "vue";
 import { useRoute } from "vue-router";
+import { useProfile } from "@/shared/composables/useProfile";
 import NavNotificationItem from "./nav-notification-item.vue";
 import useClickOutside from "@/shared/composables/useClickOutside";
 import { useAuthStore } from "@/modules/auth/store";
+import { useGeneralStore } from "@/store/general";
+import useEvents from "@/shared/composables/useEvents";
 import { Emitter } from "mitt";
 
 // Define the type of the event bus
@@ -130,7 +151,14 @@ type Events = {
 
 const route = useRoute();
 const eventBus = inject<Emitter<Events>>("eventBus");
+
 const { logoutUser } = useAuthStore();
+const { switchAppMode } = useGeneralStore();
+const { pushToastAlert, processAPIRequest } = useEvents();
+
+const { getBusiness, getBusinessActivatedStatus } = useProfile();
+const getBusinessProfile = computed(() => getBusiness());
+const isBusinessActivated = computed(() => getBusinessActivatedStatus());
 
 const pageTitle = ref<string>("");
 const pageDescription = ref<string>("");
@@ -154,11 +182,55 @@ watch(route, () => {
 });
 
 // UPDATE ENVIRONMENT MODE
-const activeMode = ref<string>("test");
+const activeMode = ref<string>(getBusinessProfile.value.businessMode || "test");
 
 const updateActiveMode = (mode: string) => {
+  triggerModeChange(mode);
+
   activeMode.value = mode;
   toggleModeDropdown(false);
+};
+
+const triggerModeChange = async (mode: string) => {
+  const response = await processAPIRequest({
+    action: switchAppMode,
+    payload: { mode },
+    alertHandler: {
+      200: {
+        message: "Business mode updated successfully",
+        description: `Your business is currently running on ${mode} mode`,
+        type: "success",
+      },
+
+      400: {
+        message: "Failed to update business mode",
+        type: "error",
+      },
+    },
+  });
+
+  if (response?.code === 200) {
+    setTimeout(() => location.reload(), 1500);
+  } else {
+    activeMode.value = mode === "live" ? "test" : "live";
+
+    pushToastAlert({
+      message: "Reversed to previous business mode",
+      type: "warning",
+    });
+  }
+};
+
+const canSwtchMode = () => {
+  if (isBusinessActivated.value === "true") {
+    toggleModeDropdown(!showModeDropdown.value);
+  } else {
+    pushToastAlert({
+      message: "Business is not activated.",
+      description: "Complete your business compliance profile",
+      type: "warning",
+    });
+  }
 };
 
 const triggerMenuSidebar = () => {

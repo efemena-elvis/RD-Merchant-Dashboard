@@ -7,3 +7,10 @@ export const getTransactions = async () => {
     requiresPublicKey: true,
   });
 };
+
+export const getCustomers = async () => {
+  return await $api.fetch(paymentRoutes.getCustomers, {
+    resolve: true,
+    requiresPublicKey: true,
+  });
+};

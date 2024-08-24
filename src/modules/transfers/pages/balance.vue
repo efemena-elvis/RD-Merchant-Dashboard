@@ -9,7 +9,7 @@
     :filterActiveValue="activePeriod"
     :filterListValue="periodList"
     pageDescription="Total balance history"
-    :pageCount="10"
+    :pagingData="tablePaging"
     :pageKeys="{ green: 'Inflow', red: 'Outflow' }"
     @searchEntered="processSearchEntry"
     @filterSelected="processFilterSelection"
@@ -49,8 +49,6 @@ import BalanceOverview from "@/modules/transfers/components/balance-overview.vue
 const {
   getBoldTableText,
   transactionFlowIcon,
-  getStatus,
-  notAvailable,
   capitalizeFirstLetter,
   formatNumber,
 } = useString();
@@ -67,10 +65,10 @@ const tableHeader = ref<TableHeaderType[]>([
   { title: "Balance Before", slug: "balance_before" },
   { title: "Change", slug: "change" },
   { title: "Balance After", slug: "balance_after" },
-  // { title: "Charge Fee", slug: "charge_fee" },
 ]);
 
 const tableBody = reactive<any[]>([]);
+const tablePaging = ref<any>({});
 
 const activePeriod = ref<string>("This month");
 const periodList = ref<string[]>([
@@ -112,11 +110,10 @@ const fetchBalanceHistory = async () => {
         balance_before: `ZMW ${formatNumber(data.balance_before)}`,
         change: getBoldTableText(`ZMW ${formatNumber(data.amount)}`),
         balance_after: `ZMW ${formatNumber(data.balance_after)}`,
-        // charge_fee: "ZMW 0.00",
       });
     });
-  } else {
-    // tableBody []
+
+    tablePaging.value = response.pagination[0];
   }
 };
 

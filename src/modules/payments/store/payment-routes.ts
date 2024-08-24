@@ -1,5 +1,4 @@
-const nameSpace: string = "payment";
-
 export const paymentRoutes = {
-  getPaymentTransactions: `${nameSpace}`,
+  getPaymentTransactions: "payment",
+  getCustomers: "customers",
 };

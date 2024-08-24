@@ -34,11 +34,13 @@
     </div>
 
     <!-- PAGINATION -->
-    <!-- <Pagination
-      :pageDescription="pageDescription"
-      :pageCount="pageCount"
-      :pageKeys="pageKeys"
-    /> -->
+    <template v-if="pagingData.page_count > 0">
+      <Pagination
+        :pageDescription="pageDescription"
+        :pagingData="pagingData"
+        :pageKeys="pageKeys"
+      />
+    </template>
   </div>
 </template>
 
@@ -54,7 +56,7 @@ interface IPageContentType {
   filterListValue: string[];
   showFilterSelection: boolean;
   pageDescription: string;
-  pageCount: number;
+  pagingData: any;
   pageKeys: any;
 }
 
@@ -64,7 +66,7 @@ const props = withDefaults(defineProps<IPageContentType>(), {
   filterListValue: () => [],
   showFilterSelection: true,
   pageDescription: "",
-  pageCount: 0,
+  pagingData: { page_count: 0 },
   pageKeys: {},
 });
 

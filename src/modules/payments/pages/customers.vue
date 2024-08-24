@@ -3,7 +3,7 @@
     searchInputPlaceholder="Search by customer email"
     :showFilterSelection="false"
     pageDescription="All customers"
-    :pageCount="10"
+    :pagingData="tablePaging"
     :pageKeys="{ green: 'Active', red: 'Blacklisted' }"
     @searchEntered="processSearchEntry"
     @filterSelected="processFilterSelection"
@@ -11,6 +11,7 @@
     <TableContainer
       :tableHeader="tableHeader"
       :tableBody="tableBody"
+      :isLoading="isLoading"
       :emptyData="{
         title: 'No customers yet',
         description:
@@ -28,14 +29,22 @@
 </template>
 
 <script lang="ts" setup>
-import { ref } from "vue";
+import { ref, onMounted, reactive } from "vue";
 import { useString } from "@/shared/composables/useString";
 import { TableHeaderType } from "@/models/dashboard-type";
+import { usePaymentStore } from "../store";
+import useDate from "@/shared/composables/useDate";
+import useEvents from "@/shared/composables/useEvents";
 import PageContentWrapper from "@/shared/components/global-comps/page-content-wrapper.vue";
 import TableContainer from "@/shared/components/table-comps/table-container.vue";
 import TableContainerBody from "@/shared/components/table-comps/table-container-body.vue";
 
 const { getStatus } = useString();
+
+const { getCustomers } = usePaymentStore();
+const { processAPIRequest } = useEvents();
+
+const isLoading = ref<boolean>(true);
 
 const tableHeader = ref<TableHeaderType[]>([
   { title: "", slug: "status" },
@@ -45,22 +54,25 @@ const tableHeader = ref<TableHeaderType[]>([
   { title: "Phone Number", slug: "phone_number" },
 ]);
 
-const tableBody: [] = [
-  // {
-  //   status: getStatus("success"),
-  //   date_created: "22nd July, 2024",
-  //   customer_email: "elvis@vesicash.com",
-  //   full_name: "Efemena Elvis",
-  //   phone_number: "+234 813 117 7703",
-  // },
-  // {
-  //   status: getStatus("success"),
-  //   date_created: "26th July, 2024",
-  //   customer_email: "oluwasegun@gmail.com",
-  //   full_name: "Oluwasegun Joseph",
-  //   phone_number: "+234 803 440 8121",
-  // },
-];
+const tableBody = reactive<any[]>([]);
+const tablePaging = ref<any>({});
+
+// const tableBody: [] = [
+// {
+//   status: getStatus("success"),
+//   date_created: "22nd July, 2024",
+//   customer_email: "elvis@vesicash.com",
+//   full_name: "Efemena Elvis",
+//   phone_number: "+234 813 117 7703",
+// },
+// {
+//   status: getStatus("success"),
+//   date_created: "26th July, 2024",
+//   customer_email: "oluwasegun@gmail.com",
+//   full_name: "Oluwasegun Joseph",
+//   phone_number: "+234 803 440 8121",
+// },
+// ];
 
 const processSearchEntry = (searchValue: string) => {
   console.log("SEARCH VALUE", searchValue);
@@ -69,6 +81,39 @@ const processSearchEntry = (searchValue: string) => {
 const processFilterSelection = (selectedPeriod: string) => {
   console.log("FILTERING BY PERIOD", selectedPeriod);
 };
+
+const getDateAdded = (date: string) => {
+  let { w2, m3, d3, y1 } = useDate.formatDate(date).getAll();
+  return `${w2}, ${d3} ${m3}, ${y1}`;
+};
+
+const fetchCustomers = async () => {
+  const response = await processAPIRequest({
+    action: getCustomers,
+    payload: {},
+    showAlert: false,
+  });
+
+  isLoading.value = false;
+
+  if (response.code === 200) {
+    response.data.map((data: any) => {
+      tableBody.push({
+        status: getStatus("success"),
+        date_created: "22nd July, 2024",
+        customer_email: "elvis@vesicash.com",
+        full_name: "Efemena Elvis",
+        phone_number: "+234 813 117 7703",
+      });
+    });
+
+    tablePaging.value = response.pagination[0];
+  }
+};
+
+onMounted(() => {
+  fetchCustomers();
+});
 </script>
 
 <style lang="scss" scoped></style>

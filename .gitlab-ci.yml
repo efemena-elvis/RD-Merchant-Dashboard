@@ -75,8 +75,8 @@ deploy_production:
     - echo "Deploying to Production Environment"
     - aws configure set aws_access_key_id $AWS_ACCESS_KEY_ID --profile gitlab
     - aws configure set aws_secret_access_key $AWS_SECRET_ACCESS_KEY --profile gitlab
-    - aws configure set region af-south-1 --profile gitlab
-    - aws s3 sync dist/ s3://$MAIN_S3_BUCKET/ --acl public-read --delete --region af-south-1 --profile gitlab
+    - aws configure set region $MAIN_AWS_DEFAULT_REGION --profile gitlab
+    - aws s3 sync dist/ s3://$MAIN_S3_BUCKET/ --acl public-read --delete --region $MAIN_AWS_DEFAULT_REGION --profile gitlab
     - aws cloudfront create-invalidation --distribution-id $MAIN_CLOUDFRONT_DISTRIBUTION --paths "/*" --profile gitlab
   environment:
     name: production

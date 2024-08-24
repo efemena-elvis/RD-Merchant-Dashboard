@@ -4,7 +4,7 @@
     :filterActiveValue="activePeriod"
     :filterListValue="periodList"
     pageDescription="All transactions"
-    :pageCount="15"
+    :pagingData="tablePaging"
     :pageKeys="{ green: 'Successful', yellow: 'Pending', red: 'Failed' }"
     @searchEntered="processSearchEntry"
     @filterSelected="processFilterSelection"
@@ -12,6 +12,7 @@
     <TableContainer
       :tableHeader="tableHeader"
       :tableBody="tableBody"
+      :isLoading="isLoading"
       :emptyData="{
         title: 'No transaction yet',
         description:
@@ -50,17 +51,20 @@ const {
 const { getTransactions } = usePaymentStore();
 const { processAPIRequest } = useEvents();
 
+const isLoading = ref<boolean>(true);
+
 const tableHeader = ref<TableHeaderType[]>([
   { title: "", slug: "status" },
   { title: "Created On", slug: "date_created" },
-  { title: "Amount Paid", slug: "amount" },
+  { title: "Amount", slug: "amount" },
   { title: "Customer", slug: "customer" },
-  { title: "Payment Reference", slug: "reference_id" },
-  { title: "Type", slug: "type_of_transaction" },
+  { title: "Reference", slug: "reference_id" },
+  // { title: "Type", slug: "type_of_transaction" },
   { title: "Payment Mode", slug: "payment_mode" },
 ]);
 
 const tableBody = reactive<any[]>([]);
+const tablePaging = ref<any>({});
 
 const activePeriod = ref<string>("This month");
 const periodList = ref<string[]>([
@@ -81,7 +85,7 @@ const processFilterSelection = (selectedPeriod: string) => {
 
 const getTransactionDate = (date: string) => {
   let { w2, m3, d3, y1 } = useDate.formatDate(date).getAll();
-  return `${d3} ${m3}, ${y1}`;
+  return `${w2}, ${d3} ${m3}, ${y1}`;
 };
 
 const fetchPaymentTransactions = async () => {
@@ -90,6 +94,8 @@ const fetchPaymentTransactions = async () => {
     payload: {},
     showAlert: false,
   });
+
+  isLoading.value = false;
 
   if (response.code === 200) {
     response.data.map((data: any) => {
@@ -100,13 +106,15 @@ const fetchPaymentTransactions = async () => {
           `${data.currency} ${formatNumber(data.amount)}`
         ),
         customer: data.customer
-          ? data.customer.email
+          ? `${data.customer.firstname} ${data.customer.lastname}`
           : notAvailable("No customer info"),
         reference_id: data.reference,
-        type_of_transaction: capitalizeFirstLetter(data.type),
+        // type_of_transaction: capitalizeFirstLetter(data.type),
         payment_mode: capitalizeFirstLetter(data.method),
       });
     });
+
+    tablePaging.value = response.pagination[0];
   }
 };
 

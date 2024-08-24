@@ -15,6 +15,7 @@
           <!-- Render the VNode directly if it is a component -->
           <component :is="tableData[header.slug]" />
         </template>
+        
         <template v-else>
           <span
             v-if="isHtmlString(tableData[header.slug])"

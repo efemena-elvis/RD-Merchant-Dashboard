@@ -112,24 +112,21 @@ export function useString() {
   };
 
   const formatNumber = (value: number): string => {
-    if (value >= 1000000) {
+    if (value >= 1_000_000) {
       // Format for 1 million and above
-      const millions = value / 1000000;
-      //@ts-ignore
+      const millions = value / 1_000_000;
       return millions.toFixed(1) + "M";
     } else if (value >= 1_000) {
-      // Format for thousands
-      //@ts-ignore
-      return value.toLocaleString();
+      // Format for thousands and append '.00'
+      return value.toLocaleString() + ".00";
     } else {
-      // Format for less than 1000
-      //@ts-ignore
-      return value?.toString();
+      // Format for less than 1000 and append '.00'
+      return value.toFixed(2);
     }
   };
 
   const getBoldTableText = (text: string) => {
-    return `<span class='font-semibold'>${text}</span>`;
+    return `<span class='font-medium text-grey-800/85'>${text}</span>`;
   };
 
   const getStatus = (status: string): string => {

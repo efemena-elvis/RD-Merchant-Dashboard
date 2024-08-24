@@ -110,7 +110,7 @@ thead tr td .table-header .table-sort-icon {
 }
 
 tbody {
-  @apply text-[13.5px] text-grey-800/90;
+  @apply text-[13.5px] text-grey-800/75;
 }
 
 tbody tr {

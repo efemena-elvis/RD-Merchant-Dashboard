@@ -1,74 +1,59 @@
 <template>
-  <div class="table-skeleton-loader">
-    <!-- Skeleton rows for the table -->
-    <div v-for="index in 6" :key="index" class="skeleton-row">
-      <div class="skeleton-circle"></div>
-      <div class="skeleton-text"></div>
-      <div class="skeleton-text"></div>
-      <div class="skeleton-text"></div>
-      <div class="skeleton-text"></div>
-      <div class="skeleton-text"></div>
-    </div>
+  <div class="table-skeleton">
+    <div class="skeleton-table-header"></div>
+    <div class="skeleton-table-body"></div>
+    <div class="skeleton-table-body"></div>
+    <div class="skeleton-table-body"></div>
+    <div class="skeleton-table-body"></div>
   </div>
 </template>
 
-<script setup>
-// No additional logic is needed for this simple skeleton loader.
-</script>
+<script></script>
 
-<style scoped lang="scss">
-.table-skeleton-loader {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-
-  .skeleton-row {
-    display: grid;
-    grid-template-columns: 20px 1fr 1fr 1fr 1fr 1fr;
-    align-items: center;
-    gap: 1rem;
-
-    .skeleton-circle,
-    .skeleton-text {
-      @apply bg-grey-10/40 rounded-lg;
-      animation: shimmer 1.5s infinite linear;
-      background: linear-gradient(90deg, #e8e8e8 25%, #efefef 50%, #e8e8e8 75%);
-      background-size: 200% 100%;
-    }
-
-    .skeleton-circle {
-      width: 12px;
-      height: 12px;
-      border-radius: 50%;
-    }
-
-    .skeleton-text {
-      height: 20px;
-      &:nth-child(2) {
-        width: 80px;
-      }
-      &:nth-child(3) {
-        width: 100px;
-      }
-      &:nth-child(4) {
-        width: 180px;
-      }
-      &:nth-child(5) {
-        width: 90px;
-      }
-      &:nth-child(6) {
-        width: 120px;
-      }
-    }
+<style lang="scss" scoped>
+/* Loading Animation */
+@keyframes loading {
+  100% {
+    transform: translateX(100%);
   }
 }
 
-@keyframes shimmer {
-  0% {
-    background-position: -100% 0;
+.table-skeleton {
+  .skeleton-table-header,
+  .skeleton-table-body {
+    @apply mb-4 w-full h-10 rounded-2xl relative overflow-hidden;
+    background: linear-gradient(
+      90deg,
+      rgba(#f4f4f4, 0.75) 0.56%,
+      rgba(#fbfbfb, 0.75) 96.76%
+    );
+
+    &::after {
+      content: "";
+      @apply relative block w-full h-full -translate-x-full;
+      -webkit-background: -webkit-gradient(
+        linear,
+        left top,
+        right top,
+        from(transparent),
+        color-stop(rgba(255, 255, 255, 0.8)),
+        to(transparent)
+      );
+
+      background: linear-gradient(
+        90deg,
+        transparent,
+        rgba(255, 255, 255, 0.8),
+        transparent
+      );
+
+      /* Adding animation */
+      animation: loading 1.15s infinite;
+    }
   }
-  100% {
-    background-position: 100% 0;
+
+  .skeleton-table-body {
+    @apply h-5 mb-3.5;
   }
 }
 </style>

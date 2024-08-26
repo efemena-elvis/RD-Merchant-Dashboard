@@ -43,9 +43,7 @@
         labelTitle="Business location"
         inputPlaceholder="Select country of business registeration"
         :inputValue="signupPayload.country_id"
-        :selectData="[
-          { value: '98e7ad5b-d718-41d1-ab38-10a245ff4279', name: 'Zambia' },
-        ]"
+        :selectData="validCountries"
         isRequired
         @onSelectionChange="signupPayload.country_id = $event"
       />
@@ -91,16 +89,17 @@
     </form>
   </AuthWrapper>
 
-  <teleport to="body" v-if="show_verify_modal">
+  <teleport to="body" v-if="showVerifyModal">
     <VerifyAccountModal @closeTriggered="toggleVerifyModal" />
   </teleport>
 </template>
 
 <script lang="ts" setup>
-import { computed, ref } from "vue";
+import { computed, onMounted, ref } from "vue";
 import { IInputType } from "@/models/form-type";
 import { useRouter } from "vue-router";
 import { useAuthStore } from "@/modules/auth/store";
+import { useGeneralStore } from "@/store/general";
 import useEvents from "@/shared/composables/useEvents";
 import AuthWrapper from "@/modules/auth/components/auth-wrapper.vue";
 import TextFieldInput from "@/shared/components/form-comps/text-field-input.vue";
@@ -120,8 +119,6 @@ type IInputValidity = {
   password: boolean;
 };
 
-const router = useRouter();
-
 const signupPayload = ref<ISignupInputType>({
   business_name: "",
   country_id: "98e7ad5b-d718-41d1-ab38-10a245ff4279",
@@ -135,9 +132,11 @@ const payloadValidity = ref<IInputValidity>({
   password: false,
 });
 
+const router = useRouter();
 const signupBtnRef = ref(null);
 
 const { signupUser } = useAuthStore();
+const { getBusinessCountries } = useGeneralStore();
 const { processAPIRequest } = useEvents();
 
 const isSignupReady = computed(() => {
@@ -157,10 +156,35 @@ const getSignupPayload = computed(() => {
   return { email, password, business_name, country_id };
 });
 
-const show_verify_modal = ref(false);
+const showVerifyModal = ref(false);
+const validCountries = ref<{ value: string; name: string }[]>([]);
 
 const toggleVerifyModal = () => {
-  show_verify_modal.value = !show_verify_modal.value;
+  showVerifyModal.value = !showVerifyModal.value;
+};
+
+const fetchCountries = async () => {
+  const response = await processAPIRequest({
+    action: getBusinessCountries,
+    payload: {},
+  });
+
+  if (response.code === 200) {
+    const getZambia = response.data.filter(
+      (country: any) => country.name === "Zambia"
+    );
+
+    if (getZambia.length > 0) {
+      validCountries.value = [
+        {
+          value: getZambia[0].id,
+          name: getZambia[0].name,
+        },
+      ];
+
+      signupPayload.value.country_id = getZambia[0].id;
+    }
+  }
 };
 
 const handleUserSignup = async () => {
@@ -194,4 +218,6 @@ const handleUserSignup = async () => {
     }, 2000);
   }
 };
+
+onMounted(() => fetchCountries());
 </script>

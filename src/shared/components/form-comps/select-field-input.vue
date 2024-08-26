@@ -40,7 +40,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from "vue";
+import { ref, watch } from "vue";
 import { ISelectInputField } from "@/models/form-type";
 import CaretDownIcon from "@/shared/components/icon-comps/caret-down-icon.vue";
 
@@ -66,6 +66,12 @@ const handleFormInput = (event: Event) => {
 
   emit("onSelectionChange", target.value);
 };
+
+watch(
+  () => props.inputValue,
+  (value) => (selectedValue.value = value),
+  { immediate: true }
+);
 </script>
 
 <style lang="scss" scoped>

@@ -22,8 +22,13 @@ export function useGeneralActions() {
     return response;
   };
 
+  const getBusinessCountries = async () => {
+    return await $api.fetch(generalRoutes.countries);
+  };
+
   return {
     uploadFile,
     switchAppMode,
+    getBusinessCountries,
   };
 }

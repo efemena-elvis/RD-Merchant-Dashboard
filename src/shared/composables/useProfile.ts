@@ -79,8 +79,10 @@ export function useProfile() {
         secret: decodeString(playground.unitedKingdom),
       },
       live: {
-        public: decodeString(alcatraz.nigeria),
-        secret: decodeString(alcatraz.unitedKingdom),
+        public: alcatraz?.nigeria ? decodeString(alcatraz.nigeria) : "",
+        secret: alcatraz?.unitedKingdom
+          ? decodeString(alcatraz.unitedKingdom)
+          : "",
       },
     };
   };

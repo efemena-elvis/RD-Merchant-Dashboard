@@ -3,7 +3,7 @@
     title="Manage your API configurations"
     description="Easily configure and manage your API settings to ensure seamless integration with your services."
     showActionRow
-    showSecondaryAction
+    :showSecondaryAction="false"
     secondaryActionText="Generate secret key"
     @onSecondaryActionClick="generateNewSecretKey"
     @onContinueClick="saveChanges"
@@ -13,7 +13,9 @@
       <div class="info-block mb-10">
         <div class="text">Need help with your integration?</div>
 
-        <button class="btn btn-sm btn-tertiary">Explore our API</button>
+        <button class="btn btn-sm btn-tertiary" @click="gotoAPIDocs">
+          Explore our API
+        </button>
       </div>
 
       <TextFieldInput
@@ -60,12 +62,14 @@
 <script lang="ts" setup>
 import { computed, ref } from "vue";
 import { IInputType } from "@/models/form-type";
+import { useString } from "@/shared/composables/useString";
 import { useProfile } from "@/shared/composables/useProfile";
 import useEvents from "@/shared/composables/useEvents";
 import SettingsDisplayBlock from "@/modules/settings/components/settings-display-block.vue";
 import TextFieldInput from "@/shared/components/form-comps/text-field-input.vue";
 
 const { getBusiness, getAPIKeys } = useProfile();
+const { createAndClickAnchor } = useString();
 
 const getBusinessProfile = computed(() => getBusiness());
 const getAPIProfile = computed(() => getAPIKeys());
@@ -75,8 +79,12 @@ const { processAPIRequest } = useEvents();
 const getKeys = computed(() => {
   if (getBusinessProfile.value.businessMode === "test") {
     return getAPIProfile.value.test;
-  } else return getAPIProfile.value.live;
+  } else return getAPIProfile.value?.live;
 });
+
+const gotoAPIDocs = () => {
+  createAndClickAnchor("https://developer.redstonepgs.com/", "_blank");
+};
 
 const saveChanges = () => {
   console.log("Saving changes");

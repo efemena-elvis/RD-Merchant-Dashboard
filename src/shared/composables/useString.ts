@@ -125,6 +125,17 @@ export function useString() {
     }
   };
 
+  const createAndClickAnchor = (href: string, target = "_self") => {
+    const anchor = document.createElement("a");
+
+    anchor.href = href;
+    anchor.target = target;
+
+    document.body.appendChild(anchor);
+    anchor.click();
+    document.body.removeChild(anchor);
+  };
+
   const getBoldTableText = (text: string) => {
     return `<span class='font-medium text-grey-800/85'>${text}</span>`;
   };
@@ -169,6 +180,7 @@ export function useString() {
     capitalizeFirstLetter,
     formatPhoneNumber,
     formatNumber,
+    createAndClickAnchor,
     getBoldTableText,
     getStatus,
     transactionFlowIcon,

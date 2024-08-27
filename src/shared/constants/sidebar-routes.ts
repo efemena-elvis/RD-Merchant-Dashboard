@@ -180,16 +180,16 @@ export const settingsSidebarRoutes: ISideNavType[] = [
   //   routeIcon: "icon-tool",
   //   routeLinkName: "RedstonePreferenceSettings",
   // },
-  {
-    routeTitle: "Contacts",
-    routeIcon: "icon-profile-users",
-    routeLinkName: "RedstoneContactSettings",
-  },
-  {
-    routeTitle: "Bank Account",
-    routeIcon: "icon-bank",
-    routeLinkName: "RedstoneAccountSettings",
-  },
+  // {
+  //   routeTitle: "Contacts",
+  //   routeIcon: "icon-profile-users",
+  //   routeLinkName: "RedstoneContactSettings",
+  // },
+  // {
+  //   routeTitle: "Bank Account",
+  //   routeIcon: "icon-bank",
+  //   routeLinkName: "RedstoneAccountSettings",
+  // },
   {
     routeTitle: "Developers",
     routeIcon: "icon-developer",

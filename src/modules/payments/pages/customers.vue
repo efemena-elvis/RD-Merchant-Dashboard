@@ -39,7 +39,7 @@ import PageContentWrapper from "@/shared/components/global-comps/page-content-wr
 import TableContainer from "@/shared/components/table-comps/table-container.vue";
 import TableContainerBody from "@/shared/components/table-comps/table-container-body.vue";
 
-const { getStatus } = useString();
+const { getStatus, notAvailable } = useString();
 
 const { getCustomers } = usePaymentStore();
 const { processAPIRequest } = useEvents();
@@ -100,10 +100,10 @@ const fetchCustomers = async () => {
     response.data.map((data: any) => {
       tableBody.push({
         status: getStatus("success"),
-        date_created: "22nd July, 2024",
-        customer_email: "elvis@vesicash.com",
-        full_name: "Efemena Elvis",
-        phone_number: "+234 813 117 7703",
+        date_created: getDateAdded(data.created_at),
+        customer_email: data.email,
+        full_name: `${data.firstname} ${data.lastname}`,
+        phone_number: notAvailable("No phone number"),
       });
     });
 

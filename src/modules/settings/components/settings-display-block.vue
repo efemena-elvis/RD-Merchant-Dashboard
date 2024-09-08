@@ -8,46 +8,99 @@
       </div>
     </div>
 
-    <div class="content-area mb-8">
-      <slot></slot>
-    </div>
+    <template v-if="isProfileLoading">
+      <SkeletonDisplay />
+    </template>
 
-    <div class="btn-action-row" v-if="showActionRow">
-      <button
-        class="btn btn-sm btn-secondary"
-        :class="!showSecondaryAction && 'invisible'"
-        @click="$emit('onSecondaryActionClicked')"
-      >
-        {{ secondaryActionText }}
-      </button>
+    <template v-else>
+      <div class="content-area mb-8">
+        <slot></slot>
+      </div>
 
-      <button class="btn btn-sm btn-primary" @click="$emit('onContinueClick')">
-        {{ primaryActionText }}
-      </button>
-    </div>
+      <div class="btn-action-row" v-if="showActionRow">
+        <button
+          class="btn btn-sm btn-secondary"
+          :class="!showSecondaryAction && 'invisible'"
+          @click="$emit('onSecondaryActionClicked')"
+        >
+          {{ secondaryActionText }}
+        </button>
+
+        <button
+          class="btn btn-sm btn-primary"
+          ref="btnRef"
+          :disabled="isPrimaryActionDisabled"
+          @click="triggerPrimaryActionClick"
+        >
+          {{ primaryActionText }}
+        </button>
+      </div>
+    </template>
   </div>
 </template>
 
 <script lang="ts" setup>
+import { ref, watch } from "vue";
+import useEvents from "@/shared/composables/useEvents";
+import { useSettingsStore } from "../store";
+import SkeletonDisplay from "@/modules/compliance/components/skeleton-display.vue";
+
 interface ISettingsInfoType {
   title: string;
   description: string;
   showActionRow: boolean;
   primaryActionText?: string;
-  showSecondaryAction: boolean;
-  secondaryActionText: string;
+  showSecondaryAction?: boolean;
+  isPrimaryActionDisabled?: boolean;
+  secondaryActionText?: string;
+  stopClickHandler?: boolean;
 }
 
-defineEmits(["onSecondaryActionClicked", "onContinueClick"]);
+const emits = defineEmits(["onSecondaryActionClicked", "onContinueClick"]);
 
-withDefaults(defineProps<ISettingsInfoType>(), {
+const props = withDefaults(defineProps<ISettingsInfoType>(), {
   title: "Document title",
   description: "Document description",
   showActionRow: false,
   primaryActionText: "Save Changes",
+  isPrimaryActionDisabled: false,
   showSecondaryAction: false,
   secondaryActionText: "Cancel",
+  stopClickHandler: false,
 });
+
+const { processAPIRequest, clickHandler } = useEvents();
+const { fetchUserProfile } = useSettingsStore();
+
+const btnRef = ref(null);
+const isProfileLoading = ref<boolean>(true);
+
+const triggerPrimaryActionClick = () => {
+  clickHandler(btnRef);
+  emits("onContinueClick");
+};
+
+watch(
+  props,
+  () => {
+    if (props.stopClickHandler)
+      clickHandler(btnRef, props.primaryActionText, false);
+  },
+  { deep: true }
+);
+
+// Fetch all profile data
+const fetchProfileData = async () => {
+  const response = await processAPIRequest({
+    action: fetchUserProfile,
+    payload: {},
+    showAlert: false,
+  });
+
+  if (response.code === 200) isProfileLoading.value = false;
+};
+
+fetchProfileData();
 </script>
 
 <style lang="scss" scoped>

@@ -3,7 +3,7 @@ export interface IComplianceBusiness {
   trading_name: string;
   description: string;
   registration_date: string;
-  legal_form: string;
+  sector: string;
   email: string;
   phone_number: string;
   website?: string | null;
@@ -20,7 +20,10 @@ export interface IComplianceBusiness {
 
 export interface IComplianceRegistration {
   number: string;
+  tpin: string;
   doc_url: string;
+  tpin_doc_url: string;
+  pacra_doc_url: string;
 }
 
 export interface IComplianceRepresentative {
@@ -33,14 +36,6 @@ export interface IComplianceRepresentative {
   doc: {
     type: string;
     value: string;
-    url: string;
-  };
-  first_address: string;
-  second_address?: string | null;
-  city: string;
-  state: string;
-  address_doc: {
-    type: string;
     url: string;
   };
 }
@@ -57,18 +52,9 @@ export interface IComplianceSignatory {
   legal_last_name: string;
   dob: string;
   nationality: string;
-  job_title: string;
   doc: {
     type: string;
     value: string;
-    url: string;
-  };
-  first_address: string;
-  second_address?: string | null;
-  city: string;
-  state: string;
-  address_doc: {
-    type: string;
     url: string;
   };
 }
@@ -95,7 +81,7 @@ export const complianceBase: IComplianceBaseType = {
     trading_name: "",
     description: "",
     registration_date: "",
-    legal_form: "",
+    sector: "",
     email: "",
     phone_number: "",
     website: "",
@@ -112,7 +98,10 @@ export const complianceBase: IComplianceBaseType = {
 
   registration: {
     number: "",
+    tpin: "",
     doc_url: "",
+    tpin_doc_url: "",
+    pacra_doc_url: "",
   },
 
   representatives: [
@@ -126,14 +115,6 @@ export const complianceBase: IComplianceBaseType = {
       doc: {
         type: "",
         value: "",
-        url: "",
-      },
-      first_address: "",
-      second_address: "",
-      city: "",
-      state: "",
-      address_doc: {
-        type: "",
         url: "",
       },
     },
@@ -151,18 +132,9 @@ export const complianceBase: IComplianceBaseType = {
     legal_last_name: "",
     dob: "",
     nationality: "",
-    job_title: "",
     doc: {
       type: "",
       value: "",
-      url: "",
-    },
-    first_address: "",
-    second_address: "",
-    city: "",
-    state: "",
-    address_doc: {
-      type: "",
       url: "",
     },
   },

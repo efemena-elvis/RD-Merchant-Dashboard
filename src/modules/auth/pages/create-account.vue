@@ -16,11 +16,6 @@
         }"
       />
 
-      <!-- :showVerifyEmail="
-          signupPayload.email && payloadValidity.email ? true : false
-        "
-        @verifyClicked="toggleVerifyModal" -->
-
       <!-- BUSINESS NAME -->
       <TextFieldInput
         labelId="businessName"

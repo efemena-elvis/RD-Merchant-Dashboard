@@ -66,27 +66,12 @@
         isRequired
         @onSelectionChange="businessPayload.nationality = $event"
       />
-
-      <TextFieldInput
-        labelId="jobTitle"
-        labelTitle="Signatory Job Title"
-        :inputType="IInputType.Text"
-        :inputValue="businessPayload.job_title"
-        inputPlaceholder="Provide the job title of signatory"
-        inputBaseColor="bg-grey-10"
-        :isRequired="true"
-        @inputChanged="businessPayload.job_title = $event"
-        :errorHandler="{
-          validator: 'validateRequired',
-          message: 'Job title is a required field',
-        }"
-      />
     </div>
   </ComplianceDisplayBlock>
 </template>
 
 <script lang="ts" setup>
-import { ref, onMounted, computed, watch } from "vue";
+import { ref, computed, watch } from "vue";
 import { useRouter } from "vue-router";
 import { IInputType } from "@/models/form-type";
 import countries from "@/shared/constants/country-list";
@@ -102,7 +87,6 @@ type IBusinessType = {
   legal_last_name: string;
   dob: string;
   nationality: string;
-  job_title: string;
 };
 
 type IInputValidity = {
@@ -123,7 +107,6 @@ const businessPayload = ref<IBusinessType>({
   legal_last_name: getComplianceBusinessSignatory.value?.legal_last_name || "",
   dob: getComplianceBusinessSignatory.value?.dob || "",
   nationality: getComplianceBusinessSignatory.value?.nationality || "",
-  job_title: getComplianceBusinessSignatory.value?.job_title || "",
 });
 
 const payloadValidity = ref<IInputValidity>({
@@ -135,14 +118,13 @@ const isActionReady = computed(() => {
     businessPayload.value.legal_last_name &&
     businessPayload.value.dob &&
     payloadValidity.value.dob &&
-    businessPayload.value.nationality &&
-    businessPayload.value.job_title
+    businessPayload.value.nationality
     ? false
     : true;
 });
 
 const getBusinessPayload = computed(() => {
-  const { legal_first_name, legal_last_name, dob, nationality, job_title } =
+  const { legal_first_name, legal_last_name, dob, nationality } =
     businessPayload.value;
 
   return {
@@ -150,7 +132,6 @@ const getBusinessPayload = computed(() => {
     legal_last_name,
     dob,
     nationality,
-    job_title,
   };
 });
 
@@ -174,7 +155,6 @@ watch(
         legal_last_name: newValue.legal_last_name || "",
         dob: newValue.dob || "",
         nationality: newValue.nationality || "",
-        job_title: newValue.job_title || "",
       };
     }
   },

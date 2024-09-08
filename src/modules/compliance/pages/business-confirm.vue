@@ -21,6 +21,7 @@
         title="We accept any ONE of the following documents:"
         :guidelines="[
           'Bank statement',
+          'Tax Payer Identification document (TPIN)',
           'Utility bills (e.g electricity, water bills)',
           'Signed lease/tenancy agreement',
         ]"
@@ -99,6 +100,10 @@ const documentTypes = ref<{ value: string; name: string }[]>([
   {
     value: "bank_statement",
     name: "Bank statement",
+  },
+  {
+    value: "tpin",
+    name: "Tax Payer Identification document (TPIN)",
   },
   {
     value: "utility_bills",

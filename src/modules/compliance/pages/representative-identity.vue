@@ -142,7 +142,7 @@ const getBusinessPayload = computed(() => {
 const handleRepresentativeIdentityUpdate = async () => {
   await handleComplianceRequest({
     payload: getBusinessPayload,
-    redirectRoute: "RedstoneRepresentativeAddress",
+    redirectRoute: "RedstoneBankAccount",
     stopClickHandler,
     succesMsg: "Representative identity submitted",
     errorMsg: "Representative update failed",

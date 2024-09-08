@@ -5,6 +5,8 @@
     showActionRow
     :showSecondaryAction="false"
     secondaryActionText="Generate secret key"
+    :isPrimaryActionDisabled="isActionReady"
+    :stopClickHandler="stopClickHandler"
     @onSecondaryActionClick="generateNewSecretKey"
     @onContinueClick="saveChanges"
   >
@@ -13,9 +15,13 @@
       <div class="info-block mb-10">
         <div class="text">Need help with your integration?</div>
 
-        <button class="btn btn-sm btn-tertiary" @click="gotoAPIDocs">
+        <a
+          href="https://developer.redstonepgs.com/"
+          target="_blank"
+          class="btn btn-sm btn-tertiary"
+        >
           Explore our API
-        </button>
+        </a>
       </div>
 
       <TextFieldInput
@@ -25,7 +31,10 @@
         :inputValue="getKeys.secret"
         inputPlaceholder="Secret key"
         inputBaseColor="bg-grey-10"
+        :showTextCopy="true"
+        copiedText="Secret key copied successfully"
         :isRequired="true"
+        :isDisabled="true"
       />
 
       <TextFieldInput
@@ -35,7 +44,10 @@
         :inputValue="getKeys.public"
         inputPlaceholder="Public key"
         inputBaseColor="bg-grey-10"
+        :showTextCopy="true"
+        copiedText="Public key copied successfully"
         :isRequired="true"
+        :isDisabled="true"
       />
 
       <TextFieldInput
@@ -45,6 +57,12 @@
         inputPlaceholder="Callback URL"
         inputBaseColor="bg-grey-10"
         :isRequired="true"
+        :inputValue="urlPayload.callback_url"
+        @inputChanged="urlPayload.callback_url = $event"
+        @inputValidated="payloadValidity.callback_url = $event"
+        :errorHandler="{
+          validator: 'validateURL',
+        }"
       />
 
       <TextFieldInput
@@ -54,27 +72,63 @@
         inputPlaceholder="Webhook URL"
         inputBaseColor="bg-grey-10"
         :isRequired="true"
+        :inputValue="urlPayload.webhook_url"
+        @inputChanged="urlPayload.webhook_url = $event"
+        @inputValidated="payloadValidity.webhook_url = $event"
+        :errorHandler="{
+          validator: 'validateURL',
+        }"
       />
     </div>
   </SettingsDisplayBlock>
 </template>
 
 <script lang="ts" setup>
-import { computed, ref } from "vue";
+import { computed, ref, watch } from "vue";
 import { IInputType } from "@/models/form-type";
-import { useString } from "@/shared/composables/useString";
-import { useProfile } from "@/shared/composables/useProfile";
+import { useSettingsStore } from "../store";
+import { storeToRefs } from "pinia";
 import useEvents from "@/shared/composables/useEvents";
+import { useProfile } from "@/shared/composables/useProfile";
 import SettingsDisplayBlock from "@/modules/settings/components/settings-display-block.vue";
 import TextFieldInput from "@/shared/components/form-comps/text-field-input.vue";
 
+type IURLType = {
+  callback_url: string;
+  webhook_url: string;
+};
+
+type IInputValidity = {
+  callback_url: boolean;
+  webhook_url: boolean;
+};
+
 const { getBusiness, getAPIKeys } = useProfile();
-const { createAndClickAnchor } = useString();
 
 const getBusinessProfile = computed(() => getBusiness());
 const getAPIProfile = computed(() => getAPIKeys());
 
 const { processAPIRequest } = useEvents();
+
+const {
+  getProfileDetails,
+  getProfileAccount,
+  getProfileContact,
+  getProfileDeveloper,
+} = storeToRefs(useSettingsStore());
+const { updateUserProfile } = useSettingsStore();
+
+const stopClickHandler = ref<boolean>(false);
+
+const urlPayload = ref<IURLType>({
+  callback_url: getProfileDeveloper.value?.callback_url || "",
+  webhook_url: getProfileDeveloper.value?.webhook_url || "",
+});
+
+const payloadValidity = ref<IInputValidity>({
+  callback_url: false,
+  webhook_url: false,
+});
 
 const getKeys = computed(() => {
   if (getBusinessProfile.value.businessMode === "test") {
@@ -82,17 +136,59 @@ const getKeys = computed(() => {
   } else return getAPIProfile.value?.live;
 });
 
-const gotoAPIDocs = () => {
-  createAndClickAnchor("https://developer.redstonepgs.com/", "_blank");
-};
+const isActionReady = computed(() => {
+  return (urlPayload.value.callback_url &&
+    payloadValidity.value.callback_url) ||
+    (urlPayload.value.webhook_url && payloadValidity.value.webhook_url)
+    ? false
+    : true;
+});
 
-const saveChanges = () => {
-  console.log("Saving changes");
+const getPayload = computed(() => {
+  return {
+    profile: { ...getProfileDetails.value },
+    bank: { ...getProfileAccount.value },
+    contact: { ...getProfileContact.value },
+    ...urlPayload.value,
+  };
+});
+
+const saveChanges = async () => {
+  const response = await processAPIRequest({
+    action: updateUserProfile,
+    payload: getPayload.value,
+    alertHandler: {
+      200: {
+        message: "Developer URL updated successfully",
+        type: "success",
+      },
+
+      400: {
+        message: "Developer URL update failed",
+        type: "error",
+      },
+    },
+  });
+
+  if (response.code) stopClickHandler.value = true;
 };
 
 const generateNewSecretKey = () => {
   console.log("Generating new secret key");
 };
+
+watch(
+  getProfileDeveloper,
+  (newValue) => {
+    if (newValue) {
+      urlPayload.value = {
+        callback_url: newValue.callback_url || "",
+        webhook_url: newValue.webhook_url || "",
+      };
+    }
+  },
+  { immediate: true }
+);
 </script>
 
 <style lang="scss" scoped>

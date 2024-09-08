@@ -140,6 +140,20 @@ export function useValidator() {
     return period >= range ? "" : message;
   };
 
+  const validateURL = (
+    input: string,
+    message: string = "Please provide a valid url string"
+  ) => {
+    const trimmedInput = trimInput(input);
+
+    try {
+      new URL(trimmedInput);
+      return "";
+    } catch (_) {
+      return message;
+    }
+  };
+
   return {
     validateRequired,
     validateEmail,
@@ -149,5 +163,6 @@ export function useValidator() {
     validateFullName,
     validateSingleName,
     validateDateRange,
+    validateURL,
   };
 }

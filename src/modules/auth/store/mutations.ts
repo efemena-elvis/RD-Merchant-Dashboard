@@ -51,6 +51,7 @@ export function useAuthMutations() {
       firstName: user.first_name,
       lastName: user.last_name,
       currentBusiness: user.current_business,
+      isEmailVerified: payload.is_email_verified,
     };
 
     setStorage({
@@ -77,6 +78,7 @@ export function useAuthMutations() {
       businessSector: business.sector,
       activated: encodeString(business.business_activated),
       supportEmailAddress: business.support_email_address,
+      activateMyBusiness: payload.activate_my_business,
     };
 
     setStorage({

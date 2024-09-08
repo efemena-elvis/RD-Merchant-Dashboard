@@ -48,8 +48,12 @@ const getMetaLocales = computed(() => ({
   other: ["fr", "es"],
 }));
 
+const getTitleText = computed(() =>
+  route.meta.title ? `${route.meta.title} -` : ""
+);
+
 const getMetaTitle = computed(
-  () => `${route.meta.title} - Redstone` || metaTitle
+  () => `${getTitleText.value} Redstone` || metaTitle
 );
 
 const getMetaDescription = computed(() => {

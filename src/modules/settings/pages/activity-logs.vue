@@ -29,12 +29,13 @@ import { ref, onMounted, reactive } from "vue";
 import { useString } from "@/shared/composables/useString";
 import { TableHeaderType } from "@/models/dashboard-type";
 import { useSettingsStore } from "../store";
+import useDate from "@/shared/composables/useDate";
 import useEvents from "@/shared/composables/useEvents";
 import PageContentWrapper from "@/shared/components/global-comps/page-content-wrapper.vue";
 import TableContainer from "@/shared/components/table-comps/table-container.vue";
 import TableContainerBody from "@/shared/components/table-comps/table-container-body.vue";
 
-const { getStatus, notAvailable, getActionBtn } = useString();
+const { getStatus, notAvailable } = useString();
 
 const { getAuditLogs } = useSettingsStore();
 const { processAPIRequest } = useEvents();
@@ -47,38 +48,11 @@ const tableHeader = ref<TableHeaderType[]>([
   { title: "Initiated By", slug: "initiated_by" },
   { title: "Action Type", slug: "action_type" },
   { title: "Activity", slug: "activity" },
-  { title: "Action", slug: "action" },
+  // { title: "Action", slug: "action" },
 ]);
 
 const tableBody = reactive<any[]>([]);
 const tablePaging = ref<any>({});
-
-// const tableBody = [
-//   {
-//     status: getStatus("success"),
-//     date_created: "22nd July, 2024 - 02:24 PM",
-//     initiated_by: "Efemena Elvis",
-//     action_type: "Refund",
-//     activity: "Initiated a customer refund",
-//     action: getActionBtn("View Refund"),
-//   },
-//   {
-//     status: getStatus("success"),
-//     date_created: "24th July, 2024 - 12:41 PM",
-//     initiated_by: "Efemena Elvis",
-//     action_type: "Customer",
-//     activity: "Added a new customer",
-//     action: getActionBtn("View Customer"),
-//   },
-//   {
-//     status: getStatus("success"),
-//     date_created: "21st June, 2024 - 10:48 AM",
-//     initiated_by: "Efemena Elvis",
-//     action_type: "Compliance",
-//     activity: "Updated business profile",
-//     action: notAvailable("No action available"),
-//   },
-// ];
 
 const activePeriod = ref<string>("This month");
 const periodList = ref<string[]>([
@@ -97,6 +71,15 @@ const processFilterSelection = (selectedPeriod: string) => {
   console.log("FILTERING BY PERIOD", selectedPeriod);
 };
 
+const getUserName = (user: any) => {
+  return user.first_name ? user.first_name + " " + user.last_name : user.email;
+};
+
+const getActivityDate = (date: string) => {
+  let { w2, m3, d3, y1 } = useDate.formatDate(date).getAll();
+  return `${w2}, ${d3} ${m3}, ${y1}`;
+};
+
 const fetchAuditLogs = async () => {
   const response = await processAPIRequest({
     action: getAuditLogs,
@@ -110,11 +93,11 @@ const fetchAuditLogs = async () => {
     response.data.map((data: any) => {
       tableBody.push({
         status: getStatus("success"),
-        date_created: data.timestamp,
-        initiated_by: data.user_id,
+        date_created: getActivityDate(data.created_at),
+        initiated_by: getUserName(data.user),
         action_type: "Compliance",
         activity: data.activity,
-        action: notAvailable("No action available"),
+        // action: notAvailable("No action available"),
       });
     });
 

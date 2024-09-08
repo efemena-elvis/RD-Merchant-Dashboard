@@ -25,7 +25,7 @@
         <button
           class="btn btn-sm btn-primary"
           ref="btnRef"
-          :disabled="isPrimaryActionDisabled"
+          :disabled="validateActionButton"
           @click="triggerPrimaryActionClick"
         >
           {{ primaryActionText }}
@@ -36,10 +36,11 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, computed, onMounted, watch } from "vue";
+import { computed, ref, watch } from "vue";
 import { useComplianceStore } from "@/modules/compliance/store";
 import useEvents from "@/shared/composables/useEvents";
 import SkeletonDisplay from "@/modules/compliance/components/skeleton-display.vue";
+import { useProfile } from "@/shared/composables/useProfile";
 
 interface IComplianceInfoType {
   title: string;
@@ -62,6 +63,7 @@ const props = withDefaults(defineProps<IComplianceInfoType>(), {
 });
 
 const { processAPIRequest, clickHandler } = useEvents();
+const { getBusiness, getBusinessActivatedStatus } = useProfile();
 const { getCompliance, mutateCompliance } = useComplianceStore();
 
 const btnRef = ref(null);
@@ -80,6 +82,12 @@ watch(
   },
   { deep: true }
 );
+
+const validateActionButton = computed(() => {
+  if (getBusinessActivatedStatus() === "true") return true;
+  else if (getBusiness().activateMyBusiness) return true;
+  else return props.isPrimaryActionDisabled;
+});
 
 // Fetch all compliance data
 const fetchComplianceData = async () => {

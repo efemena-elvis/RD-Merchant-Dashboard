@@ -41,26 +41,34 @@
 
         <!-- SUFFIX ITEM FOR PASSWORD FIELD TYPE -->
         <div
-          v-if="inputType === IInputType.Password && showPasswordDisplay"
+          v-if="getInputType === IInputType.Password && showPasswordDisplay"
           class="suffix-item"
           @click="toggleHidden"
         >
-          <div class="suffix-item-text">
+          <div class="suffix-item-text" :class="inputBaseColor">
             {{ isHidden ? "SHOW" : "HIDE" }}
           </div>
         </div>
 
-        <!-- SUFFIX ITEM FOR EMAIL VEIFY FIELD TYPE -->
-        <div
-          v-if="
-            inputType === IInputType.Email && showVerifyEmail && isInputValid
-          "
-          class="suffix-item"
-        >
-          <CheckMarkIocn v-if="isEmailVerified" />
+        <!-- SUFFIX ITEM FOR INPUT TEXT COPY -->
 
-          <div v-else class="suffix-item-text" @click="$emit('verifyClicked')">
-            VERIFY
+        <div
+          v-if="getInputType === IInputType.Text && showTextCopy"
+          class="suffix-item"
+          @click="triggerCopyText"
+        >
+          <div class="suffix-item-text" :class="inputBaseColor">
+            {{ copied ? "COPIED" : "COPY" }}
+          </div>
+        </div>
+
+        <div
+          v-else-if="getInputType === IInputType.Text && showPasswordDisplay"
+          class="suffix-item"
+          @click="toggleHidden"
+        >
+          <div class="suffix-item-text" :class="inputBaseColor">
+            {{ isHidden ? "SHOW" : "HIDE" }}
           </div>
         </div>
 
@@ -104,12 +112,12 @@
 import { ref, computed } from "vue";
 import { useValidator } from "@/shared/composables/useValidators";
 import SearchIcon from "@/shared/components/icon-comps/search-icon.vue";
-import CheckMarkIocn from "@/shared/components/icon-comps/check-mark-icon.vue";
 import {
   ITextInputField,
   IInputType,
   IInputValidator,
 } from "@/models/form-type";
+import useEvents from "@/shared/composables/useEvents";
 
 const emits = defineEmits(["verifyClicked", "inputChanged", "inputValidated"]);
 
@@ -124,8 +132,8 @@ const props = withDefaults(defineProps<ITextInputField>(), {
   isRequired: false,
   isDisabled: false,
   showPasswordDisplay: true,
-  isEmailVerified: false,
-  showVerifyEmail: false,
+  showTextCopy: false,
+  copiedText: "Coped successfully",
   placeTextCenter: false,
   hasBottomPadding: true,
 });
@@ -145,7 +153,10 @@ const {
   validateFullName,
   validateSingleName,
   validateDateRange,
+  validateURL,
 } = useValidator();
+
+const { pushToastAlert } = useEvents();
 
 const getInputType = computed(() => {
   if (props.inputType !== IInputType.Password) return props.inputType;
@@ -163,6 +174,7 @@ const isInputValid = computed(() => {
 
 const inputRef = ref<HTMLInputElement | null>(null);
 const isHidden = ref<boolean>(true);
+const copied = ref<boolean>(false);
 
 const handleIconClick = () => {
   if (inputRef.value) {
@@ -183,12 +195,21 @@ const getInputTypeView = () => {
     textarea: "is-text-area",
   };
 
-  return props.isTextArea ? typeView.textarea : typeView[props.inputType];
+  return props.isTextArea
+    ? typeView.textarea
+    : props.showTextCopy || props.inputType === IInputType.Password
+      ? typeView[IInputType.Password]
+      : typeView[props.inputType];
 };
 
 const handleFormInput = () => {
   errorHandler.validator && validateInputFields(errorHandler);
-  emits("inputChanged", formValue.value);
+  emits(
+    "inputChanged",
+    typeof formValue.value === "string"
+      ? formValue.value.trim()
+      : formValue.value
+  );
 };
 
 const validateInputFields = (errorHandler: IInputValidator) => {
@@ -233,6 +254,10 @@ const validateInputFields = (errorHandler: IInputValidator) => {
       );
       break;
 
+    case "validateURL":
+      formErrorMsg.value = validateURL(formValue.value as string, message);
+      break;
+
     default:
       formErrorMsg.value = "";
       break;
@@ -241,6 +266,23 @@ const validateInputFields = (errorHandler: IInputValidator) => {
 
 const toggleHidden = () => {
   isHidden.value = !isHidden.value;
+};
+
+const triggerCopyText = async () => {
+  await navigator.clipboard.writeText(formValue.value as string);
+
+  pushToastAlert({
+    message: props.copiedText,
+    type: "success",
+  });
+
+  copied.value = true;
+
+  setTimeout(() => {
+    copied.value = false;
+
+    if (props.inputType === IInputType.Password) toggleHidden();
+  }, 2000);
 };
 </script>
 
@@ -279,7 +321,7 @@ const toggleHidden = () => {
         }
 
         &-text {
-          @apply relative top-[2px] text-green-500 text-xs font-semibold cursor-pointer transition duration-300 ease-in-out hover:text-yellow-500;
+          @apply relative top-[2px] text-green-500 text-xs font-semibold cursor-pointer pl-3.5 transition duration-300 ease-in-out hover:text-yellow-500;
         }
 
         &-verified {

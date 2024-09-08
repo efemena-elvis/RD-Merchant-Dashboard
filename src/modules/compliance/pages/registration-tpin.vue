@@ -1,11 +1,11 @@
 <template>
   <ComplianceDisplayBlock
-    title="Verify your business registration document"
-    description="Provide your certificate of business incorporation document below to help us verify your business."
+    title="Verify your TPIN document"
+    description="Provide your Tax Payer Identification document below to help us verify your tax registration."
     showActionRow
     :isPrimaryActionDisabled="isActionReady"
     :stopClickHandler="stopClickHandler"
-    @onBackClick="router.push({ name: 'RedstoneRegistrationInformation' })"
+    @onBackClick="router.push({ name: 'RedstoneRegistrationConfirm' })"
     @onContinueClick="handleRegistrationConfirmUpdate"
   >
     <div class="content-block">
@@ -22,11 +22,11 @@
       <div class="mb-14">
         <div class="form-block">
           <label class="form-label-basic"
-            >Certificate of business incorporation</label
+            >Tax Payer Identification Document</label
           >
           <FileUploadInput
             showSkip
-            skipRoute="RedstoneRegistrationTPIN"
+            skipRoute="RedstoneRegistrationPACRA"
             :hasDocumentUploaded="!!uploadedDocument"
             :uploadedDocumentContent="getUploadedDocumentContent"
             @onDocumentUploaded="uploadedDocument = $event"
@@ -55,8 +55,8 @@ const stopClickHandler = ref<boolean>(false);
 const uploadedDocument = ref<string>("");
 
 const uploadedDocumentContent = ref<{ name: string; link: string }>({
-  name: "Certificate of incorporation",
-  link: getComplianceRegistration.value?.doc_url || "",
+  name: "TPIN document",
+  link: getComplianceRegistration.value?.tpin_doc_url || "",
 });
 
 const getUploadedDocumentContent = computed(() => {
@@ -69,17 +69,17 @@ const isActionReady = computed(() => {
 
 const getBusinessPayload = computed(() => {
   return {
-    doc_url: uploadedDocument.value,
+    tpin_doc_url: uploadedDocument.value,
   };
 });
 
 const handleRegistrationConfirmUpdate = async () => {
   await handleComplianceRequest({
     payload: getBusinessPayload,
-    redirectRoute: "RedstoneRegistrationTPIN",
+    redirectRoute: "RedstoneRegistrationPACRA",
     stopClickHandler,
-    succesMsg: "Registration document submitted",
-    errorMsg: "Registration update failed",
+    succesMsg: "TPIN document submitted",
+    errorMsg: "TPIN update failed",
     payloadType: "registration",
   });
 };
@@ -88,11 +88,11 @@ watch(
   getComplianceRegistration,
   (newValue) => {
     if (newValue) {
-      uploadedDocument.value = newValue.doc_url || "";
+      uploadedDocument.value = newValue.tpin_doc_url || "";
 
       uploadedDocumentContent.value = {
-        name: "Certificate of incorporation",
-        link: newValue.doc_url,
+        name: "TPIN document",
+        link: newValue.tpin_doc_url,
       };
     }
   },

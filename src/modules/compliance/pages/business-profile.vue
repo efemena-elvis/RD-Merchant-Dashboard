@@ -44,10 +44,10 @@
 
       <TextFieldInput
         labelId="businessDescription"
-        labelTitle="Business Description"
+        labelTitle="Nature of Business"
         :inputType="IInputType.Text"
         :inputValue="businessPayload.description"
-        inputPlaceholder="Provide a detailed business description"
+        inputPlaceholder="Provide a detailed nature of your business"
         inputBaseColor="bg-grey-10"
         :isRequired="true"
         :isTextArea="true"
@@ -76,14 +76,14 @@
       />
 
       <SelectFieldInput
-        labelId="businessLegalForm"
-        labelTitle="Business Legal Form"
-        inputPlaceholder="Select business legal form"
-        :inputValue="businessPayload.legal_form"
+        labelId="businessSector"
+        labelTitle="Business Sector"
+        inputPlaceholder="Select business sector"
+        :inputValue="businessPayload.sector"
         inputBaseColor="bg-grey-10"
-        :selectData="businessLegalForms"
+        :selectData="businessSectors"
         isRequired
-        @onSelectionChange="businessPayload.legal_form = $event"
+        @onSelectionChange="businessPayload.sector = $event"
       />
     </div>
   </ComplianceDisplayBlock>
@@ -94,7 +94,7 @@ import { computed, ref, watch } from "vue";
 import { useRouter } from "vue-router";
 import { IInputType } from "@/models/form-type";
 import { useProfile } from "@/shared/composables/useProfile";
-import { businessForms } from "@/modules/compliance/constant/compliance-navigation-list";
+import { businessSectors } from "@/modules/compliance/constant/compliance-navigation-list";
 import { useComplianceUtil } from "../composable/useComplianceUtil";
 import { useComplianceStore } from "@/modules/compliance/store";
 import ComplianceDisplayBlock from "@/modules/compliance/components/compliance-display-block.vue";
@@ -107,7 +107,7 @@ type IBusinessType = {
   trading_name: string;
   description: string;
   registration_date: string;
-  legal_form: string;
+  sector: string;
 };
 
 type IInputValidity = {
@@ -115,14 +115,13 @@ type IInputValidity = {
   trading_name: boolean;
   description: boolean;
   registration_date: boolean;
-  legal_form: boolean;
+  sector: boolean;
 };
 
 const router = useRouter();
 const { handleComplianceRequest } = useComplianceUtil();
 const { getComplianceBusiness } = storeToRefs(useComplianceStore());
 
-const businessLegalForms = ref([...businessForms]);
 const stopClickHandler = ref<boolean>(false);
 
 const { getBusiness } = useProfile();
@@ -135,7 +134,7 @@ const businessPayload = ref<IBusinessType>({
     getBusinessProfile.value.businessName,
   description: getComplianceBusiness.value?.description || "",
   registration_date: getComplianceBusiness.value?.registration_date || "",
-  legal_form: getComplianceBusiness.value?.legal_form || "",
+  sector: getComplianceBusiness.value?.sector || "",
 });
 
 const payloadValidity = ref<IInputValidity>({
@@ -143,7 +142,7 @@ const payloadValidity = ref<IInputValidity>({
   trading_name: false,
   description: false,
   registration_date: false,
-  legal_form: false,
+  sector: false,
 });
 
 const isActionReady = computed(() => {
@@ -151,25 +150,20 @@ const isActionReady = computed(() => {
     businessPayload.value.trading_name &&
     businessPayload.value.description &&
     businessPayload.value.registration_date &&
-    businessPayload.value.legal_form
+    businessPayload.value.sector
     ? false
     : true;
 });
 
 const getBusinessPayload = computed(() => {
-  const {
-    legal_name,
-    trading_name,
-    description,
-    registration_date,
-    legal_form,
-  } = businessPayload.value;
+  const { legal_name, trading_name, description, registration_date, sector } =
+    businessPayload.value;
   return {
     legal_name,
     trading_name,
     description,
     registration_date,
-    legal_form,
+    sector,
   };
 });
 
@@ -194,7 +188,7 @@ watch(
           newValue.trading_name || getBusinessProfile.value.businessName,
         description: newValue.description || "",
         registration_date: newValue.registration_date || "",
-        legal_form: newValue.legal_form || "",
+        sector: newValue.sector || "",
       };
     }
   },

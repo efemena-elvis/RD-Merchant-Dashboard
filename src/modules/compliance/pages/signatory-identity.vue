@@ -52,7 +52,7 @@
         <div class="mb-14">
           <FileUploadInput
             showSkip
-            skipRoute="RedstoneSignatoryAddress"
+            skipRoute="RedstoneAgreementSignature"
             :hasDocumentUploaded="!!uploadedDocument"
             :uploadedDocumentContent="getUploadedDocumentContent"
             @onDocumentUploaded="businessPayload.url = $event"
@@ -142,7 +142,7 @@ const getBusinessPayload = computed(() => {
 const handleSignatoryIdentityUpdate = async () => {
   await handleComplianceRequest({
     payload: getBusinessPayload,
-    redirectRoute: "RedstoneSignatoryAddress",
+    redirectRoute: "RedstoneAgreementSignature",
     stopClickHandler,
     succesMsg: "Signatory identity submitted",
     errorMsg: "Signatory update failed",

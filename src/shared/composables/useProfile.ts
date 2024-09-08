@@ -12,6 +12,7 @@ interface IUserProfile {
   firstName: string;
   lastName: string;
   currentBusiness: string;
+  isEmailVerified: boolean;
 }
 
 interface IBusinessProfile {
@@ -27,6 +28,7 @@ interface IBusinessProfile {
   businessSector: string;
   activated: string;
   supportEmailAddress: string;
+  activateMyBusiness: boolean;
 }
 
 interface IAPIKeys {

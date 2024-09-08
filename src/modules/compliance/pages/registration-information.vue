@@ -23,6 +23,21 @@
           message: 'Business registration number is a required field',
         }"
       />
+
+      <TextFieldInput
+        labelId="businessTaxNumber"
+        labelTitle="Tax Payer Identification Number (TPIN)"
+        :inputType="IInputType.Text"
+        :inputValue="businessPayload.tpin"
+        inputPlaceholder="Provide your business TPIN"
+        inputBaseColor="bg-grey-10"
+        :isRequired="true"
+        @inputChanged="businessPayload.tpin = $event"
+        :errorHandler="{
+          validator: 'validateRequired',
+          message: 'TPIN is a required field',
+        }"
+      />
     </div>
   </ComplianceDisplayBlock>
 </template>
@@ -39,6 +54,7 @@ import { storeToRefs } from "pinia";
 
 type IBusinessType = {
   number: string;
+  tpin: string;
 };
 
 const router = useRouter();
@@ -49,14 +65,18 @@ const stopClickHandler = ref<boolean>(false);
 
 const businessPayload = ref<IBusinessType>({
   number: getComplianceRegistration.value?.number || "",
+  tpin: getComplianceRegistration.value?.tpin || "",
 });
 
 const isActionReady = computed(() => {
-  return businessPayload.value.number.length ? false : true;
+  return businessPayload.value.number.length &&
+    businessPayload.value.tpin.length
+    ? false
+    : true;
 });
 
 const getBusinessPayload = computed(() => {
-  return { number: businessPayload.value.number };
+  return { ...businessPayload.value };
 });
 
 const handleRegistrationInformationUpdate = async () => {
@@ -76,6 +96,7 @@ watch(
     if (newValue) {
       businessPayload.value = {
         number: newValue.number || "",
+        tpin: newValue.tpin || "",
       };
     }
   },

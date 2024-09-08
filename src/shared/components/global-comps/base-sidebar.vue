@@ -138,7 +138,7 @@ watch(
 <style lang="scss" scoped>
 .base-sidebar {
   @apply relative bg-teal-800 border border-teal-800 h-full;
-  z-index: 5999;
+  z-index: 6999;
 
   .sidebar-items-area {
     @apply absolute top-0 pt-[108px] pb-28 w-full h-screen overflow-auto;

@@ -35,8 +35,16 @@ export const registrationNavList: INavigationType[] = [
     stepLink: "RedstoneRegistrationInformation",
   },
   {
-    stepName: "Confirm",
+    stepName: "Registration",
     stepLink: "RedstoneRegistrationConfirm",
+  },
+  {
+    stepName: "TPIN",
+    stepLink: "RedstoneRegistrationTPIN",
+  },
+  {
+    stepName: "PACRA",
+    stepLink: "RedstoneRegistrationPACRA",
   },
 ];
 
@@ -49,14 +57,6 @@ export const representativeNavList: INavigationType[] = [
     stepName: "Identity",
     stepLink: "RedstoneRepresentativeIdentity",
   },
-  {
-    stepName: "Address",
-    stepLink: "RedstoneRepresentativeAddress",
-  },
-  {
-    stepName: "Confirm",
-    stepLink: "RedstoneRepresentativeConfirm",
-  },
 ];
 
 export const signatoryNavList: INavigationType[] = [
@@ -67,14 +67,6 @@ export const signatoryNavList: INavigationType[] = [
   {
     stepName: "Identity",
     stepLink: "RedstoneSignatoryIdentity",
-  },
-  {
-    stepName: "Address",
-    stepLink: "RedstoneSignatoryAddress",
-  },
-  {
-    stepName: "Confirm",
-    stepLink: "RedstoneSignatoryConfirm",
   },
 ];
 
@@ -116,6 +108,18 @@ export const complianceSections: IComplianceSectionType[] = [
     completed: false,
   },
   {
+    id: "registration_verification_tpin",
+    title: "TPIN Verification",
+    route: "RedstoneRegistrationTPIN",
+    completed: false,
+  },
+  {
+    id: "registration_verification_pacra",
+    title: "PACRA Verification",
+    route: "RedstoneRegistrationPACRA",
+    completed: false,
+  },
+  {
     id: "representative_profile",
     title: "Representative Profile",
     route: "RedstoneRepresentativeProfile",
@@ -125,18 +129,6 @@ export const complianceSections: IComplianceSectionType[] = [
     id: "representative_identity",
     title: "Representative Identity",
     route: "RedstoneRepresentativeIdentity",
-    completed: false,
-  },
-  {
-    id: "representative_address",
-    title: "Representative Address",
-    route: "RedstoneRepresentativeAddress",
-    completed: false,
-  },
-  {
-    id: "representative_verification",
-    title: "Representative Verification",
-    route: "RedstoneRepresentativeConfirm",
     completed: false,
   },
   {
@@ -158,18 +150,6 @@ export const complianceSections: IComplianceSectionType[] = [
     completed: false,
   },
   {
-    id: "signatory_address",
-    title: "Signatory Address",
-    route: "RedstoneSignatoryAddress",
-    completed: false,
-  },
-  {
-    id: "signatory_verification",
-    title: "Signatory Verification",
-    route: "RedstoneSignatoryConfirm",
-    completed: false,
-  },
-  {
     id: "merchant_agreement",
     title: "Merchant Agreement",
     route: "RedstoneAgreementSignature",
@@ -177,41 +157,65 @@ export const complianceSections: IComplianceSectionType[] = [
   },
 ];
 
-export const businessForms: { value: string; name: string }[] = [
+export const businessSectors: { value: string; name: string }[] = [
   {
-    value: "limited_lianility_company",
-    name: "Limited liability company",
+    value: "financial_services",
+    name: "Financial Services",
   },
   {
-    value: "joint_stock_venture",
-    name: "Joint stock venture",
+    value: "e_commerce",
+    name: "E-commerce",
   },
   {
-    value: "self_employed",
-    name: "Self employed",
+    value: "telecommunications",
+    name: "Telecommunications",
   },
   {
-    value: "general_partnership",
-    name: "General partnership",
+    value: "travel_and_hospitality",
+    name: "Travel and Hospitality",
   },
   {
-    value: "limited_partnership",
-    name: "Limited partnership",
+    value: "retail",
+    name: "Retail",
   },
   {
-    value: "society",
-    name: "Society",
+    value: "gaming_and_gambling",
+    name: "Gaming and Gambling",
   },
   {
-    value: "government_llc",
-    name: "Government LLC",
+    value: "subscription_services",
+    name: "Subscription Services",
   },
   {
-    value: "foundation",
-    name: "Foundation",
+    value: "insurance",
+    name: "Insurance",
   },
   {
-    value: "other",
-    name: "Other",
+    value: "healthcare",
+    name: "Healthcare",
+  },
+  {
+    value: "utilities",
+    name: "Utilities",
+  },
+  {
+    value: "educational_services",
+    name: "Educational Services",
+  },
+  {
+    value: "real_estate",
+    name: "Real Estate",
+  },
+  {
+    value: "transportation_and_logistics",
+    name: "Transportation and Logistics",
+  },
+  {
+    value: "fintech",
+    name: "Fintech",
+  },
+  {
+    value: "charity_and_non_profit",
+    name: "Charity and Non-Profit",
   },
 ];

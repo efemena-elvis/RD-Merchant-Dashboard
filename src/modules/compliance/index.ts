@@ -149,6 +149,46 @@ const complianceRoutes: IRouteType[] = [
           },
 
           {
+            path: "registration-tpin",
+            name: "RedstoneRegistrationTPIN",
+            component: () =>
+              import(
+                /* webpackChunkName: "compliance-module" */ "@/modules/compliance/pages/registration-tpin.vue"
+              ),
+            meta: {
+              requiresAuth: true,
+              title: "Verify Business TPIN",
+              pageMeta: {
+                title: "Business Registration",
+                description:
+                  "Manage your business document registration details",
+                basePath: "Merchant Business Registration",
+                basePathIcon: "icon-shop",
+              },
+            },
+          },
+
+          {
+            path: "registration-pacra",
+            name: "RedstoneRegistrationPACRA",
+            component: () =>
+              import(
+                /* webpackChunkName: "compliance-module" */ "@/modules/compliance/pages/registration-pacra.vue"
+              ),
+            meta: {
+              requiresAuth: true,
+              title: "Verify Business TPIN",
+              pageMeta: {
+                title: "Business Registration",
+                description:
+                  "Manage your business document registration details",
+                basePath: "Merchant Business Registration",
+                basePathIcon: "icon-shop",
+              },
+            },
+          },
+
+          {
             path: "representative-profile",
             name: "RedstoneRepresentativeProfile",
             component: () =>
@@ -178,46 +218,6 @@ const complianceRoutes: IRouteType[] = [
             meta: {
               requiresAuth: true,
               title: "Business Representative Identity",
-              pageMeta: {
-                title: "Business Representative",
-                description:
-                  "Manage your business registered representative identity",
-                basePath: "Merchant Representative",
-                basePathIcon: "icon-profile-users",
-              },
-            },
-          },
-
-          {
-            path: "representative-address",
-            name: "RedstoneRepresentativeAddress",
-            component: () =>
-              import(
-                /* webpackChunkName: "compliance-module" */ "@/modules/compliance/pages/representative-address.vue"
-              ),
-            meta: {
-              requiresAuth: true,
-              title: "Business Representative Address",
-              pageMeta: {
-                title: "Business Representative",
-                description:
-                  "Manage your business registered representative identity",
-                basePath: "Merchant Representative",
-                basePathIcon: "icon-profile-users",
-              },
-            },
-          },
-
-          {
-            path: "representative-confirm",
-            name: "RedstoneRepresentativeConfirm",
-            component: () =>
-              import(
-                /* webpackChunkName: "compliance-module" */ "@/modules/compliance/pages/representative-confirm.vue"
-              ),
-            meta: {
-              requiresAuth: true,
-              title: "Business Representative Verify",
               pageMeta: {
                 title: "Business Representative",
                 description:
@@ -276,44 +276,6 @@ const complianceRoutes: IRouteType[] = [
             meta: {
               requiresAuth: true,
               title: "Signatory Identity",
-              pageMeta: {
-                title: "Business Signatory",
-                description: "Manage your business signatory identity",
-                basePath: "Merchant Business Signatory",
-                basePathIcon: "icon-user",
-              },
-            },
-          },
-
-          {
-            path: "signatory-address",
-            name: "RedstoneSignatoryAddress",
-            component: () =>
-              import(
-                /* webpackChunkName: "compliance-module" */ "@/modules/compliance/pages/signatory-address.vue"
-              ),
-            meta: {
-              requiresAuth: true,
-              title: "Signatory Address",
-              pageMeta: {
-                title: "Business Signatory",
-                description: "Manage your business signatory identity",
-                basePath: "Merchant Business Signatory",
-                basePathIcon: "icon-user",
-              },
-            },
-          },
-
-          {
-            path: "signatory-confirm",
-            name: "RedstoneSignatoryConfirm",
-            component: () =>
-              import(
-                /* webpackChunkName: "compliance-module" */ "@/modules/compliance/pages/signatory-confirm.vue"
-              ),
-            meta: {
-              requiresAuth: true,
-              title: "Signatory Verify",
               pageMeta: {
                 title: "Business Signatory",
                 description: "Manage your business signatory identity",

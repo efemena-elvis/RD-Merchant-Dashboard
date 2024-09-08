@@ -112,7 +112,7 @@
               <div class="text">Preferences</div>
             </router-link> -->
 
-            <router-link to="/settings/preferences" class="app-dropdown-item">
+            <router-link to="/settings/developers" class="app-dropdown-item">
               <div class="icon icon-developer text-base"></div>
               <div class="text">Developers</div>
             </router-link>

@@ -15,6 +15,7 @@ interface IAuthBusiness {
   businessSector: string;
   activated: string;
   supportEmailAddress: string;
+  activateMyBusiness: boolean;
 }
 
 const { getStorage } = useStorage();

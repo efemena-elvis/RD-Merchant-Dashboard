@@ -67,6 +67,7 @@
 import { ref } from "vue";
 import { useRouter } from "vue-router";
 import { useString } from "@/shared/composables/useString";
+import { useFile } from "@/shared/composables/useFile";
 import { useGeneralStore } from "@/store/general";
 import useEvents from "@/shared/composables/useEvents";
 
@@ -94,6 +95,7 @@ const emits = defineEmits(["onDocumentUploaded"]);
 
 const router = useRouter();
 const { renderImg, capitalizeFirstLetter } = useString();
+const { processFileType, processFileSize } = useFile();
 const { pushToastAlert, processAPIRequest } = useEvents();
 const { uploadFile } = useGeneralStore();
 
@@ -108,19 +110,6 @@ const docPayload = ref<{ name: string; link: string }>({
   link: alreadyUploadedDoc.link || "",
 });
 
-const processFileType = (name: string) => {
-  const fileType = name.split(".").at(-1) as string;
-  return allowedFiles.value.includes(fileType) ? true : false;
-};
-
-const processFileSize = (size: number) => {
-  if (size > 5000000) return false;
-
-  return size.toString().length >= 6
-    ? `${(size / 1000000).toFixed(1)}mb`
-    : `${(size / 1000).toFixed(1)}kb`;
-};
-
 const processDocumentUpload = async ($event: Event) => {
   const inputElement = $event.target as HTMLInputElement;
   const uploadedFile = inputElement.files ? inputElement.files[0] : null;
@@ -129,7 +118,7 @@ const processDocumentUpload = async ($event: Event) => {
 
   isUploading.value = true;
 
-  if (!processFileType(uploadedFile.name)) {
+  if (!processFileType(uploadedFile.name, allowedFiles.value)) {
     pushToastAlert({
       message: "File type is not supported!",
       description: "Document file type should either be jpg, jpeg, png or pdf",

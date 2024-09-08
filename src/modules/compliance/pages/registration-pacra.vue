@@ -1,11 +1,11 @@
 <template>
   <ComplianceDisplayBlock
-    title="Verify your business registration document"
-    description="Provide your certificate of business incorporation document below to help us verify your business."
+    title="Verify your PACRA registration document"
+    description="Provide your Patents and Companies Registration Agency (PACRA) document to help us verify the legal status your business."
     showActionRow
     :isPrimaryActionDisabled="isActionReady"
     :stopClickHandler="stopClickHandler"
-    @onBackClick="router.push({ name: 'RedstoneRegistrationInformation' })"
+    @onBackClick="router.push({ name: 'RedstoneRegistrationTPIN' })"
     @onContinueClick="handleRegistrationConfirmUpdate"
   >
     <div class="content-block">
@@ -21,12 +21,10 @@
       <!-- DOCUMENT FIELD UPLOAD -->
       <div class="mb-14">
         <div class="form-block">
-          <label class="form-label-basic"
-            >Certificate of business incorporation</label
-          >
+          <label class="form-label-basic">PACRA document</label>
           <FileUploadInput
             showSkip
-            skipRoute="RedstoneRegistrationTPIN"
+            skipRoute="RedstoneRepresentativeProfile"
             :hasDocumentUploaded="!!uploadedDocument"
             :uploadedDocumentContent="getUploadedDocumentContent"
             @onDocumentUploaded="uploadedDocument = $event"
@@ -55,8 +53,8 @@ const stopClickHandler = ref<boolean>(false);
 const uploadedDocument = ref<string>("");
 
 const uploadedDocumentContent = ref<{ name: string; link: string }>({
-  name: "Certificate of incorporation",
-  link: getComplianceRegistration.value?.doc_url || "",
+  name: "PACRA document",
+  link: getComplianceRegistration.value?.pacra_doc_url || "",
 });
 
 const getUploadedDocumentContent = computed(() => {
@@ -69,17 +67,17 @@ const isActionReady = computed(() => {
 
 const getBusinessPayload = computed(() => {
   return {
-    doc_url: uploadedDocument.value,
+    pacra_doc_url: uploadedDocument.value,
   };
 });
 
 const handleRegistrationConfirmUpdate = async () => {
   await handleComplianceRequest({
     payload: getBusinessPayload,
-    redirectRoute: "RedstoneRegistrationTPIN",
+    redirectRoute: "RedstoneRepresentativeProfile",
     stopClickHandler,
-    succesMsg: "Registration document submitted",
-    errorMsg: "Registration update failed",
+    succesMsg: "PACRA document submitted",
+    errorMsg: "PACRA update failed",
     payloadType: "registration",
   });
 };
@@ -88,11 +86,11 @@ watch(
   getComplianceRegistration,
   (newValue) => {
     if (newValue) {
-      uploadedDocument.value = newValue.doc_url || "";
+      uploadedDocument.value = newValue.pacra_doc_url || "";
 
       uploadedDocumentContent.value = {
-        name: "Certificate of incorporation",
-        link: newValue.doc_url,
+        name: "PACRA document",
+        link: newValue.pacra_doc_url,
       };
     }
   },

@@ -29,8 +29,8 @@ export interface ITextInputField {
   isRequired?: boolean;
   isDisabled?: boolean;
   showPasswordDisplay?: boolean;
-  isEmailVerified?: boolean;
-  showVerifyEmail?: boolean;
+  showTextCopy?: boolean;
+  copiedText?: string;
   placeTextCenter?: boolean;
   hasBottomPadding?: boolean;
   errorHandler?: IInputValidator;

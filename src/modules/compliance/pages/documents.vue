@@ -15,13 +15,23 @@
       />
 
       <DocumentInfoCard
+        title="Taxpayer Identification Number (TPIN) document"
+        description="Provide a copy of your TPIN document to verify that your tax registration and obligations"
+      />
+
+      <DocumentInfoCard
+        title="Patents and Companies Registration Agency (PACRA) document"
+        description="Provide a copy of your PACRA document to verify the legal status of your business"
+      />
+
+      <DocumentInfoCard
         title="Shareholders identification document"
-        description="Submit a Government issued ID of your Shareholders, such as National ID, Voter ID, Driver’s License or Passport and also a proof of address."
+        description="Submit a Government issued ID of your Shareholders, such as National ID, Voter ID, Driver’s License or International Passport"
       />
 
       <DocumentInfoCard
         title="Signatory representative identification document"
-        description="Submit a Government issued ID of your Signatory representative, such as National ID, Voter ID, Driver’s License or Passport and also a proof of address."
+        description="Submit a Government issued ID of your Signatory representative, such as National ID, Voter ID, Driver’s License or International Passport"
       />
     </div>
 

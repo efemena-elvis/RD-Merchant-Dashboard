@@ -14,11 +14,25 @@
       <div class="main-content-area">
         <!-- TOPBAR AREA -->
         <div class="topbar-area">
+          <!-- ALERT TOP BAR -->
+          <AlertTopbar
+            v-if="showAlertTop"
+            :alertText="alertTopText"
+            :alertAction="alertTopActionText"
+            :alertActionRoute="alertTopActionRoute"
+          />
           <BaseTopbar />
         </div>
 
         <!-- MAIN CONTENT -->
-        <div class="main-content">
+        <div
+          class="main-content"
+          :class="
+            showAlertTop
+              ? 'top-[176px] mdLg:top-[180px]'
+              : 'top-28 xl:top-[108px] mdLg:top-[98px]'
+          "
+        >
           <router-view v-slot="{ Component }">
             <component :is="Component" />
           </router-view>
@@ -32,7 +46,9 @@
 import { ref, watch, inject, onMounted } from "vue";
 import { useRoute } from "vue-router";
 import { useColor } from "@/shared/composables/useColor";
+import { useProfile } from "@/shared/composables/useProfile";
 import BaseTopbar from "@/shared/components/global-comps/base-topbar.vue";
+import AlertTopbar from "@/shared/components/global-comps/alert-topbar.vue";
 import BaseSidebar from "@/shared/components/global-comps/base-sidebar.vue";
 import { Emitter } from "mitt";
 
@@ -42,8 +58,15 @@ type Events = {
 };
 
 const route = useRoute();
+const { getBusiness, getBusinessActivatedStatus } = useProfile();
+
 const eventBus = inject<Emitter<Events>>("eventBus");
 const showMobileSidebar = ref<boolean>(false);
+
+const showAlertTop = ref<boolean>(false);
+const alertTopText = ref<string>("");
+const alertTopActionText = ref<string>("");
+const alertTopActionRoute = ref<string>("");
 
 const toggleMobileSidebar = () => {
   showMobileSidebar.value = !showMobileSidebar.value;
@@ -61,7 +84,26 @@ onMounted(() => {
   setPageBackgroundColor("#f6faf9");
 
   eventBus?.on("triggerSidebar", () => toggleMobileSidebar());
+
+  getActivationStatus();
 });
+
+const getActivationStatus = () => {
+  if (getBusinessActivatedStatus() !== "true") {
+    showAlertTop.value = true;
+
+    if (getBusiness().activateMyBusiness) {
+      alertTopText.value =
+        "Your business compliance data is currently in review.";
+      alertTopActionText.value = "View compliance";
+      alertTopActionRoute.value = "/compliance/compliance-summary";
+    } else {
+      alertTopText.value = "Complete your business compliance to get activated";
+      alertTopActionText.value = "Activate business";
+      alertTopActionRoute.value = "/compliance/documents";
+    }
+  } else showAlertTop.value = false;
+};
 </script>
 
 <style lang="scss" scoped>
@@ -73,11 +115,11 @@ onMounted(() => {
   }
 
   .visible-sidebar-area {
-    @apply w-[35%] md:w-[45%] sm:w-[60%] xs:w-[70%] block z-50 animate-drift-left;
+    @apply fixed h-screen w-[35%] md:w-[45%] sm:w-[60%] xs:w-[70%] block z-50 animate-drift-left;
+    z-index: 999;
 
     .sidebar-mobile-overlay {
-      @apply fixed inset-0 w-full h-full bg-neutral-900/40 z-30 transition duration-300 ease-in-out;
-      z-index: 4999;
+      @apply fixed inset-0 w-full h-full bg-neutral-900/40 transition duration-300 ease-in-out;
     }
   }
 
@@ -86,11 +128,11 @@ onMounted(() => {
 
     .topbar-area {
       @apply fixed top-0 w-[83%] xl:w-[80%] lg:w-[76%] mdLg:w-full bg-neutral-10 shadow-sm border;
-      z-index: 2999;
+      z-index: 99;
     }
 
     .main-content {
-      @apply relative top-28 xl:top-[108px] mdLg:top-[98px] w-full h-full px-8 xl:px-6 mdLg:px-4 py-1;
+      @apply relative w-full h-full px-8 xl:px-6 mdLg:px-4 py-1;
     }
   }
 }

@@ -146,7 +146,7 @@ const updateCompletionStatus = () => {
           complianceBusiness.value?.trading_name &&
           complianceBusiness.value?.description &&
           complianceBusiness.value?.registration_date &&
-          complianceBusiness.value?.legal_form
+          complianceBusiness.value?.sector
             ? true
             : false;
         break;
@@ -186,6 +186,18 @@ const updateCompletionStatus = () => {
           : false;
         break;
 
+      case "registration_verification_tpin":
+        section.completed = complianceRegistration.value?.tpin_doc_url
+          ? true
+          : false;
+        break;
+
+      case "registration_verification_pacra":
+        section.completed = complianceRegistration.value?.pacra_doc_url
+          ? true
+          : false;
+        break;
+
       case "representative_profile":
         section.completed =
           complianceRepresentative.value?.[0].legal_first_name &&
@@ -206,23 +218,6 @@ const updateCompletionStatus = () => {
             : false;
         break;
 
-      case "representative_address":
-        section.completed =
-          complianceRepresentative.value?.[0].first_address &&
-          complianceRepresentative.value?.[0].city &&
-          complianceRepresentative.value?.[0].state
-            ? true
-            : false;
-        break;
-
-      case "representative_verification":
-        section.completed =
-          complianceRepresentative.value?.[0].address_doc.type &&
-          complianceRepresentative.value?.[0].address_doc.url
-            ? true
-            : false;
-        break;
-
       case "bank_account":
         section.completed =
           complianceBankAccount.value?.name &&
@@ -238,8 +233,7 @@ const updateCompletionStatus = () => {
           complianceSignatory.value?.legal_first_name &&
           complianceSignatory.value?.legal_last_name &&
           complianceSignatory.value?.dob &&
-          complianceSignatory.value?.nationality &&
-          complianceSignatory.value?.job_title
+          complianceSignatory.value?.nationality
             ? true
             : false;
         break;
@@ -249,23 +243,6 @@ const updateCompletionStatus = () => {
           complianceSignatory.value?.doc.type &&
           complianceSignatory.value?.doc.value &&
           complianceSignatory.value?.doc.url
-            ? true
-            : false;
-        break;
-
-      case "signatory_address":
-        section.completed =
-          complianceSignatory.value?.first_address &&
-          complianceSignatory.value?.city &&
-          complianceSignatory.value?.state
-            ? true
-            : false;
-        break;
-
-      case "signatory_verification":
-        section.completed =
-          complianceSignatory.value?.address_doc.type &&
-          complianceSignatory.value?.address_doc.url
             ? true
             : false;
         break;

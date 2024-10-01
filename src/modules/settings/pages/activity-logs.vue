@@ -95,7 +95,7 @@ const fetchAuditLogs = async () => {
         status: getStatus("success"),
         date_created: getActivityDate(data.created_at),
         initiated_by: getUserName(data.user),
-        action_type: "Compliance",
+        action_type: data.action_type,
         activity: data.activity,
         // action: notAvailable("No action available"),
       });

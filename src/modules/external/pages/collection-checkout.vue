@@ -5,7 +5,7 @@
     </template>
 
     <template v-else>
-      <form @submit.prevent="handleCheckoutPayment">
+      <form @submit.prevent="handleCheckoutPayment" v-if="false">
         <!-- FORM AREA -->
         <div class="form-area">
           <!-- CUSTOMER FULLNAME -->
@@ -67,6 +67,7 @@
           </button>
         </div>
       </form>
+      <CardPaymentForm :details="cardPaymentDetails" />
     </template>
   </CheckoutWrapper>
 </template>
@@ -83,6 +84,7 @@ import SkeletonCheckout from "@/modules/external/components/skeleton-checkout.vu
 import TextFieldInput from "@/shared/components/form-comps/text-field-input.vue";
 import PhoneFieldInput from "@/shared/components/form-comps/phone-field-input.vue";
 import { storeToRefs } from "pinia";
+import CardPaymentForm from "../components/card-payment-form.vue";
 
 type IPayloadInputType = {
   full_name: string;
@@ -171,6 +173,13 @@ const getPayload = computed(() => {
   }
 
   return updatedPayload;
+});
+
+const cardPaymentDetails = computed(() => {
+  return {
+    currency: getPaymentDetails.value?.currency ?? "ZMW",
+    amount: getPaymentDetails.value?.amount ?? 0,
+  };
 });
 
 const handleCheckoutPayment = () => {

@@ -1,4 +1,9 @@
-import { paymentDetails, customerDetails } from "./state";
+import {
+  paymentDetails,
+  customerDetails,
+  cardPaymentContext,
+  cardPaymentForm,
+} from "./state";
 
 export function useExternalMutations() {
   const mutatePaymentDetails = (responsePayload: any) => {
@@ -18,8 +23,18 @@ export function useExternalMutations() {
     };
   };
 
+  const mutateCardPaymentContext = (context: string) => {
+    cardPaymentContext.value = context;
+  };
+
+  const mutateCardPaymentForm = (form: any) => {
+    cardPaymentForm.value = form;
+  };
+
   return {
     mutatePaymentDetails,
     mutateCustomerDetails,
+    mutateCardPaymentContext,
+    mutateCardPaymentForm,
   };
 }

@@ -11,3 +11,5 @@ type ICustomerDetails = {
 
 export const paymentDetails = ref<any>({});
 export const customerDetails = ref<ICustomerDetails>();
+export const cardPaymentContext = ref<string | null>(null);
+export const cardPaymentForm = ref<any>(null);

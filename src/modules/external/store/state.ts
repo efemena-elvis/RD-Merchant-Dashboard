@@ -1,3 +1,4 @@
+import type { PaymentMethods } from "@/models/api-type";
 import { ref } from "vue";
 
 type ICustomerDetails = {
@@ -11,5 +12,8 @@ type ICustomerDetails = {
 
 export const paymentDetails = ref<any>({});
 export const customerDetails = ref<ICustomerDetails>();
+export const paymentMethod = ref<PaymentMethods>();
 export const cardPaymentContext = ref<string | null>(null);
 export const cardPaymentForm = ref<any>(null);
+export const cardNumberInput = ref<any>(null);
+export const cardSecurityInput = ref<any>(null);

@@ -1,8 +1,12 @@
+import type { PaymentMethods } from "@/models/api-type";
 import {
   paymentDetails,
   customerDetails,
   cardPaymentContext,
   cardPaymentForm,
+  paymentMethod,
+  cardNumberInput,
+  cardSecurityInput,
 } from "./state";
 
 export function useExternalMutations() {
@@ -31,10 +35,25 @@ export function useExternalMutations() {
     cardPaymentForm.value = form;
   };
 
+  const mutatePaymentMethod = (method: PaymentMethods) => {
+    paymentMethod.value = method;
+  };
+
+  const mutateCardNumberInput = (input: any) => {
+    cardNumberInput.value = input;
+  };
+
+  const mutateCardSecurityInput = (input: any) => {
+    cardSecurityInput.value = input;
+  };
+
   return {
     mutatePaymentDetails,
     mutateCustomerDetails,
     mutateCardPaymentContext,
     mutateCardPaymentForm,
+    mutatePaymentMethod,
+    mutateCardNumberInput,
+    mutateCardSecurityInput,
   };
 }

@@ -18,12 +18,12 @@ export function useExternalActions() {
     return response;
   };
 
-  const fetchCardPaymentContext = async () => {
-    const response: any = await $api.push(externalRoutes.generateCardContext, {
+  const fetchCardPaymentContext = async (payload: any) => {
+    return await $api.push(externalRoutes.generateCardContext, {
       requiresPublicKey: true,
+      resolve: true,
+      payload,
     });
-    console.log({ response });
-    response?.code === 200 && mutateCardPaymentContext(response.data);
   };
 
   const makePayment = async ({ paymentReference, customerDetails }: any) => {
@@ -33,9 +33,17 @@ export function useExternalActions() {
     );
   };
 
+  const continuePayment = async ({ paymentReference }: any) => {
+    return await $api.push(
+      `${externalRoutes.continuePayment}/${paymentReference}/continue`,
+      {}
+    );
+  };
+
   return {
     fetchPaymentDetails,
     makePayment,
     fetchCardPaymentContext,
+    continuePayment,
   };
 }

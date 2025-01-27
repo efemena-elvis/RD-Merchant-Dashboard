@@ -26,7 +26,9 @@
             >
               <div class="space-y-1 mx-auto grid place-items-center">
                 <span class="text-sm text-grey-700">CARD</span>
-                <div class="w-10 h-6 border"></div>
+                <div class="w-10 h-6">
+                  <img :src="renderImg('card.svg')" alt="money" class="-mt-2" />
+                </div>
               </div>
               <div
                 class="size-4 bg-teal-500 grid place-items-center rounded-full absolute right-2 top-2"
@@ -46,7 +48,13 @@
             >
               <div class="space-y-1 mx-auto grid place-items-center">
                 <span class="text-sm text-grey-700">MOBILE MONEY</span>
-                <div class="w-10 h-6 border"></div>
+                <div class="w-10 h-6">
+                  <img
+                    :src="renderImg('money.svg')"
+                    alt="money"
+                    class="-mt-2"
+                  />
+                </div>
               </div>
               <div
                 class="size-4 bg-teal-500 grid place-items-center rounded-full absolute right-2 top-2"

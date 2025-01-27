@@ -9,7 +9,7 @@
       @click.self="selfCloseModal"
     >
       <div
-        :class="getModalWrapperStyle"
+        :class="[getModalWrapperStyle, place_side ? 'ml-auto' : 'mx-auto']"
         class="modal-cover shadow-md px-0 mx-auto"
       >
         <div class="modal-cover-body-wrapper px-0">
@@ -89,7 +89,7 @@ export default {
     document.querySelector("body").style.overflow = "hidden";
   },
 
-  beforeDestroy() {
+  unmounted() {
     document.querySelector("body").style.overflow = "auto";
   },
 

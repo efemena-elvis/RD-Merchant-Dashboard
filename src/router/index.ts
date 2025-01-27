@@ -8,6 +8,7 @@ import dashboardRoutes from "@/modules/overview";
 import paymentRoutes from "@/modules/payments";
 import transferRoutes from "@/modules/transfers";
 import settingsRoutes from "@/modules/settings";
+import storefrontRoutes from "@/modules/storefront";
 import externalRoutes from "@/modules/external";
 
 const routes = [
@@ -17,6 +18,7 @@ const routes = [
   ...paymentRoutes,
   ...transferRoutes,
   ...settingsRoutes,
+  ...storefrontRoutes,
   ...externalRoutes,
   {
     path: "/*",

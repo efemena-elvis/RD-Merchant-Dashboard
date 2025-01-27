@@ -10,11 +10,11 @@
       :class="inputBaseColor"
       >{{ labelTitle }}</label
     >
-
+    <!-- inputBaseColor -->
     <div class="form-block-input">
       <select
         :id="labelId"
-        :class="['form-control', inputBaseColor]"
+        :class="['form-control']"
         v-model="selectedValue"
         :required="isRequired"
         :disabled="isDisabled"

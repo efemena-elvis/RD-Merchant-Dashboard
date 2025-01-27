@@ -1,8 +1,6 @@
 <template>
   <div class="alert-top-bar">
     <div class="alert--left">
-      <div class="icon icon-info-circle"></div>
-
       <div class="text">{{ alertText }}</div>
     </div>
 
@@ -43,18 +41,14 @@ const handleAlertAction = () => {
   .alert--left {
     @apply flex justify-start items-center gap-x-2;
 
-    .icon {
-      @apply text-lg;
-    }
-
     .text {
-      @apply text-grey-800 text-sm lg:text-[13.5px];
+      @apply text-grey-800 text-[13.5px];
     }
   }
 
   .alert--right {
     .action-btn {
-      @apply transition duration-300 ease-in-out cursor-pointer border border-yellow-800/50 rounded-full px-5 py-2 text-[13.5px] text-center text-nowrap hover:bg-yellow-200/35;
+      @apply transition duration-300 ease-in-out cursor-pointer text-[13.5px] text-center text-nowrap underline hover:no-underline hover:text-green-700;
     }
   }
 }

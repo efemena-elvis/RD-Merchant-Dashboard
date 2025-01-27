@@ -81,7 +81,7 @@ watch(route, () => {
 const { setPageBackgroundColor } = useColor();
 
 onMounted(() => {
-  setPageBackgroundColor("#f6faf9");
+  setPageBackgroundColor("#ffffff");
 
   eventBus?.on("triggerSidebar", () => toggleMobileSidebar());
 
@@ -132,7 +132,7 @@ const getActivationStatus = () => {
     }
 
     .main-content {
-      @apply relative w-full h-full px-8 xl:px-6 mdLg:px-4 py-1;
+      @apply relative -mt-3.5 w-full h-full px-8 xl:px-6 mdLg:px-4;
     }
   }
 }

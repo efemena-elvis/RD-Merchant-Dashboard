@@ -116,6 +116,18 @@ export function useValidator() {
     else return "";
   };
 
+  const validateAlphanumeric = (
+    input: string,
+    message: string = "Input should only contain alphabets and numbers"
+  ) => {
+    const trimmedInput = trimInput(input);
+
+    // Regular expression to match only alphabets and numbers
+    const alphanumericRegex = /^[A-Za-z0-9]+$/;
+
+    return alphanumericRegex.test(trimmedInput) ? "" : message;
+  };
+
   const validateDateRange = (
     input: string,
     range: number,
@@ -162,6 +174,7 @@ export function useValidator() {
     validatePasswordStrength,
     validateFullName,
     validateSingleName,
+    validateAlphanumeric,
     validateDateRange,
     validateURL,
   };

@@ -32,6 +32,9 @@
       <TableEmpty
         :title="emptyData.title"
         :description="emptyData.description"
+        :actionText="emptyData.actionText"
+        :customImg="emptyData.customImg"
+        @onActionClicked="$emit('onActionClicked')"
         v-else
       />
     </template>
@@ -42,6 +45,8 @@
 import { toRefs } from "vue";
 import TableLoading from "@/shared/components/table-comps/table-loading.vue";
 import TableEmpty from "@/shared/components/table-comps/table-empty.vue";
+
+defineEmits(["onActionClicked"]);
 
 const props = defineProps({
   tableHeader: {
@@ -61,6 +66,8 @@ const props = defineProps({
     default: () => ({
       title: "Not available",
       description: "No data available yet",
+      actionText: "",
+      customImg: "",
     }),
   },
 });
@@ -94,11 +101,11 @@ thead {
 }
 
 thead tr {
-  @apply border-0 border-y border-y-grey-200/75 bg-grey-50/35;
+  @apply border-0 border-y border-y-grey-200/75 bg-grey-50/45;
 }
 
 thead tr td {
-  @apply px-3 pt-[22px] pb-[18px];
+  @apply px-3.5 pt-[22px] pb-[18px];
 }
 
 thead tr td .table-header {
@@ -118,7 +125,7 @@ tbody tr {
 }
 
 tbody tr td {
-  @apply px-3 py-5 w-auto;
+  @apply px-4 py-5 w-auto;
   min-width: 24px;
   max-width: 200px;
 }

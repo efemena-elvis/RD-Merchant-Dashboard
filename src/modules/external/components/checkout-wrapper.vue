@@ -6,28 +6,70 @@
 
   <div class="checkout-wrapper">
     <div class="checkout-ui">
-      <!-- CHECKOUT UI TOP -->
-      <div class="checkout-ui--top">
-        <div class="checkout-ui--top--left">
-          <!-- REDSTONE BRAND ICON -->
-          <div class="brand-icon">
-            <img :src="renderImg('redstone-dark.svg')" alt="RedstonePGS" />
+      <div class="py-6" v-if="loading_payment_details">
+        <SkeletonCheckout />
+      </div>
+
+      <template v-else>
+        <!-- CHECKOUT UI TOP -->
+        <div class="checkout-ui--top">
+          <div class="text-xl font-medium">Select payment method</div>
+          <div class="grid grid-cols-2 gap-6 mt-8 mb-2">
+            <div
+              class="rounded-lg border shadow-md p-3 relative cursor-pointer hover:border-teal-400 transition-colors"
+              :class="[
+                paymentMethod === 'card'
+                  ? 'border-teal-400'
+                  : 'border-grey-200',
+              ]"
+              @click="mutatePaymentMethod('card')"
+            >
+              <div class="space-y-1 mx-auto grid place-items-center">
+                <span class="text-sm text-grey-700">CARD</span>
+                <div class="w-10 h-6 border"></div>
+              </div>
+              <div
+                class="size-4 bg-teal-500 grid place-items-center rounded-full absolute right-2 top-2"
+                v-if="paymentMethod === 'card'"
+              >
+                <div class="icon icon-checkmark text-white"></div>
+              </div>
+            </div>
+            <div
+              class="rounded-lg border shadow-md p-3 relative cursor-pointer hover:border-teal-400 transition-colors"
+              :class="[
+                paymentMethod === 'mobilemoney'
+                  ? 'border-teal-400'
+                  : 'border-grey-200',
+              ]"
+              @click="mutatePaymentMethod('mobilemoney')"
+            >
+              <div class="space-y-1 mx-auto grid place-items-center">
+                <span class="text-sm text-grey-700">MOBILE MONEY</span>
+                <div class="w-10 h-6 border"></div>
+              </div>
+              <div
+                class="size-4 bg-teal-500 grid place-items-center rounded-full absolute right-2 top-2"
+                v-if="paymentMethod === 'mobilemoney'"
+              >
+                <div class="icon icon-checkmark text-white"></div>
+              </div>
+            </div>
+            <div
+              class="col-span-2 border-2 border-grey-200 shadow-md p-3 rounded-lg text-center text-lg font-semibold text-green-600"
+            >
+              Pay
+              {{ paymentDetails.currency }}
+              {{ formatNumber(paymentDetails.amount) }}
+            </div>
           </div>
         </div>
 
-        <div class="checkout-ui--top--right">
-          <div class="help-text">Amount to pay</div>
-          <div class="payment-amount">
-            {{ paymentDetails.currency }}
-            {{ formatNumber(paymentDetails.amount) }}
-          </div>
+        <!-- CHECKOUT UI BASE -->
+        <div class="checkout-ui--base">
+          <slot></slot>
         </div>
-      </div>
-
-      <!-- CHECKOUT UI BASE -->
-      <div class="checkout-ui--base">
-        <slot></slot>
-      </div>
+      </template>
     </div>
 
     <!-- SECURE BLOCK -->
@@ -45,13 +87,28 @@ import { useRoute } from "vue-router";
 import { useString } from "@/shared/composables/useString";
 import { useExternalStore } from "../store";
 import useEvents from "@/shared/composables/useEvents";
+import type { PaymentMethods } from "@/models/api-type";
+import { storeToRefs } from "pinia";
+import SkeletonCheckout from "@/modules/external/components/skeleton-checkout.vue";
+import { jwtDecode } from "jwt-decode";
 
 const route = useRoute();
 const { setPageBackgroundColor } = useColor();
 const { renderImg, formatNumber } = useString();
 
 const { processAPIRequest } = useEvents();
-const { fetchPaymentDetails } = useExternalStore();
+const {
+  fetchPaymentDetails,
+  mutateCardPaymentContext,
+  fetchCardPaymentContext,
+  mutateCardPaymentForm,
+  mutatePaymentMethod,
+  mutateCardNumberInput,
+  mutateCardSecurityInput,
+} = useExternalStore();
+
+const { paymentMethod } = storeToRefs(useExternalStore());
+const loading_payment_details = ref(false);
 
 const paymentDetails = ref({
   amount: 0,
@@ -71,6 +128,7 @@ const cancelTransaction = () => {
 };
 
 const loadpPaymentDetails = async (paymentReference: string) => {
+  loading_payment_details.value = true;
   const response = await processAPIRequest({
     action: fetchPaymentDetails,
     payload: { paymentReference },
@@ -79,7 +137,49 @@ const loadpPaymentDetails = async (paymentReference: string) => {
 
   if (response.code === 200) {
     paymentDetails.value = response.data;
+    mutatePaymentMethod(paymentDetails.value.method as PaymentMethods);
+    const contextResponse = await processAPIRequest({
+      action: fetchCardPaymentContext,
+      payload: {
+        currency: paymentDetails.value.currency,
+        amount: paymentDetails.value.amount,
+      },
+      showAlert: false,
+    });
+    contextResponse?.data?.capture_token &&
+      loadPaymentCardform(contextResponse.data.capture_token);
   }
+};
+
+const loadPaymentCardform = async (token: string) => {
+  const context = jwtDecode(token);
+  const capture_context = context?.ctx?.[0]?.data;
+  const head = document.getElementsByTagName("head")[0];
+  const script = document.createElement("script");
+  const clientLibraryIntegrity = capture_context?.clientLibraryIntegrity;
+  script.type = "text/javascript";
+  script.async = true;
+  script.onload = async () => {
+    loading_payment_details.value = false;
+    const flex = new Flex(token);
+    const form = flex.microform("card");
+    const cardNumberInput = form.createField("number", {
+      placeholder: "4444 4444 4444 4444",
+    });
+    const cardSecurityInput = form.createField("securityCode", {
+      placeholder: "123",
+    });
+    mutateCardNumberInput(cardNumberInput);
+    mutateCardSecurityInput(cardSecurityInput);
+    mutateCardPaymentForm(form);
+    mutateCardPaymentContext(token);
+  };
+  script.src = capture_context?.clientLibrary;
+  if (clientLibraryIntegrity) {
+    script.integrity = clientLibraryIntegrity;
+    script.crossOrigin = "anonymous";
+  }
+  head.appendChild(script);
 };
 
 watch(
@@ -108,10 +208,10 @@ onMounted(() => {
   @apply w-full h-screen flex flex-col justify-start items-center bg-[#f0f0f0];
 
   .checkout-ui {
-    @apply w-[32%] xl:w-[40%] lg:w-1/2 mdLg:w-[60%] md:w-[70%] sm:w-[80%] xs:w-[94%] mt-20 border border-grey-200/45 shadow-sm rounded-lg bg-neutral-10;
+    @apply w-[36%] xl:w-[40%] lg:w-1/2 mdLg:w-[60%] md:w-[70%] sm:w-[80%] xs:w-[94%] mt-20 border border-grey-200/45 shadow-sm rounded-xl bg-neutral-10;
 
     &--top {
-      @apply px-8 md:px-6 xs:px-4 py-[26px] md:py-6 xs:py-5 flex justify-between items-center gap-x-4 border-b border-b-grey-200/60;
+      @apply px-8 md:px-6 xs:px-4 py-[26px] md:py-6 xs:py-5;
 
       &--left {
         .brand-icon {
@@ -135,7 +235,7 @@ onMounted(() => {
     }
 
     &--base {
-      @apply px-8 md:px-6 xs:px-4 pb-10 md:pb-9 pt-11 md:pt-9 bg-grey-10/35;
+      @apply px-8 md:px-6 xs:px-4 pb-10 md:pb-9 pt-4 md:pt-6 bg-grey-10/35;
     }
   }
 

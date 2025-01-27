@@ -274,6 +274,7 @@ class ServiceApi {
         "Content-Type": "application/json",
         Authorization: `Bearer ${userToken}`,
         "public-key": this.getUserAPIKeys().publicKey,
+        "secret-key": this.getUserAPIKeys().secretKey,
       },
     };
   }

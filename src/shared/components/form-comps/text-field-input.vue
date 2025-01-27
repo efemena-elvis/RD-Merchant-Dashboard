@@ -18,26 +18,28 @@
           <SearchIcon class="prefix-icon" fillColor="#818988" />
         </div>
 
-        <input
-          :type="getInputType"
-          :id="labelId"
-          ref="inputRef"
-          v-model="formValue"
-          :class="[
-            'form-control',
-            inputBaseColor,
-            !isInputValid && 'form-control-error',
-            placeTextCenter && 'text-center',
-          ]"
-          :placeholder="inputPlaceholder"
-          :defaultValue="inputValue"
-          :required="isRequired"
-          :disabled="isDisabled"
-          @input="handleFormInput"
-          @paste="handleFormInput"
-          @change="handleFormInput"
-          @keydown.enter="handleFormInput"
-        />
+        <slot>
+          <input
+            :type="getInputType"
+            :id="labelId"
+            ref="inputRef"
+            v-model="formValue"
+            :class="[
+              'form-control',
+              inputBaseColor,
+              !isInputValid && 'form-control-error',
+              placeTextCenter && 'text-center',
+            ]"
+            :placeholder="inputPlaceholder"
+            :defaultValue="inputValue"
+            :required="isRequired"
+            :disabled="isDisabled"
+            @input="handleFormInput"
+            @paste="handleFormInput"
+            @change="handleFormInput"
+            @keydown.enter="handleFormInput"
+          />
+        </slot>
 
         <!-- SUFFIX ITEM FOR PASSWORD FIELD TYPE -->
         <div

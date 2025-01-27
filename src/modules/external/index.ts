@@ -27,6 +27,18 @@ const externalRoutes: IRouteType[] = [
       title: "Payment Collections",
     },
   },
+  {
+    path: "/checkout/check",
+    name: "RedstoneCheckoutStatus",
+    component: () =>
+      import(
+        /* webpackChunkName: "external-module" */ "@/modules/external/pages/collection-check.vue"
+      ),
+    meta: {
+      open: true,
+      title: "Payment Collections",
+    },
+  },
 ];
 
 export default externalRoutes;

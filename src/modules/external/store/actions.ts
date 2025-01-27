@@ -4,7 +4,8 @@ import { externalRoutes } from "./external-routes";
 import { IAPIType } from "@/models/api-type";
 
 export function useExternalActions() {
-  const { mutatePaymentDetails } = useExternalMutations();
+  const { mutatePaymentDetails, mutateCardPaymentContext } =
+    useExternalMutations();
 
   const fetchPaymentDetails = async ({
     paymentReference,
@@ -17,6 +18,14 @@ export function useExternalActions() {
     return response;
   };
 
+  const fetchCardPaymentContext = async (payload: any) => {
+    return await $api.push(externalRoutes.generateCardContext, {
+      requiresPublicKey: true,
+      resolve: true,
+      payload,
+    });
+  };
+
   const makePayment = async ({ paymentReference, customerDetails }: any) => {
     return await $api.push(
       `${externalRoutes.makePayment}/${paymentReference}`,
@@ -24,8 +33,17 @@ export function useExternalActions() {
     );
   };
 
+  const continuePayment = async ({ paymentReference }: any) => {
+    return await $api.push(
+      `${externalRoutes.continuePayment}/${paymentReference}/continue`,
+      {}
+    );
+  };
+
   return {
     fetchPaymentDetails,
     makePayment,
+    fetchCardPaymentContext,
+    continuePayment,
   };
 }

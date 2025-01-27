@@ -4,3 +4,5 @@ export interface IAPIType {
   message: string;
   data: any;
 }
+
+export type PaymentMethods = "card" | "mobilemoney";

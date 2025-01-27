@@ -1,73 +1,71 @@
 <template>
   <CheckoutWrapper>
-    <template v-if="fetchingPaymentDetails">
-      <SkeletonCheckout />
-    </template>
+    <form
+      @submit.prevent="handleCheckoutPayment"
+      v-if="paymentMethod === 'mobilemoney'"
+    >
+      <!-- FORM AREA -->
+      <div class="form-area">
+        <!-- CUSTOMER FULLNAME -->
+        <TextFieldInput
+          labelId="customerName"
+          labelTitle="Customer Full Name"
+          :inputType="IInputType.Text"
+          :inputValue="payload.full_name"
+          inputPlaceholder="Provide your full name"
+          isRequired
+          @inputChanged="payload.full_name = $event"
+          @inputValidated="payloadValidity.full_name = $event"
+          :errorHandler="{
+            validator: 'validateFullName',
+          }"
+        />
 
-    <template v-else>
-      <form @submit.prevent="handleCheckoutPayment">
-        <!-- FORM AREA -->
-        <div class="form-area">
-          <!-- CUSTOMER FULLNAME -->
-          <TextFieldInput
-            labelId="customerName"
-            labelTitle="Customer Full Name"
-            :inputType="IInputType.Text"
-            :inputValue="payload.full_name"
-            inputPlaceholder="Provide your full name"
-            isRequired
-            @inputChanged="payload.full_name = $event"
-            @inputValidated="payloadValidity.full_name = $event"
-            :errorHandler="{
-              validator: 'validateFullName',
-            }"
-          />
+        <!-- EMAIL ADDRESS -->
+        <TextFieldInput
+          labelId="businessEmail"
+          labelTitle="Email address"
+          :inputType="IInputType.Email"
+          :inputValue="payload.email"
+          inputPlaceholder="Provide your email address"
+          :isRequired="true"
+          @inputChanged="payload.email = $event"
+          @inputValidated="payloadValidity.email = $event"
+          :errorHandler="{
+            validator: 'validateEmail',
+          }"
+        />
 
-          <!-- EMAIL ADDRESS -->
-          <TextFieldInput
-            labelId="businessEmail"
-            labelTitle="Email address"
-            :inputType="IInputType.Email"
-            :inputValue="payload.email"
-            inputPlaceholder="Provide your email address"
-            :isRequired="true"
-            @inputChanged="payload.email = $event"
-            @inputValidated="payloadValidity.email = $event"
-            :errorHandler="{
-              validator: 'validateEmail',
-            }"
-          />
+        <!-- CUSTOMER PHONE NUMBER -->
+        <PhoneFieldInput
+          labelId="phoneNumber"
+          labelTitle="Phone Number"
+          :inputValue="payload.phone_number"
+          inputPlaceholder="Provide your phone number"
+          :isRequired="true"
+          :activeCountryCode="phoneCountryCode"
+          @countryCodeChanged="phoneCountryCode = $event"
+          @inputChanged="payload.phone_number = $event"
+          @inputValidated="payloadValidity.phone_number = $event"
+          :errorHandler="{
+            validator: 'validatePhone',
+          }"
+        />
+      </div>
 
-          <!-- CUSTOMER PHONE NUMBER -->
-          <PhoneFieldInput
-            labelId="phoneNumber"
-            labelTitle="Phone Number"
-            :inputValue="payload.phone_number"
-            inputPlaceholder="Provide your phone number"
-            :isRequired="true"
-            :activeCountryCode="phoneCountryCode"
-            @countryCodeChanged="phoneCountryCode = $event"
-            @inputChanged="payload.phone_number = $event"
-            @inputValidated="payloadValidity.phone_number = $event"
-            :errorHandler="{
-              validator: 'validatePhone',
-            }"
-          />
-        </div>
-
-        <!-- ACTION BUTTON -->
-        <div class="action-row -mt-1">
-          <button
-            class="btn btn-primary w-full"
-            ref="checkoutBtnRef"
-            :disabled="isActionReady"
-          >
-            Pay {{ paymentDetails.currency }}
-            {{ formatNumber(paymentDetails.amount) }}
-          </button>
-        </div>
-      </form>
-    </template>
+      <!-- ACTION BUTTON -->
+      <div class="action-row -mt-1">
+        <button
+          class="btn btn-primary w-full"
+          ref="checkoutBtnRef"
+          :disabled="isActionReady"
+        >
+          Pay {{ paymentDetails.currency }}
+          {{ formatNumber(paymentDetails.amount) }}
+        </button>
+      </div>
+    </form>
+    <CardPaymentForm :details="cardPaymentDetails" v-else />
   </CheckoutWrapper>
 </template>
 
@@ -79,10 +77,10 @@ import { useString } from "@/shared/composables/useString";
 import { useExternalStore } from "../store";
 import useEvents from "@/shared/composables/useEvents";
 import CheckoutWrapper from "@/modules/external/components/checkout-wrapper.vue";
-import SkeletonCheckout from "@/modules/external/components/skeleton-checkout.vue";
 import TextFieldInput from "@/shared/components/form-comps/text-field-input.vue";
 import PhoneFieldInput from "@/shared/components/form-comps/phone-field-input.vue";
 import { storeToRefs } from "pinia";
+import CardPaymentForm from "../components/card-payment-form.vue";
 
 type IPayloadInputType = {
   full_name: string;
@@ -103,7 +101,7 @@ const { formatNumber } = useString();
 const { clickHandler } = useEvents();
 
 const { mutateCustomerDetails } = useExternalStore();
-const { getPaymentDetails } = storeToRefs(useExternalStore());
+const { getPaymentDetails, paymentMethod } = storeToRefs(useExternalStore());
 
 const checkoutBtnRef = ref(null);
 const phoneCountryCode = ref<string>("260");
@@ -171,6 +169,13 @@ const getPayload = computed(() => {
   }
 
   return updatedPayload;
+});
+
+const cardPaymentDetails = computed(() => {
+  return {
+    currency: getPaymentDetails.value?.currency ?? "ZMW",
+    amount: getPaymentDetails.value?.amount ?? 0,
+  };
 });
 
 const handleCheckoutPayment = () => {

@@ -140,7 +140,7 @@ export function useString() {
     return `<span class='font-medium text-grey-800/85'>${text}</span>`;
   };
 
-  const getStatus = (status: string): string => {
+  const getStatus = (status: string, suffixText?: string): string => {
     const statusData: Record<string, string> = {
       success: "bg-green-400",
       successful: "bg-green-400",
@@ -148,7 +148,7 @@ export function useString() {
       failed: "bg-red-400",
     };
 
-    return `<div class='relative left-2.5 size-[9px] min-w-[9px] min-h-[9px] rounded-full ${statusData[status]}'></div>`;
+    return `<div class='flex flex-row items-center gap-x-1.5'><div class='relative w-[9px] h-[9px] rounded-full ${statusData[status]}'></div>${suffixText}</div>`;
   };
 
   const transactionFlowIcon = (status: string): string => {
@@ -164,8 +164,8 @@ export function useString() {
     return `<div class='text-grey-600/40'>${text}</div>`;
   };
 
-  const getActionBtn = (actionText: string): string => {
-    return `<button class='py-[7px] px-3.5 text-grey-800/80 font-medium rounded-lg border border-grey-300/70 text-[12.75px]'>${actionText}</button>`;
+  const createPreviewLink = (link: string, linkTitle?: string): string => {
+    return `<a class='text-green-600 underline cursor-pointer' href='${link}' target='_blank' rel='noopener noreferrer'>${linkTitle ?? "Preview"}</a>`;
   };
 
   return {
@@ -185,6 +185,6 @@ export function useString() {
     getStatus,
     transactionFlowIcon,
     notAvailable,
-    getActionBtn,
+    createPreviewLink,
   };
 }

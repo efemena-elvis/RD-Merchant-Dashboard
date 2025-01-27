@@ -18,6 +18,8 @@
           <SearchIcon class="prefix-icon" fillColor="#818988" />
         </div>
 
+        <!-- inputBaseColor, -->
+
         <input
           :type="getInputType"
           :id="labelId"
@@ -25,7 +27,6 @@
           v-model="formValue"
           :class="[
             'form-control',
-            inputBaseColor,
             !isInputValid && 'form-control-error',
             placeTextCenter && 'text-center',
           ]"
@@ -84,14 +85,11 @@
         </div>
       </template>
 
+      <!-- inputBaseColor, -->
       <textarea
         v-else
         :id="labelId"
-        :class="[
-          'form-control',
-          inputBaseColor,
-          formErrorMsg ? 'form-control-error' : '',
-        ]"
+        :class="['form-control', formErrorMsg ? 'form-control-error' : '']"
         v-model="formValue"
         :placeholder="inputPlaceholder"
         :required="isRequired"
@@ -109,7 +107,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from "vue";
+import { ref, computed, watch } from "vue";
 import { useValidator } from "@/shared/composables/useValidators";
 import SearchIcon from "@/shared/components/icon-comps/search-icon.vue";
 import {
@@ -133,7 +131,7 @@ const props = withDefaults(defineProps<ITextInputField>(), {
   isDisabled: false,
   showPasswordDisplay: true,
   showTextCopy: false,
-  copiedText: "Coped successfully",
+  copiedText: "Copied successfully",
   placeTextCenter: false,
   hasBottomPadding: true,
 });
@@ -152,6 +150,7 @@ const {
   validatePasswordStrength,
   validateFullName,
   validateSingleName,
+  validateAlphanumeric,
   validateDateRange,
   validateURL,
 } = useValidator();
@@ -241,6 +240,13 @@ const validateInputFields = (errorHandler: IInputValidator) => {
 
     case "validateSingleName":
       formErrorMsg.value = validateSingleName(
+        formValue.value as string,
+        message
+      );
+      break;
+
+    case "validateAlphanumeric":
+      formErrorMsg.value = validateAlphanumeric(
         formValue.value as string,
         message
       );

@@ -1,7 +1,7 @@
 <template>
   <div class="page-content-wrapper">
     <!-- TOP ROW -->
-    <div class="top-row">
+    <div class="top-row" v-if="hasPayload">
       <div class="top-row--left">
         <div class="search-block">
           <TextFieldInput
@@ -25,6 +25,15 @@
           :periodList="filterListValue"
           @onFilterSelected="handleFilterSelection"
         />
+
+        <template name="customActionBtn" v-if="showCustomActionBtn">
+          <button
+            class="btn btn-sm btn-primary custom-action-btn"
+            @click="$emit('customActionBtnClicked')"
+          >
+            {{ customActionBtnText }}
+          </button>
+        </template>
       </div>
     </div>
 
@@ -58,6 +67,9 @@ interface IPageContentType {
   pageDescription: string;
   pagingData: any;
   pageKeys: any;
+  hasPayload: boolean;
+  showCustomActionBtn: boolean;
+  customActionBtnText: string;
 }
 
 const props = withDefaults(defineProps<IPageContentType>(), {
@@ -68,9 +80,16 @@ const props = withDefaults(defineProps<IPageContentType>(), {
   pageDescription: "",
   pagingData: { page_count: 0 },
   pageKeys: {},
+  hasPayload: false,
+  showCustomActionBtn: false,
+  customActionBtnText: "",
 });
 
-const emits = defineEmits(["filterSelected", "searchEntered"]);
+const emits = defineEmits([
+  "filterSelected",
+  "searchEntered",
+  "customActionBtnClicked",
+]);
 
 // Handle search functionality
 const handleSearchEntry = (searchValue: string) => {
@@ -85,7 +104,7 @@ const handleFilterSelection = (filterValue: string) => {
 
 <style lang="scss">
 .page-content-wrapper {
-  @apply w-full h-full bg-neutral-10 rounded-lg border border-grey-200/50 p-5 mdLg:p-4 shadow-lg shadow-grey-200/40 flex flex-col justify-between items-start gap-y-9 mb-12;
+  @apply w-full h-full flex flex-col justify-between items-start gap-y-9 pb-10;
 
   .top-row {
     @apply flex justify-between items-start gap-x-4 xs:gap-x-2.5 w-full;
@@ -100,6 +119,10 @@ const handleFilterSelection = (filterValue: string) => {
 
     &--right {
       @apply flex justify-end items-center gap-x-3 xs:w-1/5;
+
+      .custom-action-btn {
+        @apply px-7 font-normal text-[14px];
+      }
     }
   }
 

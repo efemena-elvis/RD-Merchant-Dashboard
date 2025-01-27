@@ -80,7 +80,7 @@ export default function useEvents() {
       btnRef && clickHandler(btnRef, btnText, false);
 
       // Handle different response codes
-      switch (response?.code) {
+      switch (response?.code || response?.status) {
         case 200:
         case 201:
           if (

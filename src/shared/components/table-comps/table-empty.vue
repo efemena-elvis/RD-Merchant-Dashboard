@@ -2,7 +2,7 @@
   <div class="table-empty">
     <!-- EMPTY IMAGE -->
     <div class="img-wrapper">
-      <img :src="renderImg('empty-box.png')" alt="" />
+      <img :src="renderImg(`${customImg}`)" alt="empty-table" />
     </div>
 
     <!-- TITLE TEXT -->
@@ -12,11 +12,22 @@
     <div class="description-text">
       {{ description }}
     </div>
+
+    <!-- ACTION BUTTON -->
+    <button
+      class="btn btn-primary btn-sm mt-6"
+      v-if="actionText.length"
+      @click="$emit('onActionClicked')"
+    >
+      {{ actionText }}
+    </button>
   </div>
 </template>
 
 <script lang="ts" setup>
 import { useString } from "@/shared/composables/useString";
+
+defineEmits(["onActionClicked"]);
 
 defineProps({
   title: {
@@ -27,6 +38,14 @@ defineProps({
     type: String,
     default: "No table data is available yet",
   },
+  customImg: {
+    type: String,
+    default: "empty-box.png",
+  },
+  actionText: {
+    type: String,
+    default: "",
+  },
 });
 
 const { renderImg } = useString();
@@ -34,7 +53,7 @@ const { renderImg } = useString();
 
 <style lang="scss" scoped>
 .table-empty {
-  @apply flex flex-col justify-center items-center gap-y-3 -mt-4 py-8 sm:py-6 lg:-mt-1 sm:mt-3 mb-12 mdLg:mb-16;
+  @apply flex flex-col justify-center items-center gap-y-3 mt-5 py-8 sm:py-6 lg:-mt-1 sm:mt-3 mb-12 mdLg:mb-16;
 
   .img-wrapper {
     img {

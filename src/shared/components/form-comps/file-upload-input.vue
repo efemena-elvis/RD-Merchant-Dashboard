@@ -38,7 +38,7 @@
         <!-- NOT UPLOADED STATE -->
         <template v-else>
           <div class="icon icon-upload text-xl text-grey-600/80"></div>
-          <div class="select-none">Click here to upload your file</div>
+          <div class="select-none">{{ fileUploadText }}</div>
         </template>
       </div>
     </label>
@@ -64,7 +64,7 @@
 </template>
 
 <script lang="ts" setup>
-import { ref } from "vue";
+import { computed, ref } from "vue";
 import { useRouter } from "vue-router";
 import { useString } from "@/shared/composables/useString";
 import { useFile } from "@/shared/composables/useFile";
@@ -77,6 +77,7 @@ interface IFileUploadType {
   skipRoute?: string;
   hasDocumentUploaded?: boolean;
   uploadedDocumentContent?: { name?: string; link?: string };
+  fileUploadText?: string;
 }
 
 const props = withDefaults(defineProps<IFileUploadType>(), {
@@ -84,6 +85,7 @@ const props = withDefaults(defineProps<IFileUploadType>(), {
   showSkip: false,
   skipRoute: "",
   hasDocumentUploaded: false,
+  fileUploadText: "Click here to upload your file",
 });
 
 const alreadyUploadedDoc = props.uploadedDocumentContent || {
@@ -103,6 +105,8 @@ const fileUploadRef = ref<HTMLInputElement | null>(null);
 const allowedFiles = ref<string[]>(["pdf", "jpeg", "jpg", "png"]);
 
 const isDocUploaded = ref<boolean>(props.hasDocumentUploaded || false);
+// const isDocUploaded = computed(() => props.hasDocumentUploaded || false);
+
 const isUploading = ref<boolean>(false);
 
 const docPayload = ref<{ name: string; link: string }>({

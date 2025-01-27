@@ -25,6 +25,7 @@
             </div>
           </div>
         </div>
+
         <div class="label mt-2">{{ day }}</div>
       </div>
     </div>

@@ -1,0 +1,118 @@
+<template>
+  <ModalDialog @closeModal="$emit('closeTriggered')">
+    <!-- MODAL COVER HEADER -->
+    <template #modal-cover-header>
+      <div class="modal-cover-header"></div>
+    </template>
+
+    <template #modal-cover-body>
+      <div class="modal-cover-body">
+        <div class="modal-title">Delete Storefront</div>
+
+        <div class="modal-description">
+          You are about to delete
+          <span class="font-semibold">{{ storefrontData.name }}</span>
+          storefront project. Do you wish to continue?
+        </div>
+
+        <div class="modal-actions">
+          <button
+            class="btn btn-sm cancel-btn"
+            @click="$emit('closeTriggered')"
+          >
+            Cancel
+          </button>
+
+          <button
+            class="btn btn-sm delete-btn"
+            ref="deleteStorefrontBtnRef"
+            @click="handleeStorefrontDelete"
+          >
+            Delete
+          </button>
+        </div>
+      </div>
+    </template>
+
+    <!-- MODAL COVER FOOTER -->
+    <template #modal-cover-footer>
+      <div class="modal-cover-footer"></div>
+    </template>
+  </ModalDialog>
+</template>
+
+<script lang="ts" setup>
+import { ref, computed } from "vue";
+import ModalDialog from "@/shared/components/global-comps/modal-dialog.vue";
+import useEvents from "@/shared/composables/useEvents";
+import { useStorefrontStore } from "@/modules/storefront/store";
+
+const emits = defineEmits(["closeTriggered", "reloadStorefront"]);
+
+const props = defineProps({
+  storefrontData: {
+    type: Object,
+    required: true,
+  },
+});
+
+const { processAPIRequest } = useEvents();
+const { deleteStorefront } = useStorefrontStore();
+
+const deleteStorefrontBtnRef = ref(null);
+
+const handleeStorefrontDelete = async () => {
+  const response = await processAPIRequest({
+    action: deleteStorefront,
+    payload: { storefrontId: props.storefrontData.id },
+    btnRef: deleteStorefrontBtnRef,
+    btnText: "Delete",
+    alertHandler: {
+      200: {
+        message: "Storefront deleted successfully",
+        description: "You are being redirected to your storefront dashboard",
+        type: "success",
+      },
+
+      400: {
+        message: "Storefront deletion failed",
+        description: "An error occurred while deleting your storefront",
+        type: "error",
+      },
+    },
+  });
+
+  if (response.code === 200 || response.status === 200) {
+    emits("reloadStorefront");
+    emits("closeTriggered");
+  }
+};
+</script>
+
+<style lang="scss" scoped>
+.modal-cover-body {
+  .modal-title {
+    @apply text-grey-900 text-[22px] sm:text-xl font-semibold mb-6;
+  }
+
+  .modal-description {
+    @apply text-grey-600 text-[14.75px] sm:text-[13.5px] mb-8;
+  }
+
+  .modal-actions {
+    @apply flex flex-nowrap justify-start items-center gap-x-3;
+
+    .btn {
+      @apply rounded-xl w-1/2;
+    }
+
+    .cancel-btn {
+      @apply border border-grey-600 text-grey-600 hover:bg-grey-600 hover:text-neutral-10;
+    }
+
+    .delete-btn {
+      @apply bg-red-500 text-neutral-10 hover:bg-red-600;
+    }
+  }
+}
+</style>

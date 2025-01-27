@@ -273,10 +273,8 @@ class ServiceApi {
       headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${userToken}`,
-        "public-key":
-          "redPub_test_f6239f58dc7a4db4841be0c7137bb4e9f6239f58dc7aN7VkCz",
-        "secret-key":
-          "redSec_test_c4995a006d9c4e9180112d41b38acc69c4995a006d9c1LHRK3",
+        "public-key": this.getUserAPIKeys().publicKey,
+        "secret-key": this.getUserAPIKeys().secretKey,
       },
     };
   }

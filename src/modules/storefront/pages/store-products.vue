@@ -107,6 +107,7 @@ const showManageProductModal = ref(false);
 const showDeleteProductModal = ref(false);
 
 const toggleManageProductModal = () => {
+  productDataItem.value = {};
   showManageProductModal.value = !showManageProductModal.value;
 };
 
@@ -169,7 +170,8 @@ const handleDeleteProduct = (productData: any) => {
 
 const handleEditProduct = (productData: any) => {
   productDataItem.value = productData;
-  toggleManageProductModal();
+  showManageProductModal.value = !showManageProductModal.value;
+  // toggleManageProductModal();
 };
 
 const fetchStorefrontById = async () => {

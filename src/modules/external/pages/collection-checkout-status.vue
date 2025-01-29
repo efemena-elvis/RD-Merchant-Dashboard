@@ -132,7 +132,7 @@ const makeCustomerPayment = async (payload: any) => {
     showAlert: false,
   });
 
-  if (response.code === 200) {
+  if (response?.code === 200) {
     updateTransactionState("success");
   } else {
     updateTransactionState("failed");

@@ -148,7 +148,7 @@ export function useString() {
       failed: "bg-red-400",
     };
 
-    return `<div class='flex flex-row items-center gap-x-1.5'><div class='relative w-[9px] h-[9px] rounded-full ${statusData[status]}'></div>${suffixText}</div>`;
+    return `<div class='flex flex-row items-center gap-x-1.5'><div class='relative w-[9px] h-[9px] rounded-full ${statusData[status]}'></div>${suffixText ?? ""}</div>`;
   };
 
   const transactionFlowIcon = (status: string): string => {

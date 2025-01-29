@@ -97,7 +97,7 @@ const fetchPaymentTransactions = async () => {
 
   isLoading.value = false;
 
-  if (response.code === 200) {
+  if (response?.code === 200) {
     response.data.map((data: any) => {
       tableBody.push({
         status: getStatus(data.status),

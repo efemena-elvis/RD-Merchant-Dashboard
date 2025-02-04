@@ -16,7 +16,10 @@
           <template v-if="!isCheckoutStatusRoute">
             <div class="text-xl font-semibold">Payment Checkout</div>
 
-            <div class="grid grid-cols-2 gap-6 mt-8 mb-2">
+            <div
+              class="grid grid-cols-2 gap-6 mt-8 mb-2"
+              v-if="isCardCheckoutEnabled"
+            >
               <!-- CARD -->
               <div
                 class="rounded-lg border shadow-md p-3 relative cursor-pointer hover:border-green-500 transition-colors"
@@ -125,6 +128,8 @@ const {
 const { paymentMethod } = storeToRefs(useExternalStore());
 const loading_payment_details = ref(false);
 
+const isCardCheckoutEnabled = ref(false);
+
 const paymentDetails = ref({
   amount: 0,
   business_id: "",
@@ -148,6 +153,7 @@ const cancelTransaction = () => {
 
 const loadpPaymentDetails = async (paymentReference: string) => {
   loading_payment_details.value = true;
+  
   const response = await processAPIRequest({
     action: fetchPaymentDetails,
     payload: { paymentReference },
@@ -157,6 +163,12 @@ const loadpPaymentDetails = async (paymentReference: string) => {
   if (response.code === 200) {
     paymentDetails.value = response.data;
     mutatePaymentMethod(paymentDetails.value.method as PaymentMethods);
+
+    if (!isCardCheckoutEnabled.value) {
+      loading_payment_details.value = false;
+      return;
+    }
+
     const contextResponse = await processAPIRequest({
       action: fetchCardPaymentContext,
       payload: {

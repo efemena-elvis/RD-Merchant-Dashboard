@@ -77,7 +77,7 @@
 </template>
 
 <script setup lang="ts">
-import { watchEffect, ref, computed, toRaw } from "vue";
+import { watchEffect, ref, computed, toRaw, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { storeToRefs } from "pinia";
 import { useExternalStore } from "../store";
@@ -90,13 +90,19 @@ const router = useRouter();
 
 const { renderImg, formatNumber, createAndClickAnchor } = useString();
 const { processAPIRequest } = useEvents();
-const { makePayment } = useExternalStore();
+const { makePayment, fetchPaymentDetails } = useExternalStore();
 const { getCustomerDetails, getPaymentDetails } =
   storeToRefs(useExternalStore());
 
 const activeStatus = ref<string>("pending");
 const redirectURL = ref<string>("");
-const calledOnce = ref<boolean>(false); // Prevent duplicate API calls
+
+const calledOnce = ref<boolean>(false);
+const isPaymentInitiated = ref<boolean>(false);
+
+const transactionTimeInterval = ref<number>(5000);
+const currentTransactionCounter = ref<number>(0);
+const maximumTransactionCounter = ref<number>(60);
 
 // Compute readiness for API call
 const isReady = computed(() => {
@@ -105,6 +111,22 @@ const isReady = computed(() => {
     route.params.status === "pending"
   );
 });
+
+const retirevePaymentDetails = async () => {
+  const response = await processAPIRequest({
+    action: fetchPaymentDetails,
+    payload: { paymentReference: route.params.paymentReference },
+    showAlert: false,
+  });
+
+  if (response.code === 200 || response.code === 409) {
+    updateTransactionState(
+      response.data.status === "success" ? "success" : "pending"
+    );
+  } else {
+    updateTransactionState("failed");
+  }
+};
 
 // Handles payment execution
 const makeCustomerPayment = async (payload: any) => {
@@ -118,11 +140,41 @@ const makeCustomerPayment = async (payload: any) => {
   });
 
   if (response.code === 200 || response.code === 409) {
-    updateTransactionState("success");
+    isPaymentInitiated.value = true;
+
+    updateTransactionState(
+      response.data.payment_status === "success" ? "success" : "pending"
+    );
   } else {
     updateTransactionState("failed");
   }
 };
+
+watch(
+  () => isPaymentInitiated.value,
+  () => {
+    if (isPaymentInitiated.value) {
+      // Cntinuosly call the retrievePaymentDetails function
+      // every 3 seconda until the status is "success"
+      const interval = setInterval(() => {
+        if (route.params.status === "pending") {
+          currentTransactionCounter.value += 1;
+
+          if (
+            currentTransactionCounter.value >= maximumTransactionCounter.value
+          ) {
+            updateTransactionState("failed");
+            clearInterval(interval);
+          } else {
+            retirevePaymentDetails();
+          }
+        } else {
+          clearInterval(interval);
+        }
+      }, transactionTimeInterval.value);
+    }
+  }
+);
 
 // Watch for readiness and call makePayment once
 watchEffect(() => {

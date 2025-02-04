@@ -98,7 +98,7 @@ const fetchPaymentTransactions = async () => {
 
   isLoading.value = false;
 
-  if (response.code === 200) {
+  if (response?.code === 200) {
     response.data.map((data: any) => {
       tableBody.push({
         date_created: getTransactionDate(data.created_at),

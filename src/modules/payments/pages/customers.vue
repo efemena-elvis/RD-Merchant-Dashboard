@@ -5,6 +5,8 @@
     pageDescription="All customers"
     :pagingData="tablePaging"
     :pageKeys="{ green: 'Active', red: 'Blacklisted' }"
+    :hasPayload="tableBody.length > 0"
+    :showCustomActionBtn="false"
     @searchEntered="processSearchEntry"
     @filterSelected="processFilterSelection"
   >
@@ -29,7 +31,7 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, onMounted, reactive } from "vue";
+import { ref, onMounted, reactive, h } from "vue";
 import { useString } from "@/shared/composables/useString";
 import { TableHeaderType } from "@/models/dashboard-type";
 import { usePaymentStore } from "../store";
@@ -38,6 +40,7 @@ import useEvents from "@/shared/composables/useEvents";
 import PageContentWrapper from "@/shared/components/global-comps/page-content-wrapper.vue";
 import TableContainer from "@/shared/components/table-comps/table-container.vue";
 import TableContainerBody from "@/shared/components/table-comps/table-container-body.vue";
+import TableDoubleColumn from "@/shared/components/table-comps/table-double-column.vue";
 
 const { getStatus, notAvailable } = useString();
 
@@ -47,11 +50,11 @@ const { processAPIRequest } = useEvents();
 const isLoading = ref<boolean>(true);
 
 const tableHeader = ref<TableHeaderType[]>([
-  { title: "", slug: "status" },
   { title: "Added On", slug: "date_created" },
-  { title: "Customer Email", slug: "customer_email" },
   { title: "Full Name", slug: "full_name" },
+  { title: "Customer Email", slug: "customer_email" },
   { title: "Phone Number", slug: "phone_number" },
+  { title: "Status", slug: "status" },
 ]);
 
 const tableBody = reactive<any[]>([]);
@@ -99,11 +102,16 @@ const fetchCustomers = async () => {
   if (response.code === 200) {
     response.data.map((data: any) => {
       tableBody.push({
-        status: getStatus("success"),
         date_created: getDateAdded(data.created_at),
-        customer_email: data.email,
         full_name: `${data.firstname} ${data.lastname}`,
-        phone_number: notAvailable("No phone number"),
+        customer_email: data.email,
+        phone_number: data.phone_number
+          ? "+" + data.phone_number
+          : notAvailable("No phone number"),
+        status: getStatus(
+          data.blacklisted ? "danger" : "success",
+          data.blacklisted ? "Blacklisted" : "Active"
+        ),
       });
     });
 

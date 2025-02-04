@@ -12,65 +12,72 @@
 
       <template v-else>
         <!-- CHECKOUT UI TOP -->
-        <div class="checkout-ui--top">
-          <div class="text-xl font-medium">Select payment method</div>
-          <div class="grid grid-cols-2 gap-6 mt-8 mb-2">
-            <div
-              class="rounded-lg border shadow-md p-3 relative cursor-pointer hover:border-teal-400 transition-colors"
-              :class="[
-                paymentMethod === 'card'
-                  ? 'border-teal-400'
-                  : 'border-grey-200',
-              ]"
-              @click="mutatePaymentMethod('card')"
-            >
-              <div class="space-y-1 mx-auto grid place-items-center">
-                <span class="text-sm text-grey-700">CARD</span>
-                <div class="w-10 h-6">
-                  <img :src="renderImg('card.svg')" alt="money" class="-mt-2" />
+        <div class="checkout-ui--top" :class="isCheckoutStatusRoute && 'pt-10'">
+          <template v-if="!isCheckoutStatusRoute">
+            <div class="text-xl font-semibold">Payment Checkout</div>
+
+            <div class="grid grid-cols-2 gap-6 mt-8 mb-2">
+              <!-- CARD -->
+              <div
+                class="rounded-lg border shadow-md p-3 relative cursor-pointer hover:border-green-500 transition-colors"
+                :class="[
+                  paymentMethod === 'card'
+                    ? 'border-2 border-green-600'
+                    : 'border-grey-200',
+                ]"
+                @click="mutatePaymentMethod('card')"
+              >
+                <div class="space-y-3 mx-auto grid place-items-center">
+                  <div class="w-10 h-6 mb-1">
+                    <img :src="renderImg('card.svg')" alt="money" />
+                  </div>
+
+                  <div class="text-sm text-grey-700 font-medium mt-2">CARD</div>
+                </div>
+                <div
+                  class="size-4 bg-green-600 grid place-items-center rounded-full absolute right-2 top-2"
+                  v-if="paymentMethod === 'card'"
+                >
+                  <div class="icon icon-checkmark text-white"></div>
                 </div>
               </div>
+
+              <!-- MOBILE MONEY -->
               <div
-                class="size-4 bg-teal-500 grid place-items-center rounded-full absolute right-2 top-2"
-                v-if="paymentMethod === 'card'"
+                class="rounded-lg border shadow-md p-3 relative cursor-pointer hover:border-green-500 transition-colors"
+                :class="[
+                  paymentMethod === 'mobilemoney'
+                    ? 'border-2 border-green-600'
+                    : 'border-grey-200',
+                ]"
+                @click="mutatePaymentMethod('mobilemoney')"
               >
-                <div class="icon icon-checkmark text-white"></div>
-              </div>
-            </div>
-            <div
-              class="rounded-lg border shadow-md p-3 relative cursor-pointer hover:border-teal-400 transition-colors"
-              :class="[
-                paymentMethod === 'mobilemoney'
-                  ? 'border-teal-400'
-                  : 'border-grey-200',
-              ]"
-              @click="mutatePaymentMethod('mobilemoney')"
-            >
-              <div class="space-y-1 mx-auto grid place-items-center">
-                <span class="text-sm text-grey-700">MOBILE MONEY</span>
-                <div class="w-10 h-6">
-                  <img
-                    :src="renderImg('money.svg')"
-                    alt="money"
-                    class="-mt-2"
-                  />
+                <div class="space-y-3 mx-auto grid place-items-center">
+                  <div class="w-10 h-6 mb-1">
+                    <img :src="renderImg('money.svg')" alt="money" />
+                  </div>
+
+                  <div class="text-sm text-grey-700 font-medium mt-2">
+                    MOBILE MONEY
+                  </div>
+                </div>
+                <div
+                  class="size-4 bg-green-600 grid place-items-center rounded-full absolute right-2 top-2"
+                  v-if="paymentMethod === 'mobilemoney'"
+                >
+                  <div class="icon icon-checkmark text-white"></div>
                 </div>
               </div>
-              <div
-                class="size-4 bg-teal-500 grid place-items-center rounded-full absolute right-2 top-2"
-                v-if="paymentMethod === 'mobilemoney'"
-              >
-                <div class="icon icon-checkmark text-white"></div>
-              </div>
-            </div>
-            <div
+
+              <!-- <div
               class="col-span-2 border-2 border-grey-200 shadow-md p-3 rounded-lg text-center text-lg font-semibold text-green-600"
             >
               Pay
               {{ paymentDetails.currency }}
               {{ formatNumber(paymentDetails.amount) }}
+            </div> -->
             </div>
-          </div>
+          </template>
         </div>
 
         <!-- CHECKOUT UI BASE -->
@@ -89,7 +96,7 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref, watch } from "vue";
+import { computed, onMounted, ref, watch } from "vue";
 import { useColor } from "@/shared/composables/useColor";
 import { useRoute } from "vue-router";
 import { useString } from "@/shared/composables/useString";
@@ -129,6 +136,10 @@ const paymentDetails = ref({
   environment: "",
   redirect_url: "",
   reference: "",
+});
+
+const isCheckoutStatusRoute = computed(() => {
+  return route.name === "RedstoneCollectionCheckoutStatus";
 });
 
 const cancelTransaction = () => {

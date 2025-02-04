@@ -34,6 +34,13 @@
     </TableContainer>
   </div>
 
+  <teleport to="body" v-if="showViewProductDetailsModal">
+    <ViewProductDetailsModal
+      :orderId="productOrderDetails.id"
+      @closeTriggered="toggleViewProductDetailsModal"
+    />
+  </teleport>
+
   <teleport to="body" v-if="showUpdateOrdersModal">
     <UpdateOrdersModal
       :orderDetails="productOrderDetails"
@@ -53,11 +60,12 @@ import useEvents from "@/shared/composables/useEvents";
 import TableContainer from "@/shared/components/table-comps/table-container.vue";
 import TableContainerBody from "@/shared/components/table-comps/table-container-body.vue";
 import UpdateOrdersModal from "@/modules/storefront/modals/update-orders-modal.vue";
+import ViewProductDetailsModal from "@/modules/storefront/modals/view-product-details-modal.vue";
 import TableActionBtn from "@/shared/components/table-comps/table-action-btn.vue";
 import TableDoubleColumn from "@/shared/components/table-comps/table-double-column.vue";
 import useDate from "@/shared/composables/useDate";
 
-const { getBoldTableText, formatNumber } = useString();
+const { getBoldTableText, getStatus, formatNumber } = useString();
 
 const route = useRoute();
 const router = useRouter();
@@ -67,14 +75,14 @@ const { processAPIRequest } = useEvents();
 
 const isLoading = ref<boolean>(true);
 
-const getDateAdded = (date: string) => {
-  let { m4, d3, y1 } = useDate.formatDate(date).getAll();
-  return `${d3} ${m4}, ${y1}`;
+const getDateOrdered = (date: string) => {
+  let { w2, m4, d3, y1 } = useDate.formatDate(date).getAll();
+  return `${w2}, ${d3} ${m4}, ${y1}`;
 };
 
 const tableHeader = ref<TableHeaderType[]>([
   { title: "#", slug: "counter" },
-  { title: "Product Details", slug: "product" },
+  { title: "Order Date", slug: "date_created" },
   { title: "Customer Details", slug: "customer" },
   { title: "Order Details", slug: "order" },
   { title: "Payment", slug: "payment_status" },
@@ -82,50 +90,34 @@ const tableHeader = ref<TableHeaderType[]>([
   { title: "", slug: "action" },
 ]);
 
-const tableBody = reactive<any[]>([
-  {
-    counter: "1",
-    product: h(TableDoubleColumn, {
-      entry: {
-        primaryText: "M1 Macbook pro",
-        secondaryText: "Electronics",
-        displayImage: "https://picsum.photos/200",
-      },
-    }),
-    customer: h(TableDoubleColumn, {
-      entry: {
-        primaryText: "John Doe",
-        secondaryText: "johndoe@example.com",
-      },
-    }),
-    order: h(TableDoubleColumn, {
-      entry: {
-        primaryText: getBoldTableText(`ZMW ${formatNumber(1245)}`),
-        secondaryText: "Quantity: 1",
-      },
-    }),
-    payment_status: h(TableDoubleColumn, {
-      entry: {
-        primaryText: "Paid",
-        secondaryText: "24th Jan, 2025",
-      },
-    }),
-    order_status: "Processing",
-    action: h(TableActionBtn, {
-      showPrimaryBtn: true,
-      showSecondaryBtn: false,
-      primaryBtnText: "Manage",
-      onManageClick: () => handleOrderStatus(),
-    }),
-  },
-]);
+const tableBody = reactive<any[]>([]);
 const tablePaging = ref<any>({});
 
 const productOrderDetails = ref<any>({});
+
 const showUpdateOrdersModal = ref(false);
+const showViewProductDetailsModal = ref(false);
 
 const toggleUpdateOrdersModal = () => {
   showUpdateOrdersModal.value = !showUpdateOrdersModal.value;
+};
+
+const toggleViewProductDetailsModal = () => {
+  showViewProductDetailsModal.value = !showViewProductDetailsModal.value;
+};
+
+const renderStatisColor = (status: string) => {
+  const pending = [
+    "pending",
+    "preparing order",
+    "ready for pickup",
+    "awaiting pickup by carrier",
+    "out for delivery",
+  ];
+
+  if (pending.includes(status.toLowerCase())) return "pending";
+  else if (status.toLowerCase() === "delivered") return "success";
+  else return "failed";
 };
 
 const fetchAllStoreOrders = async () => {
@@ -140,33 +132,46 @@ const fetchAllStoreOrders = async () => {
   if (response.code === 200) {
     tableBody.length = 0;
 
-    // tableBody.push(
-    //   ...response.data.map((data: any) => ({
-    //     name: getBoldTableText(data.name),
-    //     orders: 0,
-    //     revenue: "ZMW 0",
-    //     link: createPreviewLink(
-    //       `https://store.redstonepgs.com/${data.slug}`,
-    //       "Preview storefront"
-    //     ),
-    //     status: `${getStatus("success", "Active")}`,
-    //     action: h(TableActionBtn, {
-    //       showPrimaryBtn: true,
-    //       showSecondaryBtn: true,
-    //       primaryBtnText: "Manage store",
-    //       onManageClick: () => router.push(`storefront/overview/${data.id}`),
-    //       onDeleteClick: () => handleDeleteStorefront(data),
-    //     }),
-    //   }))
-    // );
+    tableBody.push(
+      ...response.data.orders.map((data: any, index: number) => ({
+        counter: `${index + 1}`,
+        date_created: getDateOrdered(data.created_at),
+        customer: h(TableDoubleColumn, {
+          entry: {
+            primaryText: `${data.customer_details.firstname} ${data.customer_details.lastname}`,
+            secondaryText: data.customer_details.email,
+          },
+        }),
+        order: h(TableDoubleColumn, {
+          entry: {
+            primaryText: getBoldTableText(`ZMW ${formatNumber(data.amount)}`),
+            secondaryText: `Total Quantity: ${data.order_details.reduce((acc: any, item: any) => acc + item.quantity, 0)}`,
+          },
+        }),
+        payment_status: "<span class='text-green-600'>Paid</span>",
+        order_status: `${getStatus(renderStatisColor(data.status), data.status)}`,
+        action: h(TableActionBtn, {
+          showPrimaryBtn: true,
+          showSecondaryBtn: true,
+          primaryBtnText: "Manage",
+          showSecondaryText: true,
+          secondaryBtnIcon: "",
+          secondaryBtnText: "View",
+          isSecondaryActionDelete: false,
+          onManageClick: () => {
+            productOrderDetails.value = data;
+            toggleUpdateOrdersModal();
+          },
+          onDeleteClick: () => {
+            productOrderDetails.value = data;
+            toggleViewProductDetailsModal();
+          },
+        }),
+      }))
+    );
 
     // tablePaging.value = response.pagination[0];
   }
-};
-
-const handleOrderStatus = (orderData?: any) => {
-  productOrderDetails.value = orderData;
-  toggleUpdateOrdersModal();
 };
 
 fetchAllStoreOrders();

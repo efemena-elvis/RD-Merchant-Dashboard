@@ -10,11 +10,12 @@
 
     <button
       class="table-action-btn table-action-icon secondary-action"
+      :class="isSecondaryActionDelete ? 'hover:!bg-red-500' : ''"
       @click="$emit('deleteClick')"
       v-if="showSecondaryBtn"
     >
-      <div class="icon" :class="secondaryBtnIcon"></div>
-      <div class="text" v-if="showSecondaryText">Delete</div>
+      <div class="icon" v-if="secondaryBtnIcon" :class="secondaryBtnIcon"></div>
+      <div class="text" v-if="showSecondaryText">{{ secondaryBtnText }}</div>
     </button>
   </div>
 </template>
@@ -43,9 +44,19 @@ defineProps({
     default: false,
   },
 
+  secondaryBtnText: {
+    type: String,
+    default: "Delete",
+  },
+
   secondaryBtnIcon: {
     type: String,
     default: "icon-trash",
+  },
+
+  isSecondaryActionDelete: {
+    type: Boolean,
+    default: true,
   },
 });
 </script>
@@ -59,7 +70,7 @@ defineProps({
   }
 
   .table-action-icon {
-    @apply text-base h-10 hover:bg-red-500;
+    @apply text-base h-10;
   }
 
   .secondary-action {

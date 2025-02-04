@@ -136,8 +136,8 @@ export function useString() {
     document.body.removeChild(anchor);
   };
 
-  const getBoldTableText = (text: string) => {
-    return `<span class='font-medium text-grey-800/85'>${text}</span>`;
+  const getBoldTableText = (text: string, color?: string) => {
+    return `<span class='font-medium ${color || "text-grey-800/85"}'>${text}</span>`;
   };
 
   const getStatus = (status: string, suffixText?: string): string => {
@@ -148,7 +148,7 @@ export function useString() {
       failed: "bg-red-400",
     };
 
-    return `<div class='flex flex-row items-center gap-x-1.5'><div class='relative w-[9px] h-[9px] rounded-full ${statusData[status]}'></div>${suffixText}</div>`;
+    return `<div class='flex flex-row items-center gap-x-1.5'><div class='relative w-[9px] h-[9px] rounded-full ${statusData[status]}'></div>${capitalizeFirstLetter(suffixText as string)}</div>`;
   };
 
   const transactionFlowIcon = (status: string): string => {

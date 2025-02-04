@@ -5,7 +5,9 @@
     :filterListValue="periodList"
     pageDescription="All transactions"
     :pagingData="tablePaging"
+    :hasPayload="tableBody.length > 0"
     :pageKeys="{ green: 'Successful', yellow: 'Pending', red: 'Failed' }"
+    :showCustomActionBtn="false"
     @searchEntered="processSearchEntry"
     @filterSelected="processFilterSelection"
   >
@@ -30,7 +32,7 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, onMounted, reactive } from "vue";
+import { ref, onMounted, reactive, h } from "vue";
 import { useString } from "@/shared/composables/useString";
 import { TableHeaderType } from "@/models/dashboard-type";
 import { usePaymentStore } from "../store";
@@ -39,6 +41,7 @@ import useEvents from "@/shared/composables/useEvents";
 import PageContentWrapper from "@/shared/components/global-comps/page-content-wrapper.vue";
 import TableContainer from "@/shared/components/table-comps/table-container.vue";
 import TableContainerBody from "@/shared/components/table-comps/table-container-body.vue";
+import TableDoubleColumn from "@/shared/components/table-comps/table-double-column.vue";
 
 const {
   getBoldTableText,
@@ -54,13 +57,11 @@ const { processAPIRequest } = useEvents();
 const isLoading = ref<boolean>(true);
 
 const tableHeader = ref<TableHeaderType[]>([
-  { title: "", slug: "status" },
   { title: "Created On", slug: "date_created" },
+  { title: "Customer Details", slug: "customer_details" },
   { title: "Amount", slug: "amount" },
-  { title: "Customer", slug: "customer" },
-  { title: "Reference", slug: "reference_id" },
-  // { title: "Type", slug: "type_of_transaction" },
-  { title: "Payment Mode", slug: "payment_mode" },
+  { title: "Payment Method", slug: "payment_details" },
+  { title: "Status", slug: "status" },
 ]);
 
 const tableBody = reactive<any[]>([]);
@@ -100,17 +101,32 @@ const fetchPaymentTransactions = async () => {
   if (response.code === 200) {
     response.data.map((data: any) => {
       tableBody.push({
-        status: getStatus(data.status),
         date_created: getTransactionDate(data.created_at),
-        amount: getBoldTableText(
-          `${data.currency} ${formatNumber(data.amount)}`
-        ),
-        customer: data.customer
-          ? `${data.customer.firstname} ${data.customer.lastname}`
+        customer_details: data.customer
+          ? h(TableDoubleColumn, {
+              entry: {
+                primaryText: `${data.customer.firstname} ${data.customer.lastname}`,
+                secondaryText: data.customer.email,
+              },
+            })
           : notAvailable("No customer info"),
-        reference_id: data.reference,
-        // type_of_transaction: capitalizeFirstLetter(data.type),
-        payment_mode: capitalizeFirstLetter(data.method),
+        amount: h(TableDoubleColumn, {
+          entry: {
+            primaryText: `${data.currency} ${formatNumber(data.amount)}`,
+            secondaryText: `Charge: ${data.currency} ${formatNumber(data.charge)}`,
+          },
+        }),
+        payment_details: h(TableDoubleColumn, {
+          entry: {
+            primaryText: capitalizeFirstLetter(data.method),
+            secondaryText: `Type: ${
+              data.redirect_url.startsWith("https://store.redstonepgs.com/")
+                ? "Storefront"
+                : "Third party"
+            }`,
+          },
+        }),
+        status: getStatus(data.status, data.status),
       });
     });
 

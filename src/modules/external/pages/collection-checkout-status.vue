@@ -17,7 +17,7 @@
 
         <!-- DESCRIPTION TEXT -->
         <div class="description-text">
-          Hang tight! We're processing your payment. This should take some few
+          Hang tight! We're processing your payment. This should take a few
           moments. Please do not refresh or close this page.
         </div>
       </div>
@@ -37,9 +37,9 @@
 
         <!-- DESCRIPTION TEXT -->
         <div class="description-text">
-          "Oops! Something went wrong with your payment. Please check your
+          Oops! Something went wrong with your payment. Please check your
           details and try again. If the issue persists, contact your bank or our
-          support team."
+          support team.
         </div>
 
         <button class="btn btn-primary" @click="retryCustomerPayment">
@@ -77,7 +77,7 @@
 </template>
 
 <script setup lang="ts">
-import { watch, ref, toRaw } from "vue";
+import { watchEffect, ref, computed, toRaw } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { storeToRefs } from "pinia";
 import { useExternalStore } from "../store";
@@ -88,29 +88,55 @@ import CheckoutWrapper from "@/modules/external/components/checkout-wrapper.vue"
 const route = useRoute();
 const router = useRouter();
 
-const { renderImg, formatNumber } = useString();
-const activeStatus = ref<string>("pending");
-
+const { renderImg, formatNumber, createAndClickAnchor } = useString();
 const { processAPIRequest } = useEvents();
 const { makePayment } = useExternalStore();
 const { getCustomerDetails, getPaymentDetails } =
   storeToRefs(useExternalStore());
 
-const redirectURL = ref<string>(getPaymentDetails.value.redirect_url || "");
+const activeStatus = ref<string>("pending");
+const redirectURL = ref<string>("");
+const calledOnce = ref<boolean>(false); // Prevent duplicate API calls
 
-const exitTransactionFlow = () => {
-  location.href = redirectURL.value;
-};
+// Compute readiness for API call
+const isReady = computed(() => {
+  return (
+    Object.keys(getCustomerDetails.value || {}).length > 0 &&
+    route.params.status === "pending"
+  );
+});
 
-const retryCustomerPayment = () => {
-  router.push({
-    name: "RedstoneCollectionCheckout",
-    params: {
+// Handles payment execution
+const makeCustomerPayment = async (payload: any) => {
+  const response = await processAPIRequest({
+    action: makePayment,
+    payload: {
       paymentReference: route.params.paymentReference,
+      customerDetails: payload,
     },
+    showAlert: false,
   });
+
+  if (response.code === 200 || response.code === 409) {
+    updateTransactionState("success");
+  } else {
+    updateTransactionState("failed");
+  }
 };
 
+// Watch for readiness and call makePayment once
+watchEffect(() => {
+  if (isReady.value && !calledOnce.value) {
+    calledOnce.value = true; // Prevent re-execution
+    redirectURL.value = getPaymentDetails.value?.redirect_url || "";
+    setTimeout(
+      () => makeCustomerPayment(toRaw(getCustomerDetails.value)),
+      1000
+    );
+  }
+});
+
+// Handles transaction state update
 const updateTransactionState = (status: string) => {
   activeStatus.value = status;
   router.replace({
@@ -122,53 +148,27 @@ const updateTransactionState = (status: string) => {
   });
 };
 
-const makeCustomerPayment = async (payload: any) => {
-  const response = await processAPIRequest({
-    action: makePayment,
-    payload: {
+// Handles retrying payments
+const retryCustomerPayment = () => {
+  router.push({
+    name: "RedstoneCollectionCheckout",
+    params: {
       paymentReference: route.params.paymentReference,
-      customerDetails: payload,
     },
-    showAlert: false,
   });
-
-  if (response.code === 200) {
-    updateTransactionState("success");
-  } else {
-    updateTransactionState("failed");
-  }
 };
 
-watch(
-  [getCustomerDetails, getPaymentDetails],
-  ([customerDetails, paymentDetails]) => {
-    if (
-      Object.keys(customerDetails || {}).length &&
-      route.params.status === "pending"
-    ) {
-      makeCustomerPayment(toRaw(customerDetails));
-      redirectURL.value = paymentDetails?.redirect_url;
-    }
-  },
-  { immediate: true }
-);
-
-watch(
-  () => route.params.status,
-  (status) => {
-    if (["pending", "success", "failed"].includes(status as string)) {
-      activeStatus.value = status as string;
-    } else {
-      activeStatus.value = "pending";
-    }
-  },
-  { immediate: true }
-);
+// Exits transaction flow
+const exitTransactionFlow = () => {
+  createAndClickAnchor(
+    `${redirectURL.value}?paymentReference=${route.params.paymentReference}&status=${route.params.status}`
+  );
+};
 </script>
 
 <style scoped lang="scss">
 .checkout-container {
-  @apply flex flex-col justify-center items-center gap-y-6 sm:gap-y-5;
+  @apply flex flex-col justify-center items-center gap-y-6 sm:gap-y-5 pt-4 pb-12;
 
   .img-icon {
     img {
@@ -181,7 +181,7 @@ watch(
   }
 
   .description-text {
-    @apply text-[14.5px] sm:text-sm leading-6 sm:leading-[25px] text-grey-700/85 text-center sm:w-full mb-1;
+    @apply text-[14.5px] sm:text-sm leading-6 sm:leading-[25px] text-grey-700/85 text-center w-4/5 sm:w-full mb-1;
   }
 }
 </style>

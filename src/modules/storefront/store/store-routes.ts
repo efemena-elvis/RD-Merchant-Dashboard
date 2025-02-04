@@ -2,16 +2,17 @@ const nameSpace: string = "storefront";
 
 export const storeRoutes = {
   createStorefront: "store/create",
-  fetchStorefront: "store/business",
+  fetchStorefront: "store/list",
   fetchStoreById: "store",
   updateStorefront: "store/edit",
   deleteStorefront: "store",
 
-  getProducts: "store/products",
-  addProducts: "products/create",
-  editProduct: "products/edit",
-  deleteProduct: "products",
+  getProducts: "product/store",
+  addProducts: "store/product/create",
+  editProduct: "store/product/edit",
+  deleteProduct: "store/product",
 
-  getOrders: "orders/store",
-  updateOrderStatus: "orders/status",
+  getOrders: "store/orders/store",
+  updateOrderStatus: "store/orders/status",
+  viewOrderDetails: "orders/view",
 };

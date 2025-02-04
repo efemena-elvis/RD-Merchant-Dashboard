@@ -24,7 +24,7 @@
       </div>
     </div>
 
-    <div class="right">
+    <div class="right" v-if="pagingData.total_pages_count > 1">
       <div
         class="nav btn btn-sm"
         :class="pagingData.current_page === 1 ? 'disabled' : null"

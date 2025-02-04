@@ -43,7 +43,7 @@
     </div>
 
     <!-- PAGINATION -->
-    <template v-if="pagingData.page_count > 0">
+    <template v-if="hasPayload && pagingData.page_count > 0">
       <Pagination
         :pageDescription="pageDescription"
         :pagingData="pagingData"
@@ -61,15 +61,15 @@ import Pagination from "@/shared/components/global-comps/pagination.vue";
 
 interface IPageContentType {
   searchInputPlaceholder: string;
-  filterActiveValue: string;
-  filterListValue: string[];
-  showFilterSelection: boolean;
+  filterActiveValue?: string;
+  filterListValue?: string[];
+  showFilterSelection?: boolean;
   pageDescription: string;
   pagingData: any;
   pageKeys: any;
   hasPayload: boolean;
-  showCustomActionBtn: boolean;
-  customActionBtnText: string;
+  showCustomActionBtn?: boolean;
+  customActionBtnText?: string;
 }
 
 const props = withDefaults(defineProps<IPageContentType>(), {

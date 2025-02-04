@@ -10,7 +10,9 @@
     :filterListValue="periodList"
     pageDescription="Total balance history"
     :pagingData="tablePaging"
+    :hasPayload="tableBody.length > 0"
     :pageKeys="{ green: 'Inflow', red: 'Outflow' }"
+    :showCustomActionBtn="false"
     @searchEntered="processSearchEntry"
     @filterSelected="processFilterSelection"
   >
@@ -60,7 +62,7 @@ const isLoading = ref<boolean>(true);
 
 const tableHeader = ref<TableHeaderType[]>([
   { title: "", slug: "status" },
-  { title: "Date", slug: "date_created" },
+  { title: "Date Created", slug: "date_created" },
   { title: "Transaction Summary", slug: "summary" },
   { title: "Balance Before", slug: "balance_before" },
   { title: "Change", slug: "change" },
@@ -104,11 +106,16 @@ const fetchBalanceHistory = async () => {
   if (response.code === 200) {
     response.data.map((data: any) => {
       tableBody.push({
-        status: transactionFlowIcon("receive"),
+        status: transactionFlowIcon(
+          data.type === "credit" ? "receive" : "send"
+        ),
         date_created: getTransactionDate(data.balance_at),
         summary: capitalizeFirstLetter(data.action.split("-").join(" ")),
         balance_before: `ZMW ${formatNumber(data.balance_before)}`,
-        change: getBoldTableText(`ZMW ${formatNumber(data.amount)}`),
+        change: getBoldTableText(
+          `ZMW ${formatNumber(data.amount)}`,
+          data.type === "credit" ? "text-green-600" : "text-red-600"
+        ),
         balance_after: `ZMW ${formatNumber(data.balance_after)}`,
       });
     });

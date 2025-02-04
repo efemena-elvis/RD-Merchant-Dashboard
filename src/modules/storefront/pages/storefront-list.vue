@@ -122,7 +122,7 @@ const processFilterSelection = (selectedPeriod: string) => {
 const fetchAllStorefront = async () => {
   const response = await processAPIRequest({
     action: fetchStorefront,
-    payload: { businessId: getBusiness().businessId },
+    payload: {},
     showAlert: false,
   });
 
@@ -135,8 +135,8 @@ const fetchAllStorefront = async () => {
       ...response.data.map((data: any, index: number) => ({
         counter: index + 1,
         name: getBoldTableText(data.name),
-        orders: 0,
-        revenue: "ZMW 0",
+        orders: data.total_orders,
+        revenue: `ZMW ${formatNumber(data.total_amount)}`,
         link: createPreviewLink(
           `https://store.redstonepgs.com/${data.slug}`,
           "Preview storefront"
@@ -144,7 +144,7 @@ const fetchAllStorefront = async () => {
         status: `${getStatus("success", "Active")}`,
         action: h(TableActionBtn, {
           showPrimaryBtn: true,
-          showSecondaryBtn: true,
+          showSecondaryBtn: false,
           primaryBtnText: "Manage store",
           onManageClick: () =>
             router.push(

@@ -207,6 +207,16 @@ watch(
       }
 
       payload.value.email = payment.email;
+
+      const phoneNumberString = payment.phone_number?.toString() || "";
+
+      let sliceLength = phoneNumberString.startsWith("260")
+        ? 3
+        : phoneNumberString.startsWith("+260")
+          ? 4
+          : 0;
+
+      payload.value.phone_number = phoneNumberString.slice(sliceLength);
     }
   },
   { immediate: true }

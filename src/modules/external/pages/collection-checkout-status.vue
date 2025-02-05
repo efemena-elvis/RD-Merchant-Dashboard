@@ -100,9 +100,9 @@ const redirectURL = ref<string>("");
 const calledOnce = ref<boolean>(false);
 const isPaymentInitiated = ref<boolean>(false);
 
-const transactionTimeInterval = ref<number>(5000);
+const transactionTimeInterval = ref<number>(3000);
 const currentTransactionCounter = ref<number>(0);
-const maximumTransactionCounter = ref<number>(60);
+const maximumTransactionCounter = ref<number>(40);
 
 // Compute readiness for API call
 const isReady = computed(() => {
@@ -121,7 +121,9 @@ const retirevePaymentDetails = async () => {
 
   if (response.code === 200 || response.code === 409) {
     updateTransactionState(
-      response.data.status === "success" ? "success" : "pending"
+      ["success", "successful"].includes(response.data.status)
+        ? "success"
+        : "pending"
     );
   } else {
     updateTransactionState("failed");

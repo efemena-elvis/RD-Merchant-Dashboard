@@ -15,10 +15,7 @@
       </div>
 
       <div class="top-area--right button-actions">
-        <button
-          class="btn btn-sm btn-primary"
-          @click="toggleManageProductModal"
-        >
+        <button class="btn btn-sm btn-primary" @click="triggerManageProduct">
           Add a Product
         </button>
       </div>
@@ -82,7 +79,7 @@ const { getBoldTableText, getStatus, formatNumber } = useString();
 const route = useRoute();
 
 const { getStoreProducts, fetchStoreById } = useStorefrontStore();
-const { processAPIRequest } = useEvents();
+const { processAPIRequest, pushToastAlert } = useEvents();
 
 const isLoading = ref<boolean>(true);
 
@@ -102,6 +99,7 @@ const tablePaging = ref<any>({});
 
 const productDataItem = ref<any>({});
 const productCategories = ref<any>([]);
+const storeDetails = ref<any>({});
 
 const showManageProductModal = ref(false);
 const showDeleteProductModal = ref(false);
@@ -113,6 +111,46 @@ const toggleManageProductModal = () => {
 
 const toggleDeleteProductModal = () => {
   showDeleteProductModal.value = !showDeleteProductModal.value;
+};
+
+const triggerManageProduct = () => {
+  const {
+    description,
+    logo,
+    email,
+    phone_number,
+    address,
+    facebook,
+    instagram,
+    twitter,
+    tikTok,
+  } = storeDetails.value;
+
+  if (!description && !logo && !email && !phone_number && !address) {
+    pushToastAlert({
+      message: "Complete your store profile!",
+      type: "warning",
+    });
+
+    return;
+  }
+
+  // confirm if 2 out of the four socials is available
+  const hasLength = (val: any) => val && val.length > 0;
+  const socialCount = [facebook, instagram, twitter, tikTok].filter(
+    hasLength
+  ).length;
+
+  if (socialCount < 2) {
+    pushToastAlert({
+      message: "Provide at least 2 socials to complete your store profile!",
+      type: "warning",
+    });
+
+    return;
+  }
+
+  toggleManageProductModal();
 };
 
 const getDateAdded = (date: string) => {
@@ -144,7 +182,7 @@ const fetchAllStoreProducts = async () => {
             displayImage: data.image,
           },
         }),
-        amount: getBoldTableText(`ZMW ${formatNumber(data.amount)}`),
+        amount: getBoldTableText(`ZK${formatNumber(data.amount)}`),
         quantity: data.stock,
         status: `${getStatus(data.stock > 0 ? "success" : "danger", data.stock > 0 ? "Available" : "Out of Stock")}`,
         date_created: getDateAdded(data.created_at),
@@ -182,6 +220,8 @@ const fetchStorefrontById = async () => {
   });
 
   if (response.code === 200) {
+    storeDetails.value = response.data;
+
     const niche = storefrontNiches.find(
       (niche) => niche.slug === response.data.tag
     );
@@ -196,10 +236,10 @@ fetchStorefrontById();
 <style lang="scss" scoped>
 .strorefront-product-page {
   .top-area {
-    @apply flex justify-between items-center gap-x-3 mb-11;
+    @apply flex sm:flex-wrap justify-between items-center gap-3 mb-11;
 
     &--left {
-      @apply flex flex-col justify-center items-start gap-y-0.5 w-1/2;
+      @apply flex flex-col justify-center items-start gap-y-0.5 w-1/2 sm:w-full;
 
       .section-title {
         @apply font-semibold text-base sm:text-[15.5px] text-grey-700;
@@ -211,7 +251,7 @@ fetchStorefrontById();
     }
 
     &--right {
-      @apply flex justify-end items-center gap-x-3 sm:hidden;
+      @apply flex justify-end items-center gap-x-3;
     }
   }
 

@@ -106,7 +106,7 @@ const toggleViewProductDetailsModal = () => {
   showViewProductDetailsModal.value = !showViewProductDetailsModal.value;
 };
 
-const renderStatisColor = (status: string) => {
+const renderStatusColor = (status: string) => {
   const pending = [
     "pending",
     "preparing order",
@@ -118,6 +118,14 @@ const renderStatisColor = (status: string) => {
   if (pending.includes(status.toLowerCase())) return "pending";
   else if (status.toLowerCase() === "delivered") return "success";
   else return "failed";
+};
+
+const renderOrderQuantity = (order: any) => {
+  const quantity = order.order_details.reduce(
+    (acc: any, item: any) => acc + item.quantity,
+    0
+  );
+  return `Total Quantity: ${quantity < 1 ? 1 : quantity}`;
 };
 
 const fetchAllStoreOrders = async () => {
@@ -144,12 +152,17 @@ const fetchAllStoreOrders = async () => {
         }),
         order: h(TableDoubleColumn, {
           entry: {
-            primaryText: getBoldTableText(`ZMW ${formatNumber(data.amount)}`),
-            secondaryText: `Total Quantity: ${data.order_details.reduce((acc: any, item: any) => acc + item.quantity, 0)}`,
+            primaryText: getBoldTableText(`ZK${formatNumber(data.amount)}`),
+            secondaryText: renderOrderQuantity(data),
           },
         }),
-        payment_status: "<span class='text-green-600'>Paid</span>",
-        order_status: `${getStatus(renderStatisColor(data.status), data.status)}`,
+        payment_status: h(TableDoubleColumn, {
+          entry: {
+            primaryText: `<span class='text-green-600'>Paid</span>`,
+            secondaryText: `Order no: ${data.order_number || "N/A"}`,
+          },
+        }),
+        order_status: `${getStatus(renderStatusColor(data.status), data.status)}`,
         action: h(TableActionBtn, {
           showPrimaryBtn: true,
           showSecondaryBtn: true,

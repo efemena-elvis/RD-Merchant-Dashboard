@@ -107,18 +107,18 @@ const handleFilterSelection = (filterValue: string) => {
   @apply w-full h-full flex flex-col justify-between items-start gap-y-9 pb-10;
 
   .top-row {
-    @apply flex justify-between items-start gap-x-4 xs:gap-x-2.5 w-full;
+    @apply flex sm:flex-wrap justify-between items-start gap-4 sm:gap-3 w-full;
 
     &--left {
-      @apply flex justify-start items-center gap-x-3 xs:w-[70%];
+      @apply flex justify-start items-center gap-3 sm:w-full;
 
       .search-block {
-        @apply w-[260px] xs:w-full;
+        @apply w-[260px] sm:w-full;
       }
     }
 
     &--right {
-      @apply flex justify-end items-center gap-x-3 xs:w-1/5;
+      @apply flex justify-end items-center gap-3 sm:w-full;
 
       .custom-action-btn {
         @apply px-7 font-normal text-[14px];

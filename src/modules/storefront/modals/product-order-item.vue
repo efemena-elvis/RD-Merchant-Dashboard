@@ -15,7 +15,7 @@
 
         <div class="info-bottom">
           <div class="product-amount">
-            <span class="mr-0.5">ZMW</span
+            <span class="mr-0.5">ZK</span
             ><span>{{ formatNumber(product.amount) }}</span>
           </div>
           <div class="multiplier">x</div>

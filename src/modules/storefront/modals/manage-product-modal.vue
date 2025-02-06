@@ -205,9 +205,9 @@ const productPayload = ref<IStorefrontType>({
 const manageProductBtnRef = ref(null);
 
 const isActionReady = computed(() => {
-  return productPayload.value.name &&
-    productPayload.value.description &&
-    productPayload.value.category &&
+  return productPayload.value.name.length &&
+    productPayload.value.description.length &&
+    productPayload.value.category.length &&
     productPayload.value.stock &&
     productPayload.value.amount &&
     uploadedProductImage.value

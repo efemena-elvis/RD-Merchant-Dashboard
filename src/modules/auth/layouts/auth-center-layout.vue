@@ -16,7 +16,7 @@
 
     <a
       class="fixed bottom-[30px] right-[30px] scale-[0.85] cursor-pointer transition duration-300 ease-in-out hover:scale-[0.9]"
-      href=""
+      href="mailto:support@redstonepgs.com"
       target="_blank"
     >
       <SupportIcon />

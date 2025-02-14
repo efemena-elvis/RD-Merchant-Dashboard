@@ -39,6 +39,14 @@
         </div>
       </div>
     </div>
+
+    <a
+      class="support-card"
+      href="mailto:support@redstonepgs.com?subject=Support Request&body=Hello, I need assistance with..."
+    >
+      <div class="icon icon-support-icon"></div>
+      <div class="text">NEED HELP ?</div>
+    </a>
   </div>
 </template>
 
@@ -47,9 +55,11 @@ import { ref, watch, inject, onMounted } from "vue";
 import { useRoute } from "vue-router";
 import { useColor } from "@/shared/composables/useColor";
 import { useProfile } from "@/shared/composables/useProfile";
+import { useString } from "@/shared/composables/useString";
 import BaseTopbar from "@/shared/components/global-comps/base-topbar.vue";
 import AlertTopbar from "@/shared/components/global-comps/alert-topbar.vue";
 import BaseSidebar from "@/shared/components/global-comps/base-sidebar.vue";
+import SupportIcon from "@/shared/components/icon-comps/support-icon.vue";
 import { Emitter } from "mitt";
 
 // Define the type of the event bus
@@ -58,6 +68,8 @@ type Events = {
 };
 
 const route = useRoute();
+const { renderImg } = useString();
+
 const { getBusiness, getBusinessActivatedStatus } = useProfile();
 
 const eventBus = inject<Emitter<Events>>("eventBus");
@@ -132,8 +144,19 @@ const getActivationStatus = () => {
     }
 
     .main-content {
-      @apply relative -mt-3.5 w-full h-full px-8 xl:px-6 mdLg:px-4;
+      @apply relative -mt-3.5 w-full h-full pb-7 px-8 xl:px-6 mdLg:px-4;
     }
+  }
+}
+.support-card {
+  @apply fixed text-white bg-teal-700/95 bottom-7 right-7 scale-[0.85] cursor-pointer rounded-full py-[11px] px-[15px] flex justify-center items-center gap-x-2 transition duration-300 ease-in-out hover:scale-[0.9];
+
+  .icon {
+    @apply text-[16px];
+  }
+
+  .text {
+    @apply text-[13px] text-white font-medium;
   }
 }
 </style>

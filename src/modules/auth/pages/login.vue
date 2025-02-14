@@ -119,9 +119,13 @@ const handleUserLogin = async () => {
 
   if (response.code === 200) {
     // Check if user email is verified
+    const { is_email_verified, activate_my_business } = response.data;
+
     setTimeout(() => {
-      location.href = response.data.is_email_verified
-        ? "/transfers/balance"
+      location.href = is_email_verified
+        ? activate_my_business
+          ? "/transfers/balance"
+          : "/compliance/documents"
         : `/verify-account?email=${encodeURIComponent(getLoginPayload.value.email)}`;
     }, 1200);
   }

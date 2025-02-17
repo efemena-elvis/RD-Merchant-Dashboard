@@ -7,7 +7,7 @@ export const storeRoutes = {
   updateStorefront: "store/edit",
   deleteStorefront: "store",
 
-  getProducts: "product/store",
+  getProducts: "store/products",
   addProducts: "store/product/create",
   editProduct: "store/product/edit",
   deleteProduct: "store/product",

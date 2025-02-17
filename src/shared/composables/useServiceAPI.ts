@@ -242,9 +242,14 @@ class ServiceApi {
   // DELETE API REQUEST
   async remove<T>(
     url: string,
-    option: { payload?: any; resolve?: boolean } = {
+    option: {
+      payload?: any;
+      resolve?: boolean;
+      requiresPublicKey?: boolean;
+    } = {
       payload: {},
       resolve: true,
+      requiresPublicKey: false,
     }
   ): Promise<T | AxiosResponse<T>> {
     try {
@@ -254,7 +259,7 @@ class ServiceApi {
 
       const response = await axios.delete<T>(url, {
         data: option.payload,
-        ...this.getHeaders(),
+        ...this.getHeaders(false, option.requiresPublicKey),
       });
 
       // Reset to initial base URL after the request
@@ -370,12 +375,11 @@ class ServiceApi {
         const originalConfig = error.config as CustomAxiosRequestConfig;
 
         if (originalConfig && error.response) {
-          if (error.response.status === 401 && !originalConfig._retry) {
-            originalConfig._retry = true;
-            logOutUser();
-
-            return axios(originalConfig);
-          }
+          // if (error.response.status === 401 && !originalConfig._retry) {
+          //   originalConfig._retry = true;
+          //   logOutUser();
+          //   return axios(originalConfig);
+          // }
         }
 
         return Promise.reject(error);

@@ -122,7 +122,7 @@ const makePaymentWithCardToken = async (token: string) => {
     customerDetails: {
       customer_first_name: payment_details.customer_first_name ?? "--",
       customer_last_name: payment_details.customer_last_name ?? "--",
-      phone_number: payment_details?.phone_number ?? "--",
+      phone_number: payment_details?.phone_number || "--",
       email: payment_details.email,
       method: store.paymentMethod,
       token,
@@ -132,6 +132,7 @@ const makePaymentWithCardToken = async (token: string) => {
       customer_city: "--",
       customer_state: "--",
       customer_zip: "10101",
+      account_number: payment_details.account_number || "--",
     },
   };
   try {

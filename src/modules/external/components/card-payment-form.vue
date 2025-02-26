@@ -120,8 +120,8 @@ const makePaymentWithCardToken = async (token: string) => {
   const payload = {
     paymentReference: payment_details.reference,
     customerDetails: {
-      customer_first_name: payment_details.customer_first_name,
-      customer_last_name: payment_details.customer_last_name,
+      customer_first_name: payment_details.customer_first_name ?? "--",
+      customer_last_name: payment_details.customer_last_name ?? "--",
       phone_number: payment_details?.phone_number ?? "--",
       email: payment_details.email,
       method: store.paymentMethod,

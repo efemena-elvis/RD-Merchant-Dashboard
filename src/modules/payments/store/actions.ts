@@ -14,3 +14,17 @@ export const getCustomers = async () => {
     requiresPublicKey: true,
   });
 };
+
+export const initiatePayout = async (payload: any) => {
+  return await $api.push(paymentRoutes.initiatePayout, {
+    payload,
+    requiresPublicKey: true,
+  });
+};
+
+export const fetchAllPayouts = async () => {
+  return await $api.fetch(paymentRoutes.getAllPayouts, {
+    resolve: true,
+    requiresPublicKey: true,
+  });
+};

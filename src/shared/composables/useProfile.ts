@@ -8,7 +8,12 @@ const { getAuthToken, getAuthUser, getAuthBusiness, getAuthBusinessToken } =
 interface IUserProfile {
   id: string;
   email: string;
-  country: string;
+  country: {
+    country_code: string;
+    currency_code: string;
+    name: string;
+    id: string;
+  };
   firstName: string;
   lastName: string;
   currentBusiness: string;

@@ -40,14 +40,15 @@
       </div>
     </div>
 
-    <a
-      class="support-card"
-      href="mailto:support@redstonepgs.com?subject=Support Request&body=Hello, I need assistance with..."
-    >
+    <a class="support-card" href="#" @click="toggleSupportModal">
       <div class="icon icon-support-icon"></div>
       <div class="text">NEED HELP ?</div>
     </a>
   </div>
+
+  <teleport to="body" v-if="showSupportModal">
+    <ContactSupportModal @closeTriggered="toggleSupportModal" />
+  </teleport>
 </template>
 
 <script lang="ts" setup>
@@ -55,12 +56,11 @@ import { ref, watch, inject, onMounted } from "vue";
 import { useRoute } from "vue-router";
 import { useColor } from "@/shared/composables/useColor";
 import { useProfile } from "@/shared/composables/useProfile";
-import { useString } from "@/shared/composables/useString";
 import BaseTopbar from "@/shared/components/global-comps/base-topbar.vue";
 import AlertTopbar from "@/shared/components/global-comps/alert-topbar.vue";
 import BaseSidebar from "@/shared/components/global-comps/base-sidebar.vue";
-import SupportIcon from "@/shared/components/icon-comps/support-icon.vue";
 import { Emitter } from "mitt";
+import ContactSupportModal from "@/shared/modals/contact-support-modal.vue";
 
 // Define the type of the event bus
 type Events = {
@@ -68,7 +68,6 @@ type Events = {
 };
 
 const route = useRoute();
-const { renderImg } = useString();
 
 const { getBusiness, getBusinessActivatedStatus } = useProfile();
 
@@ -82,6 +81,12 @@ const alertTopActionRoute = ref<string>("");
 
 const toggleMobileSidebar = () => {
   showMobileSidebar.value = !showMobileSidebar.value;
+};
+
+const showSupportModal = ref(false);
+
+const toggleSupportModal = () => {
+  showSupportModal.value = !showSupportModal.value;
 };
 
 watch(route, () => {
@@ -144,7 +149,7 @@ const getActivationStatus = () => {
     }
 
     .main-content {
-      @apply relative -mt-3.5 w-full h-full pb-7 px-8 xl:px-6 mdLg:px-4;
+      @apply relative mt-3.5 w-full h-full pb-7 px-8 xl:px-6 mdLg:px-4;
     }
   }
 }

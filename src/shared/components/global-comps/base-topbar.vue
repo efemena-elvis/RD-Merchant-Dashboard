@@ -135,7 +135,7 @@
 
 <script lang="ts" setup>
 import { ref, watch, inject, computed } from "vue";
-import { useRoute } from "vue-router";
+import { useRoute, useRouter } from "vue-router";
 import { useProfile } from "@/shared/composables/useProfile";
 import NavNotificationItem from "./nav-notification-item.vue";
 import useClickOutside from "@/shared/composables/useClickOutside";
@@ -150,6 +150,8 @@ type Events = {
 };
 
 const route = useRoute();
+const router = useRouter();
+
 const eventBus = inject<Emitter<Events>>("eventBus");
 
 const { logoutUser } = useAuthStore();
@@ -185,10 +187,22 @@ watch(route, () => {
 const activeMode = ref<string>(getBusinessProfile.value.businessMode || "test");
 
 const updateActiveMode = (mode: string) => {
+  const storefrontChildren = [
+    "RedstoneStorefrontOverview",
+    "RedstoneStorefrontProducts",
+    "RedstoneStorefrontOrders",
+  ];
+
+  const current_route = route.name;
+
   triggerModeChange(mode);
 
   activeMode.value = mode;
   toggleModeDropdown(false);
+
+  if (storefrontChildren.includes(current_route as string)) {
+    router.push({ name: "RedstoneStorefront" });
+  }
 };
 
 const triggerModeChange = async (mode: string) => {

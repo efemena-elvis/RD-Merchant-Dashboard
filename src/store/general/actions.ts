@@ -22,6 +22,13 @@ export function useGeneralActions() {
     return response;
   };
 
+  const contactSupport = async (payload: any) => {
+    return await $api.push(generalRoutes.contactSupport, {
+      payload,
+      requiresPublicKey: true,
+    });
+  };
+
   const getBusinessCountries = async () => {
     return await $api.fetch(generalRoutes.countries);
   };
@@ -29,6 +36,7 @@ export function useGeneralActions() {
   return {
     uploadFile,
     switchAppMode,
+    contactSupport,
     getBusinessCountries,
   };
 }

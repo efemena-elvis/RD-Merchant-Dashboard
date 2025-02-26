@@ -43,12 +43,12 @@ export const sidebarRoutes: ISidebarRouteType = {
     //   icon: "icon-rotate-left",
     //   active: true,
     // },
-    // {
-    //   link: "/payments/payouts",
-    //   title: "Payouts",
-    //   icon: "icon-export",
-    //   active: true,
-    // },
+    {
+      link: "/payments/payouts",
+      title: "Payouts",
+      icon: "icon-export",
+      active: true,
+    },
     // {
     //   link: "/payments/disputes",
     //   title: "Disputes",

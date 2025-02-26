@@ -1,22 +1,28 @@
 <template>
   <PageContentWrapper
     searchInputPlaceholder="Search by payout reference id"
-    :filterActiveValue="activePeriod"
-    :filterListValue="periodList"
+    :showFilterSelection="false"
     pageDescription="All payouts"
-    :pageCount="10"
+    :pagingData="tablePaging"
     :pageKeys="{ green: 'Successful', yellow: 'Pending', red: 'Failed' }"
+    :hasPayload="tableBody.length > 0"
+    :showCustomActionBtn="true"
+    :customActionBtnText="'Initiate a payout'"
+    @customActionBtnClicked="toggleInitiatePayoutModal"
     @searchEntered="processSearchEntry"
     @filterSelected="processFilterSelection"
   >
     <TableContainer
       :tableHeader="tableHeader"
       :tableBody="tableBody"
+      :isLoading="isLoading"
       :emptyData="{
-        title: 'No payouts yet',
+        title: 'No payout initiated yet',
         description:
-          'We haven\'t paid any money to this account. This is where you\'ll be able to see your scheduled payouts and the transactions you were paid for',
+          'You haven\'t initiated any payout yet. This is where you\'ll be able to see all your  initiated payout transactions',
+        actionText: 'Initiate a payout',
       }"
+      @onActionClicked="toggleInitiatePayoutModal"
     >
       <TableContainerBody
         v-for="(payload, index) in tableBody"
@@ -26,62 +32,47 @@
       />
     </TableContainer>
   </PageContentWrapper>
+
+  <teleport to="body" v-if="showInitiatePayoutModal">
+    <InitiatePayoutModal @closeTriggered="toggleInitiatePayoutModal" />
+  </teleport>
 </template>
 
 <script lang="ts" setup>
 import { ref } from "vue";
 import { useString } from "@/shared/composables/useString";
 import { TableHeaderType } from "@/models/dashboard-type";
+import { usePaymentStore } from "../store";
+import useDate from "@/shared/composables/useDate";
+import useEvents from "@/shared/composables/useEvents";
+import InitiatePayoutModal from "@/modules/payments/modals/initiate-payout-modal.vue";
 import PageContentWrapper from "@/shared/components/global-comps/page-content-wrapper.vue";
 import TableContainer from "@/shared/components/table-comps/table-container.vue";
 import TableContainerBody from "@/shared/components/table-comps/table-container-body.vue";
 
-const { getBoldTableText, getStatus, notAvailable } = useString();
+const { getBoldTableText, formatNumber, capitalizeFirstLetter } = useString();
+
+const { fetchAllPayouts } = usePaymentStore();
+const { processAPIRequest } = useEvents();
+
+const isLoading = ref<boolean>(true);
+
+const showInitiatePayoutModal = ref(false);
+
+const toggleInitiatePayoutModal = () => {
+  showInitiatePayoutModal.value = !showInitiatePayoutModal.value;
+};
 
 const tableHeader = ref<TableHeaderType[]>([
-  { title: "", slug: "status" },
   { title: "Date Initiated", slug: "date_created" },
   { title: "Payout Reference", slug: "reference_id" },
-  { title: "Payout Source", slug: "payout_source" },
-  { title: "Requested Amount", slug: "requested_amount" },
-  { title: "Amount Paid", slug: "amount_paid" },
+  { title: "Amount Requested", slug: "amount_requested" },
+  { title: "Payout Narration", slug: "narration" },
+  { title: "Status", slug: "status" },
 ]);
 
-const tableBody: any[] = [
-  // {
-  //   status: getStatus("success"),
-  //   date_created: "Tue, 22nd July, 2024",
-  //   reference_id: "#bbd21047-1c00-2191",
-  //   payout_source: "Redstone PGS Business ZM",
-  //   requested_amount: getBoldTableText("ZMW 5,600"),
-  //   amount_paid: getBoldTableText("ZMW 5,400"),
-  // },
-  // {
-  //   status: getStatus("failed"),
-  //   date_created: "Thur, 24th July, 2024",
-  //   reference_id: "#thd21047-1c00-wq12",
-  //   payout_source: "Redstone PGS Business ZM",
-  //   requested_amount: getBoldTableText("ZMW 4,200"),
-  //   amount_paid: notAvailable("Payout failed"),
-  // },
-  // {
-  //   status: getStatus("pending"),
-  //   date_created: "Mon, 21st June, 2024",
-  //   reference_id: "#j1q21047-1c00-io1q",
-  //   payout_source: "Redstone PGS Business ZM",
-  //   requested_amount: getBoldTableText("ZMW 2,000"),
-  //   amount_paid: notAvailable("Payout pending"),
-  // },
-];
-
-const activePeriod = ref<string>("This month");
-const periodList = ref<string[]>([
-  "Today",
-  "Last 7 days",
-  "This month",
-  "Last month",
-  "All time",
-]);
+const tableBody: any[] = [];
+const tablePaging = ref<any>({});
 
 const processSearchEntry = (searchValue: string) => {
   console.log("SEARCH VALUE", searchValue);
@@ -90,6 +81,41 @@ const processSearchEntry = (searchValue: string) => {
 const processFilterSelection = (selectedPeriod: string) => {
   console.log("FILTERING BY PERIOD", selectedPeriod);
 };
+
+const getDateCreated = (date: string) => {
+  let { w2, m3, d3, y1 } = useDate.formatDate(date).getAll();
+  return `${w2}, ${d3} ${m3}, ${y1}`;
+};
+
+const fetchPayouts = async () => {
+  const response = await processAPIRequest({
+    action: fetchAllPayouts,
+    payload: {},
+    showAlert: false,
+  });
+
+  isLoading.value = false;
+
+  if (response.code === 200) {
+    tableBody.length = 0;
+
+    response.data.map((data: any) => {
+      tableBody.push({
+        date_created: getDateCreated(data.created_at),
+        reference_id: data.reference,
+        amount_requested: getBoldTableText(
+          `${data.currency} ${formatNumber(data.amount)}`
+        ),
+        narration: data.narration,
+        status: capitalizeFirstLetter(data.status.split("_").join(" ")),
+      });
+    });
+
+    tablePaging.value = response.pagination[0];
+  }
+};
+
+fetchPayouts();
 </script>
 
 <style lang="scss" scoped></style>

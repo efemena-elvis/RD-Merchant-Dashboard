@@ -20,13 +20,28 @@
       <div class="col-span-2 border" id="number-container"></div>
     </TextFieldInput>
 
-    <TextFieldInput
-      labelId="cardExpiry"
-      labelTitle="Card Expiry"
-      :inputType="IInputType.Text"
-      inputPlaceholder="MM / YY"
-      :isRequired="true"
-    />
+    <div class="relative">
+      <label
+        for="cardExpiry"
+        class="bg-white text-sm absolute left-1 -top-2 form-label z-10"
+        >Card Expiry</label
+      >
+      <input
+        type="text"
+        class="form-control max-h-[52px]"
+        id="cardExpiry"
+        v-model="formattedDate"
+        @input="formatInput"
+        placeholder="03 / 2026"
+        maxlength="9"
+      />
+      <div
+        class="absolute bottom-3 text-sm font-medium text-red-500"
+        v-if="invalidExpiry"
+      >
+        Invalid date
+      </div>
+    </div>
 
     <TextFieldInput
       labelId="cardCvv"
@@ -42,6 +57,7 @@
       type="submit"
       class="w-full btn btn-primary col-span-2"
       ref="btnRef"
+      :disabled="invalidExpiry"
     >
       PAY
     </button>
@@ -62,6 +78,39 @@ const loading_card_security_input = ref(false);
 const { clickHandler, pushToastAlert, processAPIRequest } = useEvents();
 const btnRef = ref(null);
 
+const formattedDate = ref("");
+const invalidExpiry = ref(false);
+const expiryMonth = ref("");
+const expiryYear = ref("");
+
+const formatInput = (event: Event) => {
+  let value = (event?.target as HTMLInputElement)?.value.replace(/\D/g, "");
+
+  if (value.length > 6) value = value.slice(0, 6);
+
+  if (value.length >= 2) {
+    formattedDate.value = `${value.slice(0, 2)} / ${value.slice(2)}`;
+  } else {
+    formattedDate.value = value;
+  }
+  if (value.length === 6) {
+    const month = Number(value.slice(0, 2));
+    const year = Number(value.slice(-4));
+    const currentYear = new Date().getFullYear();
+    if (year < currentYear) {
+      invalidExpiry.value = true;
+      return;
+    }
+    if (month < 0 || month > 12) {
+      invalidExpiry.value = true;
+      return;
+    }
+    invalidExpiry.value = false;
+    expiryMonth.value = `${month}`.length < 2 ? `0${month}` : `${month}`;
+    expiryYear.value = `${year}`;
+  }
+};
+
 const loadingInputs = computed(
   () => loading_card_number_input.value || loading_card_security_input.value
 );
@@ -71,18 +120,19 @@ const makePaymentWithCardToken = async (token: string) => {
   const payload = {
     paymentReference: payment_details.reference,
     customerDetails: {
-      customer_first_name: payment_details.customer_first_name,
-      customer_last_name: payment_details.customer_last_name,
-      phone_number: "260977777777",
+      customer_first_name: payment_details.customer_first_name ?? "--",
+      customer_last_name: payment_details.customer_last_name ?? "--",
+      phone_number: payment_details?.phone_number || "--",
       email: payment_details.email,
       method: store.paymentMethod,
       token,
-      customer_address: "test address",
-      customer_address_2: "test address II",
+      customer_address: "--",
+      customer_address_2: "--",
       customer_country: "ZM",
-      customer_city: "Lusaka",
-      customer_state: "Lusaka",
+      customer_city: "--",
+      customer_state: "--",
       customer_zip: "10101",
+      account_number: payment_details.account_number || "--",
     },
   };
   try {
@@ -138,7 +188,7 @@ const handleSubmission = () => {
   if (form) {
     clickHandler(btnRef);
     form.createToken(
-      { expirationMonth: "01", expirationYear: "2028" },
+      { expirationMonth: expiryMonth.value, expirationYear: expiryYear.value },
       (err, token) => {
         clickHandler(btnRef, "PAY", false);
         if (err) {

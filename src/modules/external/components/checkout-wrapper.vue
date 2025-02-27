@@ -128,7 +128,7 @@ const {
 const { paymentMethod } = storeToRefs(useExternalStore());
 const loading_payment_details = ref(false);
 
-const isCardCheckoutEnabled = ref(false);
+const isCardCheckoutEnabled = ref(true);
 
 const paymentDetails = ref({
   amount: 0,
@@ -153,7 +153,7 @@ const cancelTransaction = () => {
 
 const loadpPaymentDetails = async (paymentReference: string) => {
   loading_payment_details.value = true;
-  
+
   const response = await processAPIRequest({
     action: fetchPaymentDetails,
     payload: { paymentReference },

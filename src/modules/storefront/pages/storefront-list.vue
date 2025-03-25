@@ -136,7 +136,7 @@ const fetchAllStorefront = async () => {
         counter: index + 1,
         name: getBoldTableText(data.name),
         orders: data?.total_orders ?? 0,
-        revenue: getBoldTableText(`ZK${formatNumber(data?.total_amount ?? 0)}`),
+        revenue: getBoldTableText(`ZMW${formatNumber(data?.total_amount ?? 0)}`),
         link: createPreviewLink(
           `https://store.redstonepgs.com/${data.slug}`,
           "Preview storefront"

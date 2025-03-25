@@ -3,6 +3,7 @@
     <!-- TOP AREA -->
     <div class="top-area">
       <div class="top-area--left">
+       
         <div class="section-title">Storefront Information</div>
 
         <div class="section-description">
@@ -65,6 +66,9 @@
             <div class="text-red-500 text-xs leading-5 mt-[1px]">
               NOTE: The storefront url was automatically generated when you
               created your storefront and cannot be changed.
+            </div>
+            <div class=" text-xs leading-5 mt-[1px]">
+              You also have the option to add a <router-link class="text-blue-500 text-xs" :to="`/storefront/domains/${storefrontId}?storeSlug=${storefrontSlug}`">custom domain</router-link> to personalize your website's URL, making it more professional and easier for users to remember.
             </div>
           </div>
         </div>
@@ -286,7 +290,7 @@
 
 <script lang="ts" setup>
 import { ref, computed } from "vue";
-import { useRoute } from "vue-router";
+import { useRoute, useRouter } from "vue-router";
 import { useStorefrontStore } from "@/modules/storefront/store";
 import { storefrontNiches } from "@/shared/constants/storefront-niches";
 import useEvents from "@/shared/composables/useEvents";
@@ -301,6 +305,13 @@ const storeIsLoading = ref<boolean>(true);
 const updateStorefrontBtnRef = ref(null);
 
 const uploadedLogo = ref<string>("");
+
+
+
+const router = useRouter();
+
+const storefrontId = ref(route.params.storeId);
+const storefrontSlug = ref(route.query.storeSlug);
 
 const getUploadedLogoContent = computed(() => {
   return {

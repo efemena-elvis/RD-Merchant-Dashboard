@@ -63,13 +63,14 @@ const storefrontRoutes: IRouteType[] = [
               },
             },
           },
+             
 
           {
             path: "orders/:storeId",
             name: "RedstoneStorefrontOrders",
             component: () =>
               import(
-                /* webpackChunkName: "storefront-module" */ "@/modules/storefront/pages/store-orders.vue"
+        /* webpackChunkName: "storefront-module" */    "@/modules/storefront/pages/store-orders.vue"
               ),
             meta: {
               requiresAuth: true,
@@ -80,6 +81,24 @@ const storefrontRoutes: IRouteType[] = [
               },
             },
           },
+
+          {
+            path: "domains/:storeId",
+            name: "RedstoneStorefrontDomains",
+            component: () =>
+              import(
+            /* webpackChunkName: "storefront-module" */ "@/modules/storefront/pages/custom-domains.vue"
+              ),
+            meta: {
+              requiresAuth: true,
+              title: "Custom Domains",
+              pageMeta: {
+                title: "Custom Domains",
+                description: "Create and manage your custom domains",
+              },
+            },
+          },
+
         ],
       },
     ],

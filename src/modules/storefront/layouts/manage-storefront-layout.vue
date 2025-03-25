@@ -5,7 +5,7 @@
       class="btn btn-sm btn-secondary back-btn"
       @click="router.push({ name: 'RedstoneStorefront' })"
     >
-      <div class="icon icon-caret-left text-lg"></div>
+      <div class="text-lg icon icon-caret-left"></div>
       Back
     </div>
 
@@ -40,6 +40,16 @@
           <div class="nav-item-icon icon-directbox-notif"></div>
           <div class="nav-item-text">Orders</div>
         </router-link>
+        <router-link
+          :to="`/storefront/domains/${storefrontId}?storeSlug=${storefrontSlug}`"
+          class="nav-item"
+          activeClass="nav-item-active"
+          exactActiveClass="nav-item-active"
+        >
+        <Globe class="text-gray-400 nav-item-icon" size = "16"/>
+
+          <div class="nav-item-text">Domains</div>
+        </router-link>
       </div>
     </div>
 
@@ -53,7 +63,9 @@
 
 <script lang="ts" setup>
 import { ref } from "vue";
+import { Globe } from "lucide-vue-next";
 import { useRoute, useRouter } from "vue-router";
+
 
 const route = useRoute();
 const router = useRouter();

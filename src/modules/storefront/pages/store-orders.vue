@@ -1,5 +1,5 @@
 <template>
-  <div class="strorefront-order-page pb-10">
+  <div class="pb-10 strorefront-order-page">
     <!-- TOP AREA -->
     <div class="top-area">
       <div class="top-area--left">
@@ -152,7 +152,7 @@ const fetchAllStoreOrders = async () => {
         }),
         order: h(TableDoubleColumn, {
           entry: {
-            primaryText: getBoldTableText(`ZK${formatNumber(data.amount)}`),
+            primaryText: getBoldTableText(`ZMW${formatNumber(data.amount)}`),
             secondaryText: renderOrderQuantity(data),
           },
         }),

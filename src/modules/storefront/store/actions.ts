@@ -94,3 +94,26 @@ export const viewOrderDetails = async (payload: any) => {
     { resolve: true, requiresPublicKey: true }
   );
 };
+
+
+export const lookUpDomain = async (payload: any) => {
+  return await $api.push(
+      storeRoutes.checkDomain
+    , {
+      payload,
+      resolve: true,
+      requiresPublicKey: true
+    }
+  )
+}
+
+
+export const initiateDomainPayment = async ({
+  payload,
+  businessId,
+}: any) => {
+  return await $api.push(`${storeRoutes.initiateDomainPayment}`, {
+    payload,
+    customHeaders: { "business-id": businessId },
+  });
+};

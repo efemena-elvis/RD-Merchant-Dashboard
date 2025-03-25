@@ -13,7 +13,7 @@
     <div class="flex items-center gap-4">
       <div
         :class="domainCheckError ? 'border-red-500' : 'border-gray-300'"
-        class="flex items-center w-[90%] gap-3 p-3 border rounded-md hover:border-green-400/80 focus:border-green-400"
+        class="flex items-center w-[75%] gap-3 p-3 border rounded-md hover:border-green-400/80 focus:border-green-400"
       >
         <Globe class="text-gray-400" :size="16" />
         <input
@@ -26,12 +26,12 @@
       <button
         :disabled="domain.trim() === ''"
         @click="handleCheckDomain"
-        class="p-3 rounded-md bg-[#2c9a4b] text-white w-1/4 flex justify-center items-center disabled:opacity-50 hover:opacity-50"
+        class="p-3 rounded-md bg-[#2c9a4b] text-white w-[18%] flex justify-center items-center disabled:opacity-50 hover:opacity-50"
       >
         <img
           src="@/shared/assets/images/loading_icon.gif"
           v-if="domainIsLoading"
-          class="w-[20px]"
+          class="w-[18px]"
         />
         <span v-else>Search</span>
       </button>
@@ -73,7 +73,7 @@
         <button
           @click="initiatePayment"
           v-if="isDomainAvailable"
-          class="bg-black rounded-md p-2 2xl:w-[120px] sm:w-[80px] hover:opacity-50 text-white"
+          class="bg-black rounded-md p-2 2xl:w-[120px] xl:w-[100px] sm:w-[80px] hover:opacity-50 text-white"
         >
           Buy
         </button>
@@ -138,7 +138,7 @@ const handleCheckDomain = async () => {
       checkedDomain.value = domain.value
  
     } else {
-      domainCheckError.value = "Domain lookup failed. Try again.";
+      domainCheckError.value = "Domain lookup failed. Try a different domain or retry.";
     }
   } catch (error: any) {
     domainCheckError.value = error.message || "Something went wrong.";

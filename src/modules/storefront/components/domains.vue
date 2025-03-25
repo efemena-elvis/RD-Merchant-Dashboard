@@ -1,10 +1,8 @@
 <template>
   <div>
-    <h6
-        class="text-2xl font-semibold text-gray-800 border-gray-400 "
-      >
-        Your {{domains.length > 1 ?  "Domains" : "Domain"}}
-      </h6>
+    <h6 class="text-2xl font-semibold text-gray-800 border-gray-400">
+      Your {{ domains.length > 1 ? "Domains" : "Domain" }}
+    </h6>
     <p class="mt-2 mb-8 text-gray-600">
       Manage your domains effortlessly. Copy your domain for easy sharing or
       activate it to connect seamlessly.
@@ -23,13 +21,16 @@
           placeholder="Search domain..."
         />
       </div>
+      <span v-if="domains.length === 0" class="mx-auto py-6 text-red-600">
+      No result found.
+    </span>
     </div>
+
     <div
       v-for="(domain, index) in domains"
       :key="index"
       class="relative py-4 mt-6 border border-gray-600 rounded-lg"
     >
-   
       <div
         class="flex justify-between px-4 xl:items-center 2xl:items-center sm:flex-col sm:items-start sm:gap-4"
       >
@@ -53,9 +54,8 @@
           </button>
         </div>
       </div>
-      <p
-        class="mt-2 text-blue-600 underline break-all transition cursor-pointer hover:text-blue-800"
-      ></p>
+     
+      
     </div>
   </div>
 </template>
@@ -63,8 +63,7 @@
 <script setup lang="ts">
 import { ref } from "vue";
 
-
-const allDomains = ref<string[]>(["aishat.com", "omolola.net"]); 
+const allDomains = ref<string[]>(["aishat.com", "omolola.net"]);
 const domains = ref<string[]>([...allDomains.value]);
 const domainCopied = ref<string>("");
 const searchInput = ref<string>("");
@@ -73,7 +72,7 @@ const copyToClipboard = async (text: string) => {
   try {
     await navigator.clipboard.writeText(text);
     domainCopied.value = text;
-    setTimeout(() => (domainCopied.value = ""), 2000); 
+    setTimeout(() => (domainCopied.value = ""), 2000);
   } catch (err) {
     console.error("Failed to copy:", err);
   }
@@ -81,15 +80,14 @@ const copyToClipboard = async (text: string) => {
 
 const handleSearch = () => {
   if (!searchInput.value.trim()) {
-    domains.value = [...allDomains.value]; 
+    domains.value = [...allDomains.value];
     return;
   }
-  
+
   domains.value = allDomains.value.filter((domain) =>
     domain.toLowerCase().includes(searchInput.value.toLowerCase().trim())
   );
 };
-
 </script>
 
 <style scoped></style>

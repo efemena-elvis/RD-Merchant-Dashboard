@@ -31,7 +31,7 @@
         <img
           src="@/shared/assets/images/loading_icon.gif"
           v-if="domainIsLoading"
-          class="w-[20%]"
+          class="w-[20px]"
         />
         <span v-else>Search</span>
       </button>
@@ -65,14 +65,15 @@
 
       <div class="flex items-center justify-between w-1/2">
         <div
-          class="bg-green-300 p-1 rounded-full min-w-[100px] text-center font-semibold text-[12px]"
+        v-if = "isDomainAvailable"
+          class="bg-green-300 p-1 rounded-full 2xl:w-[100px] sm:w-[80px] text-center font-semibold text-[12px]"
         >
           ZMW8,000
         </div>
         <button
           @click="initiatePayment"
           v-if="isDomainAvailable"
-          class="bg-black rounded-md p-2 w-[120px] hover:opacity-50 text-white"
+          class="bg-black rounded-md p-2 2xl:w-[120px] sm:w-[80px] hover:opacity-50 text-white"
         >
           Buy
         </button>
@@ -106,7 +107,7 @@ const isDomainAvailable = computed(
   () => domainDetails.value?.data === "AVAILABLE"
 );
 
-
+//Validate Domain Function
 const validateDomain = () => {
   if (!domain.value.trim()) {
     domainCheckError.value = "Domain is required";
@@ -120,7 +121,7 @@ const validateDomain = () => {
   }
 };
 
-
+// Handle Domain Lookup
 const handleCheckDomain = async () => {
   if (!validateDomain()) return;
   domainIsLoading.value = true;
@@ -146,7 +147,7 @@ const handleCheckDomain = async () => {
   }
 };
 
-
+// Fetch Store Details
 const getStoreDetails = async () => {
   loading.value = true;
   try {
@@ -165,7 +166,7 @@ const getStoreDetails = async () => {
 
 };
 
-
+// Initiate Payment
 const initiatePayment = async () => {
   if (!storeDetails.value?.data?.business_id) {
     console.error("Store details missing.");

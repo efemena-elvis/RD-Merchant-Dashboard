@@ -108,12 +108,11 @@ export const lookUpDomain = async (payload: any) => {
 }
 
 
-export const initiateDomainPayment = async ({
-  payload,
-  businessId,
-}: any) => {
-  return await $api.push(`${storeRoutes.initiateDomainPayment}`, {
-    payload,
-    customHeaders: { "business-id": businessId },
-  });
+export const initiateDomainPayment = async (payload: any) => {
+  return await $api.push(storeRoutes.initiateDomainPayment, 
+    {
+      payload,
+      resolve: true,
+      requiresPublicKey: true
+    })
 };

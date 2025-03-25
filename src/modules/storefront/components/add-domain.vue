@@ -41,7 +41,7 @@
     </div>
     <div
       v-if="!domainCheckError && domainDetails"
-      class="flex items-center justify-between mt-6"
+      class="flex items-center justify-between mt-6 2xl:w-[93%] xl:w-[95%]"
     >
       <div class="flex items-center w-1/2 gap-3">
         <SearchCheck
@@ -65,7 +65,7 @@
 
       <div class="flex items-center justify-between w-1/2">
         <div
-        v-if = "isDomainAvailable"
+          v-if="isDomainAvailable"
           class="bg-green-300 p-1 rounded-full 2xl:w-[100px] sm:w-[80px] text-center font-semibold text-[12px]"
         >
           ZMW8,000
@@ -73,33 +73,60 @@
         <button
           @click="initiatePayment"
           v-if="isDomainAvailable"
-          class="bg-black rounded-md p-2 2xl:w-[120px] xl:w-[100px] sm:w-[80px] hover:opacity-50 text-white"
+          class="bg-black rounded-md p-2 2xl:w-[120px] xl:w-[100px] sm:w-[80px] flex justify-center items-center hover:opacity-50 text-white"
         >
-          Buy
+          <img
+            src="@/shared/assets/images/loading_icon.gif"
+            v-if="isPaymentLoading"
+            class="w-[18px]"
+          />
+
+          <span v-else>Buy</span>
         </button>
       </div>
     </div>
   </div>
 </template>
 <script setup lang="ts">
-import { ref, computed, onMounted } from "vue";
+import { ref, computed} from "vue";
 import { Globe, SearchCheck, X } from "lucide-vue-next";
 import useEvents from "@/shared/composables/useEvents";
 import { useStorefrontStore } from "../store";
 import { initiateDomainPayment } from "../store/actions";
 import { useRoute } from "vue-router";
+import { useString } from "@/shared/composables/useString";
+import { inject } from "vue";
+import { Emitter } from "mitt";
 
+type Events = {
+  hidePageLoader: void;
+  showPageLoader: void;
+};
+
+const { createAndClickAnchor } = useString();
+const eventBus = inject<Emitter<Events>>("eventBus");
 const route = useRoute();
-const { processAPIRequest } = useEvents();
+const { processAPIRequest, pushToastAlert } = useEvents();
 const { lookUpDomain, fetchStoreById } = useStorefrontStore();
 
 const domain = ref<string>("");
-const checkedDomain = ref<string>("")
+const checkedDomain = ref<string>("");
 const domainIsLoading = ref<boolean>(false);
-const loading = ref<boolean>(false);
-const storeDetails = ref();
 const domainDetails = ref();
 const domainCheckError = ref<string>("");
+const paymentPayload = ref({
+  currency: "ZMW",
+  country: "ZM",
+  narration: "Domain purchase",
+  method: "mobilemoney",
+  amount: 1.3,
+  redirect_url: "",
+  email: "",
+  customer_first_name: "",
+  customer_last_name: "",
+  phone_number: "260977777777",
+});
+const isPaymentLoading = ref<boolean>(false);
 
 const domainPattern = /^[a-zA-Z0-9-]+\.[a-zA-Z]{2,}$/;
 
@@ -135,10 +162,10 @@ const handleCheckDomain = async () => {
 
     if (response.code === 200) {
       domainDetails.value = response;
-      checkedDomain.value = domain.value
- 
+      checkedDomain.value = domain.value;
     } else {
-      domainCheckError.value = "Domain lookup failed. Try a different domain or retry.";
+      domainCheckError.value =
+        "Domain lookup failed. Try a different domain or retry.";
     }
   } catch (error: any) {
     domainCheckError.value = error.message || "Something went wrong.";
@@ -147,56 +174,47 @@ const handleCheckDomain = async () => {
   }
 };
 
-// Fetch Store Details
-const getStoreDetails = async () => {
-  loading.value = true;
-  try {
-    const response = await processAPIRequest({
-      action: fetchStoreById,
-      payload: { storeId: route.params.storeId },
-      showAlert: false,
-    });
 
-    storeDetails.value = response;
-  } catch (error) {
-    console.error("Error fetching store details:", error);
-  } finally {
-    loading.value = false;
-  }
 
-};
-
-// Initiate Payment
+// Initiate Domain Payment
 const initiatePayment = async () => {
-  if (!storeDetails.value?.data?.business_id) {
-    console.error("Store details missing.");
-    return;
-  }
-
+  isPaymentLoading.value = true;
   const response = await processAPIRequest({
     action: initiateDomainPayment,
-    payload: {
-      payload: {
-        currency: "ZMW",
-        country: "ZM",
-        narration: "Domain purchase",
-        method: "mobilemoney",
-        amount: 1.3,
-        redirect_url: "",
-        email: "",
-        customer_first_name: "",
-        customer_last_name: "",
-        phone_number: "260977777777",
-      },
-      businessId: storeDetails.value.data.business_id,
-    },
+    payload: paymentPayload.value,
     showAlert: true,
   });
 
+  if (response?.code === 200) {
+    createAndClickAnchor(response.data.payment_link);
+  }
+
+  // HANDLE UNIDENTIFIED MOBILE OPERATOR
+  else if (response?.code === 400 && response?.message === "Unknown Operator") {
+    eventBus?.emit("hidePageLoader");
+
+    pushToastAlert({
+      message: "Unknown Mobile Operator",
+      description: "Please check phone number and try again.",
+      type: "error",
+    });
+  }
+
+  // HANDLE ERROR RESPONSE
+  else {
+    eventBus?.emit("hidePageLoader");
+
+    pushToastAlert({
+      message: "Domain payment failed",
+      description: "Unable to process your payment. Please try again later.",
+      type: "error",
+    });
+  }
+  isPaymentLoading.value = false;
   console.log(response);
 };
 
-onMounted(getStoreDetails);
+
 </script>
 
 <style scoped></style>

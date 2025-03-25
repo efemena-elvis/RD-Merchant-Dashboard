@@ -25,7 +25,7 @@
       No result found.
     </span>
     </div>
-
+<!-- <p>{{store?.data?.slug}}</p> -->
     <div
       v-for="(domain, index) in domains"
       :key="index"
@@ -68,6 +68,8 @@ const domains = ref<string[]>([...allDomains.value]);
 const domainCopied = ref<string>("");
 const searchInput = ref<string>("");
 
+
+defineProps(["store"])
 const copyToClipboard = async (text: string) => {
   try {
     await navigator.clipboard.writeText(text);
@@ -88,6 +90,8 @@ const handleSearch = () => {
     domain.toLowerCase().includes(searchInput.value.toLowerCase().trim())
   );
 };
+
+
 </script>
 
 <style scoped></style>

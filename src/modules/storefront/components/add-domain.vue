@@ -4,7 +4,7 @@
       <h2 class="text-2xl font-semibold text-gray-800">
         Customize Your Storefront Domain
       </h2>
-      <p class="mt-2 text-gray-600 2xl:w-[60%] sm:w-[90%] text-[14px]">
+      <p class="mt-2 text-gray-600 2xl:w-[60%] sm:w-[90%] xl:w-[90%] text-[14px]">
         Make your store truly yours by setting up a custom domain. A branded
         domain enhances credibility, improves customer trust, and strengthens
         your online presence. Register a new domain in just a few steps. 🚀
@@ -13,7 +13,7 @@
     <div class="flex items-center w-full gap-4">
       <div
         :class="domainCheckError ? 'border-red-500' : 'border-gray-300'"
-        class="flex items-center 2xl:w-[55%] xl:w-[60%] sm:w-[90%] gap-3 p-4 border rounded-lg hover:border-green-400/80 focus:border-green-400"
+        class="flex items-center 2xl:w-[55%] xl:w-[70%] sm:w-[90%] gap-3 p-4 border rounded-lg hover:border-green-400/80 focus:border-green-400"
       >
         <Globe class="text-gray-400" :size="16" />
         <input
@@ -149,9 +149,7 @@ watch(
   { immediate: true }
 );
 
-onMounted(() => {
-  console.log("Business Profile:", newProfile.value);
-});
+
 
 const domain = ref<string>("");
 const checkedDomain = ref<string>("");
@@ -320,35 +318,35 @@ const initiatePayment = async () => {
 };
 
 // Add Domain Config
-const handleAddDomainConfig = async () => {
-  try {
-    const response = await processAPIRequest({
-      action: addDomainConfig,
-      payload: registerDomainPayload.value,
-      showAlert: true,
-    });
+// const handleAddDomainConfig = async () => {
+//   try {
+//     const response = await processAPIRequest({
+//       action: addDomainConfig,
+//       payload: registerDomainPayload.value,
+//       showAlert: true,
+//     });
 
-    if (response.code === 200) {
-      pushToastAlert({
-        message: "Domain registered successfully.",
-        description: "",
-        type: "success",
-      });
-    } else if (response.code === 400) {
-      pushToastAlert({
-        message: "Unable to register domain",
-        description: "Please, try again.",
-        type: "error",
-      });
-    }
-  } catch (error) {
-    pushToastAlert({
-      message: "Something went wrong.",
-      description: "Something went wrong. Please, try again.",
-      type: "error",
-    });
-  }
-};
+//     if (response.code === 200) {
+//       pushToastAlert({
+//         message: "Domain registered successfully.",
+//         description: "",
+//         type: "success",
+//       });
+//     } else if (response.code === 400) {
+//       pushToastAlert({
+//         message: "Unable to register domain",
+//         description: "Please, try again.",
+//         type: "error",
+//       });
+//     }
+//   } catch (error) {
+//     pushToastAlert({
+//       message: "Something went wrong.",
+//       description: "Something went wrong. Please, try again.",
+//       type: "error",
+//     });
+//   }
+// };
 
 </script>
 

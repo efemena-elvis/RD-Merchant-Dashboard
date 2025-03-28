@@ -52,7 +52,7 @@
 </template>
 
 <script lang="ts" setup>
-import { h, ref, reactive } from "vue";
+import { h, ref, reactive, onMounted } from 'vue';
 import { useRouter } from "vue-router";
 import { useString } from "@/shared/composables/useString";
 import { TableHeaderType } from "@/models/dashboard-type";
@@ -65,6 +65,7 @@ import TableContainerBody from "@/shared/components/table-comps/table-container-
 import CreateStoreFrontModal from "@/modules/storefront/modals/create-storefront-modal.vue";
 import DeleteStoreFrontModal from "@/modules/storefront/modals/delete-storefront-modal.vue";
 import TableActionBtn from "@/shared/components/table-comps/table-action-btn.vue";
+import { getDomainConfig } from "../store/actions";
 
 const { getBoldTableText, getStatus, createPreviewLink, formatNumber } =
   useString();
@@ -74,6 +75,7 @@ const { getBusiness } = useProfile();
 
 const { fetchStorefront } = useStorefrontStore();
 const { processAPIRequest } = useEvents();
+const storeDomains = ref<Record<string, string>>({}); 
 
 const isLoading = ref<boolean>(true);
 
@@ -119,6 +121,27 @@ const processFilterSelection = (selectedPeriod: string) => {
   console.log("FILTERING BY PERIOD", selectedPeriod);
 };
 
+
+
+
+const handleGetDomainConfig = async (store: any): Promise<void> => {
+  if (!store || storeDomains.value[store.id]) return; 
+
+  try {
+    const response = await processAPIRequest({
+      action: getDomainConfig,
+      payload: { id: store.id },
+      showAlert: false,
+    });
+
+    if (response.code === 200 && response.data.domain) {
+      storeDomains.value[store.id] = response.data.domain; 
+    }
+  } catch (err: any) {
+    console.log("Error fetching domain config:", err.message);
+  }
+};
+
 const fetchAllStorefront = async () => {
   const response = await processAPIRequest({
     action: fetchStorefront,
@@ -129,36 +152,38 @@ const fetchAllStorefront = async () => {
   isLoading.value = false;
 
   if (response.code === 200) {
-    console.log(response)
     tableBody.length = 0;
 
-    tableBody.push(
-      ...response.data.map((data: any, index: number) => ({
+   
+    await Promise.all(response.data.map(handleGetDomainConfig));
+
+    const updatedTableBody = response.data.map((data: any, index: number) => {
+      const domain = storeDomains.value[data.id] || `store.redstonepgs.com/${data.slug}`;
+
+      return {
         counter: index + 1,
         name: getBoldTableText(data.name),
         orders: data?.total_orders ?? 0,
         revenue: getBoldTableText(`ZMW${formatNumber(data?.total_amount ?? 0)}`),
-        link: createPreviewLink(
-          `https://store.redstonepgs.com/${data.slug}`,
-          "Preview storefront"
-        ),
+        link: createPreviewLink(`https://${domain}`, "Preview storefront"),
         status: `${getStatus("success", "Active")}`,
         action: h(TableActionBtn, {
           showPrimaryBtn: true,
           showSecondaryBtn: false,
-          primaryBtnText: "Manage store",
-          onManageClick: () =>
-            router.push(
-              `storefront/overview/${data.id}?storeSlug=${data.slug}`
-            ),
+          primaryBtnText: "Manage Store",
+          onManageClick: () => {
+            router.push(`storefront/overview/${data.id}?storeSlug=${domain}`);
+          },
           onDeleteClick: () => handleDeleteStorefront(data),
         }),
-      }))
-    );
+      };
+    });
 
-    // tablePaging.value = response.pagination[0];
+    tableBody.push(...updatedTableBody);
   }
 };
+
+
 
 const handleDeleteStorefront = (storefrontData: any) => {
   deleteStorefrontData.value = storefrontData;
@@ -168,6 +193,7 @@ const handleDeleteStorefront = (storefrontData: any) => {
 
 
 fetchAllStorefront();
+
 </script>
 
 <style lang="scss" scoped></style>

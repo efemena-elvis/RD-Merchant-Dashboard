@@ -129,6 +129,7 @@ const fetchAllStorefront = async () => {
   isLoading.value = false;
 
   if (response.code === 200) {
+    console.log(response)
     tableBody.length = 0;
 
     tableBody.push(
@@ -163,6 +164,8 @@ const handleDeleteStorefront = (storefrontData: any) => {
   deleteStorefrontData.value = storefrontData;
   toggleDeleteStorefrontModal();
 };
+
+
 
 fetchAllStorefront();
 </script>

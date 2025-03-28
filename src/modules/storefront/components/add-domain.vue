@@ -4,34 +4,34 @@
       <h2 class="text-2xl font-semibold text-gray-800">
         Customize Your Storefront Domain
       </h2>
-      <p class="mt-2 text-gray-600">
+      <p class="mt-2 text-gray-600 2xl:w-[60%] sm:w-[90%] text-[14px]">
         Make your store truly yours by setting up a custom domain. A branded
         domain enhances credibility, improves customer trust, and strengthens
         your online presence. Register a new domain in just a few steps. 🚀
       </p>
     </div>
-    <div class="flex items-center gap-4">
+    <div class="flex items-center w-full gap-4">
       <div
         :class="domainCheckError ? 'border-red-500' : 'border-gray-300'"
-        class="flex items-center w-[75%] gap-3 p-3 border rounded-md hover:border-green-400/80 focus:border-green-400"
+        class="flex items-center 2xl:w-[55%] xl:w-[60%] sm:w-[90%] gap-3 p-4 border rounded-lg hover:border-green-400/80 focus:border-green-400"
       >
         <Globe class="text-gray-400" :size="16" />
         <input
           v-model="domain"
           type="text"
-          class="w-full text-gray-500 bg-transparent border-none"
-          placeholder="Enter a domain name, e.g 'example.com'."
+          class="w-full text-lg bg-transparent border-none gray-500"
+          placeholder="Enter a domain name. e.g. 'example.com'."
         />
       </div>
       <button
         :disabled="domain.trim() === ''"
         @click="handleCheckDomain"
-        class="p-3 rounded-md bg-[#2c9a4b] text-white w-[18%] flex justify-center items-center disabled:opacity-50 hover:opacity-50"
+        class="btn-primary btn-sm btn"
       >
         <img
           src="@/shared/assets/images/loading_icon.gif"
           v-if="domainIsLoading"
-          class="w-[18px]"
+          class="w-[20px]"
         />
         <span v-else>Search</span>
       </button>
@@ -41,9 +41,9 @@
     </div>
     <div
       v-if="!domainCheckError && domainDetails"
-      class="flex items-center justify-between mt-6 2xl:w-[93%] xl:w-[95%]"
+      class="flex items-center justify-between mt-6 xl:w-[75%] 2xl:w-[70%] sm:w-full"
     >
-      <div class="flex items-center w-1/2 gap-3">
+      <div class="flex items-center gap-3">
         <SearchCheck
           v-if="isDomainAvailable"
           :size="16"
@@ -66,14 +66,16 @@
       <div class="flex items-center justify-between w-1/2">
         <div
           v-if="isDomainAvailable"
-          class="bg-green-300 p-1 rounded-full 2xl:w-[100px] sm:w-[80px] text-center font-semibold text-[12px]"
+          class="bg-green-300 p-1 rounded-full w-[100px] text-center font-semibold text-[12px]"
         >
           ZMW{{ formatNumber(domainDetails?.data.price) }}
         </div>
         <button
+          :disabled="newProfile?.businessMode === 'test'"
           @click="initiatePayment"
           v-if="isDomainAvailable"
-          class="bg-black rounded-md p-2 2xl:w-[120px] xl:w-[100px] sm:w-[80px] flex justify-center items-center hover:opacity-50 text-white"
+          
+          class="bg-black disabled:opacity-50 rounded-md p-2 2xl:w-[80px] xl:w-[60px] sm:w-[60px] flex justify-center items-center hover:opacity-50 text-white"
         >
           <img
             src="@/shared/assets/images/loading_icon.gif"
@@ -88,20 +90,28 @@
   </div>
 </template>
 <script setup lang="ts">
-import { ref, computed, reactive } from "vue";
+import { ref, computed, reactive, onMounted, watch } from "vue";
 import { Globe, SearchCheck, X } from "lucide-vue-next";
 import useEvents from "@/shared/composables/useEvents";
 import { useStorefrontStore } from "../store";
-import { addDomainConfig, initiateDomainPayment, registerDomain } from "../store/actions";
+import {
+  addDomainConfig,
+  initiateDomainPayment,
+  registerDomain,
+} from "../store/actions";
 import { useRoute } from "vue-router";
 import { useString } from "@/shared/composables/useString";
 import { inject } from "vue";
 import { Emitter } from "mitt";
+import { useProfile } from "@/shared/composables/useProfile";
 
 type Events = {
   hidePageLoader: void;
   showPageLoader: void;
 };
+
+const route = useRoute();
+
 type registerDomainPayload = {
   domain: String;
   domain_duration: Number;
@@ -112,9 +122,36 @@ const props = defineProps(["store"]);
 
 const { createAndClickAnchor } = useString();
 const eventBus = inject<Emitter<Events>>("eventBus");
-const route = useRoute();
+
 const { processAPIRequest, pushToastAlert } = useEvents();
 const { lookUpDomain } = useStorefrontStore();
+const { getBusiness } = useProfile();
+const getBusinessProfile = computed(() => getBusiness());
+const newProfile = ref<{
+  businessAddress: string;
+  disputeEmailAddress: string;
+  generalEmailAddress: string;
+  businessId: string;
+  businessLogo: string;
+  businessMode: string;
+  businessName: string;
+  businessSector: string;
+  bankName: string;
+} | null>(null);
+
+watch(
+  getBusinessProfile,
+  (newVal) => {
+    if (newVal) {
+      newProfile.value = newVal;
+    }
+  },
+  { immediate: true }
+);
+
+onMounted(() => {
+  console.log("Business Profile:", newProfile.value);
+});
 
 const domain = ref<string>("");
 const checkedDomain = ref<string>("");
@@ -193,10 +230,20 @@ const handleCheckDomain = async () => {
     if (response.code === 200) {
       domainDetails.value = response;
       checkedDomain.value = domain.value;
+
+      if(newProfile.value?.businessMode === "test"){
+        pushToastAlert({
+      message: "Warning",
+      description: "Activate your business to buy a domain.",
+      type: "warning",
+    });
+      }
     } else {
       domainCheckError.value =
         "Failed to lookup domain. Try again or try a different domain extension.";
     }
+
+    
   } catch (error: any) {
     domainCheckError.value = error.message || "Something went wrong.";
   } finally {
@@ -245,9 +292,7 @@ const initiatePayment = async () => {
   });
 
   if (response?.code === 200) {
-    // handleRegisterDomain();
-    createAndClickAnchor(response.data.payment_link);
-    // handleAddDomainConfig()
+    handleRegisterDomain();
   }
 
   // HANDLE UNIDENTIFIED MOBILE OPERATOR
@@ -272,9 +317,7 @@ const initiatePayment = async () => {
     });
   }
   isPaymentLoading.value = false;
-
 };
-
 
 // Add Domain Config
 const handleAddDomainConfig = async () => {
@@ -285,14 +328,12 @@ const handleAddDomainConfig = async () => {
       showAlert: true,
     });
 
-
     if (response.code === 200) {
       pushToastAlert({
         message: "Domain registered successfully.",
         description: "",
         type: "success",
       });
-
     } else if (response.code === 400) {
       pushToastAlert({
         message: "Unable to register domain",
@@ -309,7 +350,14 @@ const handleAddDomainConfig = async () => {
   }
 };
 
-
 </script>
 
-<style scoped></style>
+<style scoped>
+.btn {
+  @apply w-[82px] h-[46px] py-3 sm:py-3 px-7 text-grey-800/80 border text-[13px];
+}
+
+.btn-primary {
+  @apply text-neutral-10;
+}
+</style>

@@ -52,7 +52,7 @@
 </template>
 
 <script lang="ts" setup>
-import { h, ref, reactive, onMounted } from 'vue';
+import { h, ref, reactive, onMounted } from "vue";
 import { useRouter } from "vue-router";
 import { useString } from "@/shared/composables/useString";
 import { TableHeaderType } from "@/models/dashboard-type";
@@ -75,7 +75,7 @@ const { getBusiness } = useProfile();
 
 const { fetchStorefront } = useStorefrontStore();
 const { processAPIRequest } = useEvents();
-const storeDomains = ref<Record<string, string>>({}); 
+const storeDomains = ref<Record<string, string>>({});
 
 const isLoading = ref<boolean>(true);
 
@@ -121,11 +121,8 @@ const processFilterSelection = (selectedPeriod: string) => {
   console.log("FILTERING BY PERIOD", selectedPeriod);
 };
 
-
-
-
 const handleGetDomainConfig = async (store: any): Promise<void> => {
-  if (!store || storeDomains.value[store.id]) return; 
+  if (!store || storeDomains.value[store.id]) return;
 
   try {
     const response = await processAPIRequest({
@@ -135,7 +132,7 @@ const handleGetDomainConfig = async (store: any): Promise<void> => {
     });
 
     if (response.code === 200 && response.data.domain) {
-      storeDomains.value[store.id] = response.data.domain; 
+      storeDomains.value[store.id] = response.data.domain;
     }
   } catch (err: any) {
     console.log("Error fetching domain config:", err.message);
@@ -154,17 +151,19 @@ const fetchAllStorefront = async () => {
   if (response.code === 200) {
     tableBody.length = 0;
 
-   
     await Promise.all(response.data.map(handleGetDomainConfig));
 
     const updatedTableBody = response.data.map((data: any, index: number) => {
-      const domain = storeDomains.value[data.id] || `store.redstonepgs.com/${data.slug}`;
+      const domain =
+        storeDomains.value[data.id] || `store.redstonepgs.com/${data.slug}`;
 
       return {
         counter: index + 1,
         name: getBoldTableText(data.name),
         orders: data?.total_orders ?? 0,
-        revenue: getBoldTableText(`ZMW${formatNumber(data?.total_amount ?? 0)}`),
+        revenue: getBoldTableText(
+          `ZMW${formatNumber(data?.total_amount ?? 0)}`
+        ),
         link: createPreviewLink(`https://${domain}`, "Preview storefront"),
         status: `${getStatus("success", "Active")}`,
         action: h(TableActionBtn, {
@@ -183,17 +182,12 @@ const fetchAllStorefront = async () => {
   }
 };
 
-
-
 const handleDeleteStorefront = (storefrontData: any) => {
   deleteStorefrontData.value = storefrontData;
   toggleDeleteStorefrontModal();
 };
 
-
-
 fetchAllStorefront();
-
 </script>
 
 <style lang="scss" scoped></style>

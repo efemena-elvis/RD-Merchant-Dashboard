@@ -49,7 +49,7 @@
               />
             </div>
 
-            <div class="form-input-block" v-if = "allDomains.length > 1">
+            <!-- <div class="form-input-block" v-if = "allDomains.length > 1">
               <div class="form-input-block form-control form-input">
                 <div class="form-placeholder">
                   https://
@@ -61,9 +61,9 @@
                   v-model="allDomains[0]"
                 />
               </div>
-            </div>
+            </div> -->
 
-            <div class="form-input-block" v-else>
+            <div class="form-input-block" >
               <div class="form-input-block form-control form-input">
                 <div class="form-placeholder">
                   https://store.redstonepgs.com/

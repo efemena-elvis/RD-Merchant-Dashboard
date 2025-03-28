@@ -1,7 +1,7 @@
 <template>
   <div>
     <h6 class="text-2xl font-semibold text-gray-800 border-gray-400">
-      Your {{ domains.length > 1 ? "Domains" : "Domain" }}
+      Your {{ allDomains.length > 1 ? "Domains" : "Domain" }}
     </h6>
     <p class="mt-2 mb-8 text-gray-600">
       Manage your domains effortlessly. Copy your domain for easy sharing or
@@ -21,13 +21,13 @@
           placeholder="Search domain..."
         />
       </div>
-      <span v-if="domains.length === 0" class="mx-auto py-6 text-red-600">
-      No result found.
-    </span>
+      <span v-if="allDomains.length === 0" class="py-6 mx-auto text-red-600">
+        No result found.
+      </span>
     </div>
-<!-- <p>{{store?.data?.slug}}</p> -->
+    <!-- <p>{{store?.data?.slug}}</p> -->
     <div
-      v-for="(domain, index) in domains"
+      v-for="(domain, index) in allDomains"
       :key="index"
       class="relative py-4 mt-6 border border-gray-600 rounded-lg"
     >
@@ -54,22 +54,23 @@
           </button>
         </div>
       </div>
-     
-      
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
+import { onMounted } from "vue";
 import { ref } from "vue";
+import { getDomainConfig } from "../store/actions";
+import useEvents from "@/shared/composables/useEvents";
 
-const allDomains = ref<string[]>(["aishat.com", "omolola.net"]);
-const domains = ref<string[]>([...allDomains.value]);
+const props = defineProps(["store", "domains"]);
+const allDomains = ref<string[]>([...props.domains]);
 const domainCopied = ref<string>("");
 const searchInput = ref<string>("");
 
+const { processAPIRequest } = useEvents();
 
-defineProps(["store"])
 const copyToClipboard = async (text: string) => {
   try {
     await navigator.clipboard.writeText(text);
@@ -82,11 +83,11 @@ const copyToClipboard = async (text: string) => {
 
 const handleSearch = () => {
   if (!searchInput.value.trim()) {
-    domains.value = [...allDomains.value];
+    allDomains.value = [...props.domains];
     return;
   }
 
-  domains.value = allDomains.value.filter((domain) =>
+  allDomains.value = props.domains?.filter((domain: string) =>
     domain.toLowerCase().includes(searchInput.value.toLowerCase().trim())
   );
 };

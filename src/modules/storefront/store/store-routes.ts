@@ -17,5 +17,8 @@ export const storeRoutes = {
   viewOrderDetails: "orders/view",
 
   checkDomain: "store/domain/lookup",
-  initiateDomainPayment: "payment/init"
+  initiateDomainPayment: "payment/init",
+  registerDomain: "store/domain/register",
+  addDomainConfig: "store/domain/config",
+  getDomainConfig: "store/domain/view"
 };

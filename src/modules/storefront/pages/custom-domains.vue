@@ -17,9 +17,9 @@
       </div>
     </div>
 
-    <AddDomain v-if="activeTab === 'Add'" />
+    <AddDomain v-if="activeTab === 'Add'" :store="storeDetails" />
 
-    <Domains v-else :store = "storeDetails"/>
+    <Domains v-else :store="storeDetails" :domains="allDomains" />
   </div>
 </template>
 
@@ -30,19 +30,23 @@ import { useStorefrontStore } from "@/modules/storefront/store";
 import { useRoute, useRouter } from "vue-router";
 import AddDomain from "../components/add-domain.vue";
 import Domains from "../components/domains.vue";
+import { getDomainConfig } from "../store/actions";
 
 const route = useRoute();
 
 const router = useRouter();
 
-const storeDetails = ref(null);
+interface StoreDetails {
+  id: string;
+  [key: string]: any;
+}
+
+const storeDetails = ref<StoreDetails | null>(null);
 const loading = ref(true);
 const activeTab = ref("Add");
-
+const allDomains = ref<string[]>([`store.redstonepgs.com/loven`]);
 const { fetchStoreById } = useStorefrontStore();
 const { processAPIRequest } = useEvents();
-
-
 
 // Fetch Store Details
 const getStoreDetails = async () => {
@@ -54,15 +58,32 @@ const getStoreDetails = async () => {
       showAlert: false,
     });
 
-    storeDetails.value = response;
+    storeDetails.value = response.data;
   } catch (error) {
     console.error("Error fetching store details:", error);
   }
 };
 
+const handleGetDomainConfig = async (): Promise<void> => {
+  try {
+    const response = await processAPIRequest({
+      action: getDomainConfig,
+      payload: { id: route.params.storeId },
+      showAlert: false,
+    });
 
+    if (response.code === 200) {
+      allDomains?.value.unshift(response.data.domain);
+    }
+  } catch (err: any) {
+    console.log(err.message);
+  }
+};
 
-onMounted(getStoreDetails);
+onMounted(() => {
+  getStoreDetails();
+  handleGetDomainConfig();
+});
 
 const tabBackground = (tab: string) =>
   tab === activeTab.value

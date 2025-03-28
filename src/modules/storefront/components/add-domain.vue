@@ -19,7 +19,7 @@
         <input
           v-model="domain"
           type="text"
-          class="w-full text-gray-500 border-none bg-transaparent"
+          class="w-full text-gray-500 bg-transparent border-none"
           placeholder="Enter a domain name, e.g 'example.com'."
         />
       </div>
@@ -36,7 +36,7 @@
         <span v-else>Search</span>
       </button>
     </div>
-    <div class="text-red-500 text-sm py-2" v-if="domainCheckError">
+    <div class="py-2 text-sm text-red-500" v-if="domainCheckError">
       {{ domainCheckError }}
     </div>
     <div
@@ -68,7 +68,7 @@
           v-if="isDomainAvailable"
           class="bg-green-300 p-1 rounded-full 2xl:w-[100px] sm:w-[80px] text-center font-semibold text-[12px]"
         >
-          ZMW8,000
+          ZMW{{ formatNumber(domainDetails?.data.price) }}
         </div>
         <button
           @click="initiatePayment"
@@ -88,11 +88,11 @@
   </div>
 </template>
 <script setup lang="ts">
-import { ref, computed} from "vue";
+import { ref, computed, reactive } from "vue";
 import { Globe, SearchCheck, X } from "lucide-vue-next";
 import useEvents from "@/shared/composables/useEvents";
 import { useStorefrontStore } from "../store";
-import { initiateDomainPayment } from "../store/actions";
+import { addDomainConfig, initiateDomainPayment, registerDomain } from "../store/actions";
 import { useRoute } from "vue-router";
 import { useString } from "@/shared/composables/useString";
 import { inject } from "vue";
@@ -102,37 +102,67 @@ type Events = {
   hidePageLoader: void;
   showPageLoader: void;
 };
+type registerDomainPayload = {
+  domain: String;
+  domain_duration: Number;
+  store_id: String;
+};
+
+const props = defineProps(["store"]);
 
 const { createAndClickAnchor } = useString();
 const eventBus = inject<Emitter<Events>>("eventBus");
 const route = useRoute();
 const { processAPIRequest, pushToastAlert } = useEvents();
-const { lookUpDomain, fetchStoreById } = useStorefrontStore();
+const { lookUpDomain } = useStorefrontStore();
 
 const domain = ref<string>("");
 const checkedDomain = ref<string>("");
 const domainIsLoading = ref<boolean>(false);
 const domainDetails = ref();
 const domainCheckError = ref<string>("");
-const paymentPayload = ref({
-  currency: "ZMW",
-  country: "ZM",
-  narration: "Domain purchase",
-  method: "mobilemoney",
-  amount: 1.3,
-  redirect_url: "",
-  email: "",
-  customer_first_name: "",
-  customer_last_name: "",
-  phone_number: "260977777777",
+
+const registerDomainPayload = computed(() => {
+  return {
+    domain: checkedDomain?.value,
+    domain_duration: 1,
+    store_id: props.store?.id,
+  };
 });
+
+const { formatNumber } = useString();
+
+const getPaymentPayload = computed(() => {
+  return {
+    currency: "ZMW",
+    country: "ZM",
+    narration: "Domain purchase",
+    method: "mobilemoney",
+    amount: domainDetails?.value.data.price,
+    redirect_url: `/storefront/overview/${props.store?.id}?storeSlug=${props.store?.slug}`,
+    email: "",
+    customer_first_name: "",
+    customer_last_name: "",
+    phone_number: "",
+  };
+});
+
 const isPaymentLoading = ref<boolean>(false);
 
 const domainPattern = /^[a-zA-Z0-9-]+\.[a-zA-Z]{2,}$/;
 
-const isDomainAvailable = computed(
-  () => domainDetails.value?.data === "AVAILABLE"
-);
+const splitDomain = () => {
+  if (domain.value) {
+    const parts = domain.value.split(".");
+    const name = parts.slice(0, -1).join(".");
+    const extension = "." + parts.slice(-1)[0];
+    return { name, extension };
+  }
+};
+const isDomainAvailable = computed(() => {
+  if (domainDetails.value?.data.response === "AVAILABLE") return true;
+  else return false;
+});
 
 //Validate Domain Function
 const validateDomain = () => {
@@ -156,7 +186,7 @@ const handleCheckDomain = async () => {
   try {
     const response = await processAPIRequest({
       action: lookUpDomain,
-      payload: { domain: domain.value },
+      payload: splitDomain(),
       showAlert: false,
     });
 
@@ -165,7 +195,7 @@ const handleCheckDomain = async () => {
       checkedDomain.value = domain.value;
     } else {
       domainCheckError.value =
-        "Domain lookup failed. Try a different domain or retry.";
+        "Failed to lookup domain. Try again or try a different domain extension.";
     }
   } catch (error: any) {
     domainCheckError.value = error.message || "Something went wrong.";
@@ -174,19 +204,50 @@ const handleCheckDomain = async () => {
   }
 };
 
-
+// Register Dmonain
+const handleRegisterDomain = async () => {
+  try {
+    const response = await processAPIRequest({
+      action: registerDomain,
+      payload: registerDomainPayload.value,
+      showAlert: true,
+    });
+    if (response.code === 200) {
+      pushToastAlert({
+        message: "Domain registered successfully.",
+        description: "",
+        type: "success",
+      });
+      createAndClickAnchor(response.data.payment_link);
+    } else if (response.code === 400) {
+      pushToastAlert({
+        message: "Unable to register domain",
+        description: "Please, try again.",
+        type: "error",
+      });
+    }
+  } catch (error) {
+    pushToastAlert({
+      message: "Something went wrong.",
+      description: "Something went wrong. Please, try again.",
+      type: "error",
+    });
+  }
+};
 
 // Initiate Domain Payment
 const initiatePayment = async () => {
   isPaymentLoading.value = true;
   const response = await processAPIRequest({
     action: initiateDomainPayment,
-    payload: paymentPayload.value,
+    payload: getPaymentPayload.value,
     showAlert: true,
   });
 
   if (response?.code === 200) {
+    // handleRegisterDomain();
     createAndClickAnchor(response.data.payment_link);
+    // handleAddDomainConfig()
   }
 
   // HANDLE UNIDENTIFIED MOBILE OPERATOR
@@ -211,7 +272,41 @@ const initiatePayment = async () => {
     });
   }
   isPaymentLoading.value = false;
-  console.log(response);
+
+};
+
+
+// Add Domain Config
+const handleAddDomainConfig = async () => {
+  try {
+    const response = await processAPIRequest({
+      action: addDomainConfig,
+      payload: registerDomainPayload.value,
+      showAlert: true,
+    });
+
+
+    if (response.code === 200) {
+      pushToastAlert({
+        message: "Domain registered successfully.",
+        description: "",
+        type: "success",
+      });
+
+    } else if (response.code === 400) {
+      pushToastAlert({
+        message: "Unable to register domain",
+        description: "Please, try again.",
+        type: "error",
+      });
+    }
+  } catch (error) {
+    pushToastAlert({
+      message: "Something went wrong.",
+      description: "Something went wrong. Please, try again.",
+      type: "error",
+    });
+  }
 };
 
 

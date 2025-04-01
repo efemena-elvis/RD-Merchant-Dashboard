@@ -74,11 +74,13 @@ class ServiceApi {
       resolve?: boolean;
       payload?: any;
       is_attach?: boolean;
+      customHeaders?: Record<string, string | null>;
       requiresPublicKey?: boolean;
     } = {
       resolve: true,
       payload: null,
       is_attach: false,
+      customHeaders: {},
       requiresPublicKey: false,
     }
   ): Promise<T | AxiosResponse<T>> {
@@ -91,7 +93,7 @@ class ServiceApi {
 
       const response = await axios.get<T>(
         hashed_url,
-        this.getHeaders(option.is_attach, option.requiresPublicKey)
+        this.getHeaders(option.is_attach, option.requiresPublicKey, option.customHeaders || {})
       );
 
       // Reset to initial base URL after the request
@@ -127,11 +129,13 @@ class ServiceApi {
       resolve = true,
       is_attach = false,
       requiresPublicKey = false,
+      customHeaders = {}
     }: {
       payload?: any;
       resolve?: boolean;
       is_attach?: boolean;
       requiresPublicKey?: boolean;
+      customHeaders?: Record<string, string | null>;
     }
   ): Promise<T | AxiosResponse<T>> {
     try {
@@ -142,7 +146,7 @@ class ServiceApi {
       const response = await axios.post<T>(
         url,
         payload,
-        this.getHeaders(is_attach, requiresPublicKey)
+        this.getHeaders(is_attach, requiresPublicKey, customHeaders)
       );
 
       // Reset to initial base URL after the request
@@ -167,11 +171,13 @@ class ServiceApi {
       resolve = true,
       is_attach = false,
       requiresPublicKey = false,
+      customHeaders = {}
     }: {
       payload?: any;
       resolve?: boolean;
       is_attach?: boolean;
       requiresPublicKey?: boolean;
+      customHeaders?: Record<string, string | null>;
     }
   ): Promise<T | AxiosResponse<T>> {
     try {
@@ -182,7 +188,7 @@ class ServiceApi {
       const response = await axios.put<T>(
         url,
         payload,
-        this.getHeaders(is_attach, requiresPublicKey)
+        this.getHeaders(is_attach, requiresPublicKey,customHeaders)
       );
 
       // Reset to initial base URL after the request
@@ -207,11 +213,13 @@ class ServiceApi {
       resolve = true,
       is_attach = false,
       requiresPublicKey = false,
+      customHeaders = {}
     }: {
       payload?: any;
       resolve?: boolean;
       is_attach?: boolean;
       requiresPublicKey?: boolean;
+      customHeaders?: Record<string, string | null>;
     }
   ): Promise<T | AxiosResponse<T>> {
     try {
@@ -222,7 +230,7 @@ class ServiceApi {
       const response = await axios.patch<T>(
         url,
         payload,
-        this.getHeaders(is_attach, requiresPublicKey)
+        this.getHeaders(is_attach, requiresPublicKey, customHeaders)
       );
 
       // Reset to initial base URL after the request
@@ -246,6 +254,7 @@ class ServiceApi {
       payload?: any;
       resolve?: boolean;
       requiresPublicKey?: boolean;
+      customHeaders?: Record<string, string | null>;
     } = {
       payload: {},
       resolve: true,
@@ -259,7 +268,7 @@ class ServiceApi {
 
       const response = await axios.delete<T>(url, {
         data: option.payload,
-        ...this.getHeaders(false, option.requiresPublicKey),
+        ...this.getHeaders(false, option.requiresPublicKey, option.customHeaders || {}),
       });
 
       // Reset to initial base URL after the request
@@ -315,9 +324,7 @@ class ServiceApi {
   // ===============================
   // SETUP REQUEST HEADERS
   getHeaders(
-    attach: boolean = false,
-    requiresPublicKey: boolean = false
-  ): AxiosRequestConfig {
+attach: boolean = false, requiresPublicKey: boolean = false, customHeaders: Record<string, string | null>  ): AxiosRequestConfig {
     const authUserToken = getStorage({
       storage_name: constants.REDSTONE_AUTH_TOKEN,
     }) as string | null;

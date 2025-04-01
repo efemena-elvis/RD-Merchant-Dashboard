@@ -8,7 +8,7 @@
     </template>
 
     <template #modal-cover-body>
-      <div class="modal-cover-body mt-3">
+      <div class="mt-3 modal-cover-body">
         <!-- STOREFRONT NAME -->
         <TextFieldInput
           labelId="storefrontName"
@@ -66,9 +66,9 @@
 
     <!-- MODAL COVER FOOTER -->
     <template #modal-cover-footer>
-      <div class="modal-cover-footer -mt-4">
+      <div class="-mt-4 modal-cover-footer">
         <button
-          class="btn btn-primary w-full"
+          class="w-full btn btn-primary"
           ref="createStorefrontBtnRef"
           :disabled="isActionReady"
           @click="handleCreateStorefront"
@@ -105,7 +105,7 @@ const { processAPIRequest } = useEvents();
 const { createStorefront } = useStorefrontStore();
 
 const validCurrencies = ref<{ value: string; name: string }[]>([
-  { value: "ZK", name: "Zambian Kwacha" },
+  { value: "ZMW", name: "Zambian Kwacha" },
 ]);
 
 const storefrontNicheOptions = computed(() => {
@@ -116,7 +116,7 @@ const storefrontNicheOptions = computed(() => {
 
 const storefrontPayload = ref<IStorefrontType>({
   name: "",
-  currency: "ZK",
+  currency: "ZMW",
   tag: "",
   business_id: getBusiness().businessId,
 });

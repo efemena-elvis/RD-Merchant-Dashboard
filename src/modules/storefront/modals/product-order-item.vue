@@ -15,7 +15,7 @@
 
         <div class="info-bottom">
           <div class="product-amount">
-            <span class="mr-0.5">ZK</span
+            <span class="mr-0.5">ZMW</span
             ><span>{{ formatNumber(product.amount) }}</span>
           </div>
           <div class="multiplier">x</div>
@@ -27,8 +27,8 @@
         </div>
       </div>
 
-      <div class="product-order-amount pt-1">
-        <span class="mr-0.5">ZK</span
+      <div class="pt-1 product-order-amount">
+        <span class="mr-0.5">ZMW</span
         ><span>{{
           formatNumber(product.amount * (product.quantity || 1))
         }}</span>

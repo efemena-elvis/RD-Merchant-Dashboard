@@ -1,8 +1,9 @@
 <template>
-  <div class="store-overview-page pb-10">
+  <div class="pb-10 store-overview-page">
     <!-- TOP AREA -->
     <div class="top-area">
       <div class="top-area--left">
+       
         <div class="section-title">Storefront Information</div>
 
         <div class="section-description">
@@ -48,7 +49,21 @@
               />
             </div>
 
-            <div class="form-input-block">
+            <!-- <div class="form-input-block" v-if = "allDomains.length > 1">
+              <div class="form-input-block form-control form-input">
+                <div class="form-placeholder">
+                  https://
+                </div>
+                <input
+                  type="text"
+                  placeholder="storefront url"
+                  disabled
+                  v-model="allDomains[0]"
+                />
+              </div>
+            </div> -->
+
+            <div class="form-input-block" >
               <div class="form-input-block form-control form-input">
                 <div class="form-placeholder">
                   https://store.redstonepgs.com/
@@ -65,6 +80,9 @@
             <div class="text-red-500 text-xs leading-5 mt-[1px]">
               NOTE: The storefront url was automatically generated when you
               created your storefront and cannot be changed.
+            </div>
+            <div class=" text-xs leading-5 mt-[1px] text-[#757d88]">
+              You also have the option to add a <router-link class="text-xs " :to="`/storefront/domains/${storefrontId}?storeSlug=${storefrontSlug}`">custom domain</router-link> to personalize your website's URL, making it more professional and easier for users to remember.
             </div>
           </div>
         </div>
@@ -104,7 +122,7 @@
 
         <div class="input-row--right">
           <div class="form-wrapper">
-            <div class="form-file-upload w-full">
+            <div class="w-full form-file-upload">
               <FileUploadInput
                 :showSkip="false"
                 :hasDocumentUploaded="!!uploadedLogo"
@@ -115,7 +133,7 @@
             </div>
 
             <div
-              class="transition duration-300 ease-in-out mx-auto mt-2"
+              class="mx-auto mt-2 transition duration-300 ease-in-out"
               v-if="uploadedLogo"
             >
               <img
@@ -267,7 +285,7 @@
       </div>
 
       <div class="input-row">
-        <div class="button-actions flex justify-end items-center gap-x-3">
+        <div class="flex items-center justify-end button-actions gap-x-3">
           <button class="btn btn-sm btn-secondary" @click="fetchStorefrontById">
             Cancel
           </button>
@@ -285,12 +303,13 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, computed } from "vue";
-import { useRoute } from "vue-router";
+import { ref, computed, onMounted } from "vue";
+import { useRoute, useRouter } from "vue-router";
 import { useStorefrontStore } from "@/modules/storefront/store";
 import { storefrontNiches } from "@/shared/constants/storefront-niches";
 import useEvents from "@/shared/composables/useEvents";
 import FileUploadInput from "@/shared/components/form-comps/file-upload-input.vue";
+import { getDomainConfig } from "../store/actions";
 
 const route = useRoute();
 
@@ -299,21 +318,9 @@ const { fetchStoreById, updateStorefront } = useStorefrontStore();
 
 const storeIsLoading = ref<boolean>(true);
 const updateStorefrontBtnRef = ref(null);
+const storefrontId = ref(route.params.storeId);
+const storefrontSlug = ref(route.query.storeSlug);
 
-const uploadedLogo = ref<string>("");
-
-const getUploadedLogoContent = computed(() => {
-  return {
-    name: uploadedLogo.value ? "Store Logo" : "",
-    link: uploadedLogo.value,
-  };
-});
-
-const storefrontNicheOptions = computed(() => {
-  return storefrontNiches.map((niche) => {
-    return { value: niche.slug, label: niche.nicheTitle };
-  });
-});
 
 const storePayload = ref<any>({
   name: "",
@@ -328,6 +335,30 @@ const storePayload = ref<any>({
   twitter: "",
   tikTok: "",
 });
+
+const allDomains = ref<string[]>([storePayload?.value.slug]);
+const uploadedLogo = ref<string>("");
+
+
+
+const router = useRouter();
+
+
+
+const getUploadedLogoContent = computed(() => {
+  return {
+    name: uploadedLogo.value ? "Store Logo" : "",
+    link: uploadedLogo.value,
+  };
+});
+
+const storefrontNicheOptions = computed(() => {
+  return storefrontNiches.map((niche) => {
+    return { value: niche.slug, label: niche.nicheTitle };
+  });
+});
+
+
 
 const getStorefrontPayload = computed(() => {
   return {
@@ -366,6 +397,22 @@ const fetchStorefrontById = async () => {
   }
 };
 
+const handleGetDomainConfig = async (): Promise<void> => {
+  try {
+    const response = await processAPIRequest({
+      action: getDomainConfig,
+      payload: { storeId: route.params.storeId },
+      showAlert: false,
+    });
+
+    if (response.code === 200) {
+      allDomains?.value.unshift(response.data.domain);
+    }
+  } catch (err: any) {
+    console.log(err.message);
+  }
+};
+
 const updateStorefrontDetails = async () => {
   const response = await processAPIRequest({
     action: updateStorefront,
@@ -392,7 +439,12 @@ const updateStorefrontDetails = async () => {
   }
 };
 
-fetchStorefrontById();
+onMounted(() => {
+  fetchStorefrontById();
+  handleGetDomainConfig();
+})
+
+
 </script>
 
 <style lang="scss" scoped>

@@ -94,3 +94,49 @@ export const viewOrderDetails = async (payload: any) => {
     { resolve: true, requiresPublicKey: true }
   );
 };
+
+
+export const lookUpDomain = async (payload: any) => {
+  return await $api.push(
+      storeRoutes.checkDomain
+    , {
+      payload,
+      resolve: true,
+      requiresPublicKey: true
+    }
+  )
+}
+
+
+export const initiateDomainPayment = async (payload: any) => {
+  return await $api.push(storeRoutes.initiateDomainPayment, 
+    {
+      payload,
+      resolve: true,
+      requiresPublicKey: true
+    })
+};
+
+
+export const registerDomain = async (payload: any) => {
+  return await $api.push(storeRoutes.registerDomain, {
+    payload,
+    resolve: true,
+    requiresPublicKey: true
+  })
+}
+
+export const addDomainConfig = async (payload: any) => {
+  return await $api.push(storeRoutes.addDomainConfig, {
+    payload,
+    resolve: true,
+    requiresPublicKey: true
+  })
+}
+
+export const getDomainConfig = async (payload: any) => {
+  return await $api.fetch(`${storeRoutes.getDomainConfig}?store_id=${payload.id}`, {
+    resolve: true,
+    requiresPublicKey: true
+  })
+}

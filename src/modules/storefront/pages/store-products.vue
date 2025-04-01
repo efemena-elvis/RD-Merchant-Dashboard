@@ -1,5 +1,5 @@
 <template>
-  <div class="strorefront-product-page pb-10">
+  <div class="pb-10 strorefront-product-page">
     <!-- TOP AREA -->
     <div class="top-area">
       <div class="top-area--left">
@@ -182,7 +182,7 @@ const fetchAllStoreProducts = async () => {
             displayImage: data.image,
           },
         }),
-        amount: getBoldTableText(`ZK${formatNumber(data.amount)}`),
+        amount: getBoldTableText(`ZMW${formatNumber(data.amount)}`),
         quantity: data.stock,
         status: `${getStatus(data.stock > 0 ? "success" : "danger", data.stock > 0 ? "Available" : "Out of Stock")}`,
         date_created: getDateAdded(data.created_at),

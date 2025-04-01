@@ -1,13 +1,13 @@
 <template>
   <form
-    class="grid grid-cols-2 gap-4 relative"
+    class="relative grid grid-cols-2 gap-4"
     @submit.prevent="handleSubmission"
   >
     <div
-      class="absolute inset-0 bg-neutral-400/5 border grid place-items-center z-10"
+      class="absolute inset-0 z-10 grid border bg-neutral-400/5 place-items-center"
       v-if="loadingInputs"
     >
-      <div class="icon-spinner-ios text-2xl text-green-500 animate-spin"></div>
+      <div class="text-2xl text-green-500 icon-spinner-ios animate-spin"></div>
     </div>
     <TextFieldInput
       labelId="cardNumber"
@@ -40,7 +40,7 @@
 
     <button
       type="submit"
-      class="w-full btn btn-primary col-span-2"
+      class="w-full col-span-2 btn btn-primary"
       ref="btnRef"
     >
       PAY
@@ -176,6 +176,7 @@ const loadCardInputs = () => {
     cardNumberInput?.on("load", () => {
       loading_card_number_input.value = false;
     });
+    
     cardNumberInput.load("#number-container");
   }
   if (cardSecurityInput) {

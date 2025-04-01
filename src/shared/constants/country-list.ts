@@ -545,7 +545,7 @@ const countries = [
     code: "zm",
     flag: "https://flagsapi.com/ZM/flat/64.png",
     currency: {
-      sign: "ZK",
+      sign: "ZMW",
       short: "ZMW",
       long: "Kwacha",
       description: "Zambian Kwacha",

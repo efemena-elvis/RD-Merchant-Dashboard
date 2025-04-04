@@ -5,14 +5,14 @@
         Add a Storefront Domain
       </div>
 
-      <p class="mt-2 text-grey-600/90 text-sm leading-6 lg:w-1/2 sm:w-full">
+      <p class="mt-2 text-grey-600/90 text-sm leading-6 w-1/2 sm:w-full">
         Enhance your brand with a custom domain, boost credibility, build trust,
         and strengthen your online presence. Set it up in minutes! 🚀
       </p>
     </div>
 
     <!-- DOMAIN SEARCH AREA -->
-    <div class="lg:w-1/2 sm:w-full">
+    <div class="w-1/2 sm:w-full">
       <TextFieldInput
         labelId="businessEmail"
         labelTitle=""
@@ -110,8 +110,7 @@ interface StoreType {
   [key: string]: any;
 }
 
-
-const props = defineProps<{store: StoreType |  null}>()
+const props = defineProps<{ store: StoreType | null }>();
 const eventBus = inject<Emitter<Events>>("eventBus");
 
 const { getBusiness } = useProfile();

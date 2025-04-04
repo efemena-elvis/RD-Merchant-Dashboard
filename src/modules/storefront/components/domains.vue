@@ -3,20 +3,20 @@
     <div class="mb-8">
       <div class="text-xl font-semibold text-neutral-800">Your Domain List</div>
 
-      <p class="mt-2 text-grey-600/90 text-sm leading-6 lg:w-1/2 sm:w-full">
+      <p class="mt-2 text-grey-600/90 text-sm leading-6 w-1/2 sm:w-full">
         Manage your domains effortlessly. Copy your domain for easy sharing or
         activate it to connect seamlessly.
       </p>
     </div>
 
-    <div class="domain-list-area lg:w-[70%] sm:w-full">
+    <div class="domain-list-area w-[70%] sm:w-full">
       <div
         v-for="(domain, index) in allDomains"
         :key="index"
-        class="relative lg:py-4 sm:py-6 mt-6 border border-grey-400/75 rounded-lg"
+        class="relative py-3 sm:py-4 mt-6 border border-grey-400/75 rounded-lg"
       >
         <div
-          class="flex justify-between lg:gap-4 sm:gap-6 px-4 xl:items-center 2xl:items-center sm:flex-col sm:items-start sm:gap-4"
+          class="flex justify-between gap-4 px-4 xl:items-center 2xl:items-center sm:flex-col sm:items-start"
         >
           <span class="w-1/3 font-medium text-grey-700 text-sm">{{
             domain
@@ -28,15 +28,17 @@
             Active
           </div>
 
-          <div class="flex justify-end items-center gap-2 ">
+          <div class="flex justify-end items-center gap-2">
             <button
               @click="copyToClipboard(domain)"
-              class="btn btn-sm btn-primary text-[11px] !lg:h-[40px] sm:!h-[30px] !w-[80px]"
+              class="btn btn-sm btn-primary text-[11px] !h-[44px] sm:!h-[30px]"
             >
               {{ domainCopied === domain ? "Copied" : "Copy" }}
             </button>
 
-            <button class="btn btn-sm btn-alert text-[11px] !lg:h-[40px] sm:!h-[30px] !w-[80px]">
+            <button
+              class="btn btn-sm btn-alert text-[11px] !h-[44px] sm:!h-[30px]"
+            >
               Deactivate
             </button>
           </div>

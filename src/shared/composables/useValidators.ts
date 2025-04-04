@@ -166,6 +166,25 @@ export function useValidator() {
     }
   };
 
+  const validateDomain = (
+    input: string,
+    message: string = "Please provide a valid domain name"
+  ) => {
+    const trimmedInput = trimInput(input);
+
+    // Remove http:// or https:// if present
+    const cleanedInput = trimmedInput.replace(/^https?:\/\//i, "");
+
+    // Domain regex explanation:
+    // ^(?!-): shouldn't start with hyphen
+    // [a-zA-Z0-9-]{1,63}: 1-63 chars of letters, digits or hyphens
+    // (?<!-)$: shouldn't end with hyphen
+    // (\.[a-zA-Z]{2,})+$: one or more dots followed by 2+ letters (TLD)
+    const domainRegex = /^(?!-)[a-zA-Z0-9-]{1,63}(?<!-)(\.[a-zA-Z]{2,})+$/;
+
+    return domainRegex.test(cleanedInput) ? "" : message;
+  };
+
   return {
     validateRequired,
     validateEmail,
@@ -177,5 +196,6 @@ export function useValidator() {
     validateAlphanumeric,
     validateDateRange,
     validateURL,
+    validateDomain,
   };
 }

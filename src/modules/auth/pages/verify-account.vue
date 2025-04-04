@@ -1,7 +1,7 @@
 <template>
   <AuthWrapper
     title_text="Verify your email address"
-    :meta_text="`An confirmation code has been sent to your email address at <span class='grey-800 font-semibold'>${userEmailAddress}</span>`"
+    :meta_text="`A confirmation code has been sent to your email address at <span class='grey-800 font-semibold'>${userEmailAddress}</span>`"
   >
     <form @submit.prevent="handleUserEmailVerification" class="mt-4">
       <!-- CONFIRMATION CODE -->

@@ -1,19 +1,22 @@
 <template>
-  <div class="xl:w-[80%] 2xl:w-[60%] sm:w-full">
-    <div class="flex items-center gap-8 pb-6 font-semibold">
+  <div>
+    <div class="flex w-max justify-start items-center gap-4 mb-9">
       <div
         @click="activeTab = 'Add'"
         :class="tabBackground('Add')"
         class="btn btn-sm"
       >
-        <h4>+Add</h4>
+        <div class="icon icon-add"></div>
+        <div>Add Domain</div>
       </div>
+
       <div
         @click="activeTab = 'Domains'"
         class="btn btn-sm"
         :class="tabBackground('Domains')"
       >
-        <h4>Domains</h4>
+        <div class="icon icon-layer"></div>
+        <div>Domain List</div>
       </div>
     </div>
 
@@ -24,13 +27,13 @@
 </template>
 
 <script lang="ts" setup>
-import { onMounted, ref } from "vue";
+import { ref } from "vue";
 import useEvents from "@/shared/composables/useEvents";
 import { useStorefrontStore } from "@/modules/storefront/store";
 import { useRoute } from "vue-router";
+import TabSwitcher from "@/shared/components/global-comps/tab-switcher.vue";
 import AddDomain from "../components/add-domain.vue";
 import Domains from "../components/domains.vue";
-import { getDomainConfig } from "../store/actions";
 
 const route = useRoute();
 
@@ -44,7 +47,8 @@ const storeDetails = ref<StoreDetails | null>(null);
 const loading = ref(true);
 const activeTab = ref("Add");
 const allDomains = ref<string[]>([]);
-const { fetchStoreById } = useStorefrontStore();
+
+const { fetchStoreById, getDomainConfig } = useStorefrontStore();
 const { processAPIRequest } = useEvents();
 
 // Fetch Store Details
@@ -58,7 +62,7 @@ const getStoreDetails = async () => {
     });
 
     storeDetails.value = response.data;
-   
+
     allDomains.value = [`store.redstonepgs.com/${response.data.slug}`];
 
     handleGetDomainConfig();
@@ -75,7 +79,7 @@ const handleGetDomainConfig = async (): Promise<void> => {
   try {
     const response = await processAPIRequest({
       action: getDomainConfig,
-      payload: { id: storeDetails.value.id }, 
+      payload: { id: storeDetails.value.id },
       showAlert: false,
     });
 
@@ -87,14 +91,20 @@ const handleGetDomainConfig = async (): Promise<void> => {
   }
 };
 
-onMounted(getStoreDetails);
-
 const tabBackground = (tab: string) =>
-  tab === activeTab.value ? "btn-primary text-white" : "btn-tertiary text-black";
+  tab === activeTab.value
+    ? "btn-primary text-white"
+    : "btn-tertiary text-black";
+
+getStoreDetails();
 </script>
 
 <style lang="scss" scoped>
 .btn {
-  @apply w-[100px] h-[46px] py-3 sm:py-3 px-7 border text-[13px];
+  @apply w-auto h-auto px-7 py-2.5 text-sm gap-2;
+
+  .icon {
+    @apply text-lg;
+  }
 }
 </style>

@@ -40,15 +40,15 @@
           <div class="nav-item-icon icon-directbox-notif"></div>
           <div class="nav-item-text">Orders</div>
         </router-link>
+
         <router-link
-          :to="`/storefront/domains/${storefrontId}?storeSlug=${storefrontSlug}`"
+          :to="`/storefront/custom-domain/${storefrontId}?storeSlug=${storefrontSlug}`"
           class="nav-item"
           activeClass="nav-item-active"
           exactActiveClass="nav-item-active"
         >
-        <Globe class="text-gray-400 nav-item-icon" size = "16"/>
-
-          <div class="nav-item-text">Domains</div>
+          <div class="nav-item-icon icon-safe-home"></div>
+          <div class="nav-item-text">Domain</div>
         </router-link>
       </div>
     </div>
@@ -63,9 +63,7 @@
 
 <script lang="ts" setup>
 import { ref } from "vue";
-import { Globe } from "lucide-vue-next";
 import { useRoute, useRouter } from "vue-router";
-
 
 const route = useRoute();
 const router = useRouter();

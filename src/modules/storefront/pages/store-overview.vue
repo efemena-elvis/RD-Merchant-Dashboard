@@ -3,7 +3,6 @@
     <!-- TOP AREA -->
     <div class="top-area">
       <div class="top-area--left">
-       
         <div class="section-title">Storefront Information</div>
 
         <div class="section-description">
@@ -49,21 +48,7 @@
               />
             </div>
 
-            <!-- <div class="form-input-block" v-if = "allDomains.length > 1">
-              <div class="form-input-block form-control form-input">
-                <div class="form-placeholder">
-                  https://
-                </div>
-                <input
-                  type="text"
-                  placeholder="storefront url"
-                  disabled
-                  v-model="allDomains[0]"
-                />
-              </div>
-            </div> -->
-
-            <div class="form-input-block" >
+            <div class="form-input-block">
               <div class="form-input-block form-control form-input">
                 <div class="form-placeholder">
                   https://store.redstonepgs.com/
@@ -77,12 +62,14 @@
               </div>
             </div>
 
-            <div class="text-red-500 text-xs leading-5 mt-[1px]">
-              NOTE: The storefront url was automatically generated when you
-              created your storefront and cannot be changed.
-            </div>
-            <div class=" text-xs leading-5 mt-[1px] text-[#757d88]">
-              You also have the option to add a <router-link class="text-xs " :to="`/storefront/domains/${storefrontId}?storeSlug=${storefrontSlug}`">custom domain</router-link> to personalize your website's URL, making it more professional and easier for users to remember.
+            <div class="text-grey-600/85 text-[12.5px] leading-5 mt-[1px]">
+              NOTE: Your storefront URL is auto-generated. Add a
+              <router-link
+                class="underline"
+                :to="`/storefront/domains/${storefrontId}?storeSlug=${storefrontSlug}`"
+                >custom domain</router-link
+              >
+              for a more professional and memorable address.
             </div>
           </div>
         </div>
@@ -309,18 +296,17 @@ import { useStorefrontStore } from "@/modules/storefront/store";
 import { storefrontNiches } from "@/shared/constants/storefront-niches";
 import useEvents from "@/shared/composables/useEvents";
 import FileUploadInput from "@/shared/components/form-comps/file-upload-input.vue";
-import { getDomainConfig } from "../store/actions";
 
 const route = useRoute();
 
 const { processAPIRequest } = useEvents();
-const { fetchStoreById, updateStorefront } = useStorefrontStore();
+const { fetchStoreById, updateStorefront, getDomainConfig } =
+  useStorefrontStore();
 
 const storeIsLoading = ref<boolean>(true);
 const updateStorefrontBtnRef = ref(null);
 const storefrontId = ref(route.params.storeId);
 const storefrontSlug = ref(route.query.storeSlug);
-
 
 const storePayload = ref<any>({
   name: "",
@@ -339,11 +325,7 @@ const storePayload = ref<any>({
 const allDomains = ref<string[]>([storePayload?.value.slug]);
 const uploadedLogo = ref<string>("");
 
-
-
 const router = useRouter();
-
-
 
 const getUploadedLogoContent = computed(() => {
   return {
@@ -357,8 +339,6 @@ const storefrontNicheOptions = computed(() => {
     return { value: niche.slug, label: niche.nicheTitle };
   });
 });
-
-
 
 const getStorefrontPayload = computed(() => {
   return {
@@ -442,9 +422,7 @@ const updateStorefrontDetails = async () => {
 onMounted(() => {
   fetchStorefrontById();
   handleGetDomainConfig();
-})
-
-
+});
 </script>
 
 <style lang="scss" scoped>

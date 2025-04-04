@@ -1,61 +1,54 @@
 <template>
-  <div>
+  <div class="w-full pb-20">
     <div class="mb-8">
-      <h2 class="text-2xl font-semibold text-gray-800">
-        Customize Your Storefront Domain
-      </h2>
-      <p class="mt-2 text-gray-600 2xl:w-[60%] sm:w-[90%] xl:w-[90%] text-[14px]">
-        Make your store truly yours by setting up a custom domain. A branded
-        domain enhances credibility, improves customer trust, and strengthens
-        your online presence. Register a new domain in just a few steps. 🚀
+      <div class="text-xl font-semibold text-neutral-800">
+        Add a Storefront Domain
+      </div>
+
+      <p class="mt-2 text-grey-600/90 text-sm leading-6 w-1/2">
+        Enhance your brand with a custom domain, boost credibility, build trust,
+        and strengthen your online presence. Set it up in minutes! 🚀
       </p>
     </div>
-    <div class="flex items-center w-full gap-4">
-      <div
-        :class="domainCheckError ? 'border-red-500' : 'border-gray-300'"
-        class="flex items-center 2xl:w-[55%] xl:w-[70%] sm:w-[90%] gap-3 p-4 border rounded-lg hover:border-green-400/80 focus:border-green-400"
-      >
-        <Globe class="text-gray-400" :size="16" />
-        <input
-          v-model="domain"
-          type="text"
-          class="w-full text-lg bg-transparent border-none gray-500"
-          placeholder="Enter a domain name. e.g. 'example.com'."
-        />
-      </div>
+
+    <!-- DOMAIN SEARCH AREA -->
+    <div class="w-1/2">
+      <TextFieldInput
+        labelId="businessEmail"
+        labelTitle=""
+        :inputType="IInputType.Search"
+        inputPlaceholder="Search storefront domain e.g 'myshop.com'"
+        :isRequired="true"
+        :hasBottomPadding="false"
+        @inputChanged="domain = $event"
+        @inputValidated=""
+        :errorHandler="{
+          validator: 'validateDomain',
+          message: 'Provide a valid storefront domain URL',
+        }"
+      />
+
       <button
+        ref="btnRef"
+        class="btn btn-sm btn-primary mt-5 w-[180px]"
         :disabled="domain.trim() === ''"
         @click="handleCheckDomain"
-        class="btn-primary btn-sm btn"
       >
-        <img
-          src="@/shared/assets/images/loading_icon.gif"
-          v-if="domainIsLoading"
-          class="w-[20px]"
-        />
-        <span v-else>Search</span>
+        Search domain
       </button>
     </div>
-    <div class="py-2 text-sm text-red-500" v-if="domainCheckError">
-      {{ domainCheckError }}
-    </div>
+
     <div
       v-if="!domainCheckError && domainDetails"
       class="flex items-center justify-between mt-6 xl:w-[75%] 2xl:w-[70%] sm:w-full"
     >
       <div class="flex items-center gap-3">
-        <SearchCheck
-          v-if="isDomainAvailable"
-          :size="16"
-          class="text-[#2c9a4b] mt-1"
-        />
-        <X v-else :size="16" class="mt-1 text-red-600" />
         <div>
           <p>
-            <span class="italic font-bold">{{ checkedDomain }} </span> is
+            <span class="font-semibold">{{ checkedDomain }} </span> is
             <span
               class="text-small"
-              :class="isDomainAvailable ? 'text-[#2c9a4b]' : 'text-red-600'"
+              :class="isDomainAvailable ? 'text-green-600' : 'text-red-600'"
             >
               {{ isDomainAvailable ? "available" : "unavailable" }}
             </span>
@@ -70,11 +63,11 @@
         >
           ZMW{{ formatNumber(domainDetails?.data.price) }}
         </div>
+
         <button
           :disabled="newProfile?.businessMode === 'test'"
           @click="initiatePayment"
           v-if="isDomainAvailable"
-          
           class="bg-black disabled:opacity-50 rounded-md p-2 2xl:w-[80px] xl:w-[60px] sm:w-[60px] flex justify-center items-center hover:opacity-50 text-white"
         >
           <img
@@ -89,28 +82,21 @@
     </div>
   </div>
 </template>
+
 <script setup lang="ts">
-import { ref, computed, reactive, onMounted, watch } from "vue";
-import { Globe, SearchCheck, X } from "lucide-vue-next";
+import { ref, computed, watch, inject } from "vue";
 import useEvents from "@/shared/composables/useEvents";
 import { useStorefrontStore } from "../store";
-import {
-  addDomainConfig,
-  initiateDomainPayment,
-  registerDomain,
-} from "../store/actions";
-import { useRoute } from "vue-router";
 import { useString } from "@/shared/composables/useString";
-import { inject } from "vue";
-import { Emitter } from "mitt";
 import { useProfile } from "@/shared/composables/useProfile";
+import { Emitter } from "mitt";
+import TextFieldInput from "@/shared/components/form-comps/text-field-input.vue";
+import { IInputType } from "@/models/form-type";
 
 type Events = {
   hidePageLoader: void;
   showPageLoader: void;
 };
-
-const route = useRoute();
 
 type registerDomainPayload = {
   domain: String;
@@ -118,15 +104,21 @@ type registerDomainPayload = {
   store_id: String;
 };
 
+// !!NOTE Add type to your props @Aishat
 const props = defineProps(["store"]);
-
-const { createAndClickAnchor } = useString();
 const eventBus = inject<Emitter<Events>>("eventBus");
 
-const { processAPIRequest, pushToastAlert } = useEvents();
-const { lookUpDomain } = useStorefrontStore();
 const { getBusiness } = useProfile();
+const { createAndClickAnchor } = useString();
+
+const { processAPIRequest, pushToastAlert } = useEvents();
+const { lookUpDomain, initiateDomainPayment, registerDomain, addDomainConfig } =
+  useStorefrontStore();
+
+const btnRef = ref(null);
+
 const getBusinessProfile = computed(() => getBusiness());
+
 const newProfile = ref<{
   businessAddress: string;
   disputeEmailAddress: string;
@@ -148,8 +140,6 @@ watch(
   },
   { immediate: true }
 );
-
-
 
 const domain = ref<string>("");
 const checkedDomain = ref<string>("");
@@ -222,6 +212,8 @@ const handleCheckDomain = async () => {
     const response = await processAPIRequest({
       action: lookUpDomain,
       payload: splitDomain(),
+      btnRef: btnRef,
+      btnText: "Search domain",
       showAlert: false,
     });
 
@@ -229,19 +221,17 @@ const handleCheckDomain = async () => {
       domainDetails.value = response;
       checkedDomain.value = domain.value;
 
-      if(newProfile.value?.businessMode === "test"){
+      if (newProfile.value?.businessMode === "test") {
         pushToastAlert({
-      message: "Warning",
-      description: "Activate your business to buy a domain.",
-      type: "warning",
-    });
+          message: "Warning",
+          description: "Activate your business to buy a domain.",
+          type: "warning",
+        });
       }
     } else {
       domainCheckError.value =
         "Failed to lookup domain. Try again or try a different domain extension.";
     }
-
-    
   } catch (error: any) {
     domainCheckError.value = error.message || "Something went wrong.";
   } finally {
@@ -347,15 +337,6 @@ const initiatePayment = async () => {
 //     });
 //   }
 // };
-
 </script>
 
-<style scoped>
-.btn {
-  @apply w-[82px] h-[46px] py-3 sm:py-3 px-7 text-grey-800/80 border text-[13px];
-}
-
-.btn-primary {
-  @apply text-neutral-10;
-}
-</style>
+<style lang="scss" scoped></style>

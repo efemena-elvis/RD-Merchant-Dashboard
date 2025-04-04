@@ -52,7 +52,7 @@
 </template>
 
 <script lang="ts" setup>
-import { h, ref, reactive, onMounted } from "vue";
+import { h, ref, reactive } from "vue";
 import { useRouter } from "vue-router";
 import { useString } from "@/shared/composables/useString";
 import { TableHeaderType } from "@/models/dashboard-type";
@@ -65,7 +65,6 @@ import TableContainerBody from "@/shared/components/table-comps/table-container-
 import CreateStoreFrontModal from "@/modules/storefront/modals/create-storefront-modal.vue";
 import DeleteStoreFrontModal from "@/modules/storefront/modals/delete-storefront-modal.vue";
 import TableActionBtn from "@/shared/components/table-comps/table-action-btn.vue";
-import { getDomainConfig } from "../store/actions";
 
 const { getBoldTableText, getStatus, createPreviewLink, formatNumber } =
   useString();
@@ -73,7 +72,7 @@ const { getBoldTableText, getStatus, createPreviewLink, formatNumber } =
 const router = useRouter();
 const { getBusiness } = useProfile();
 
-const { fetchStorefront } = useStorefrontStore();
+const { fetchStorefront, getDomainConfig } = useStorefrontStore();
 const { processAPIRequest } = useEvents();
 const storeDomains = ref<Record<string, string>>({});
 

@@ -154,6 +154,7 @@ const {
   validateAlphanumeric,
   validateDateRange,
   validateURL,
+  validateDomain,
 } = useValidator();
 
 const { pushToastAlert } = useEvents();
@@ -263,6 +264,10 @@ const validateInputFields = (errorHandler: IInputValidator) => {
 
     case "validateURL":
       formErrorMsg.value = validateURL(formValue.value as string, message);
+      break;
+
+    case "validateDomain":
+      formErrorMsg.value = validateDomain(formValue.value as string, message);
       break;
 
     default:

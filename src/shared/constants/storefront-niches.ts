@@ -36,6 +36,7 @@ export const storefrontNiches = [
       { id: 4, name: "Shoes & Footwear", slug: "shoes-&-footwear" },
       { id: 5, name: "Accessories", slug: "accessories" },
       { id: 6, name: "Jewelry & Watches", slug: "jewelry-&-watches" },
+      { id: 7, name: "Unisex", slug: "unisex" },
     ],
   },
   {

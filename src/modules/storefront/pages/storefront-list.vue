@@ -120,23 +120,23 @@ const processFilterSelection = (selectedPeriod: string) => {
   console.log("FILTERING BY PERIOD", selectedPeriod);
 };
 
-const handleGetDomainConfig = async (store: any): Promise<void> => {
-  if (!store || storeDomains.value[store.id]) return;
+// const handleGetDomainConfig = async (store: any): Promise<void> => {
+//   if (!store || storeDomains.value[store.id]) return;
 
-  try {
-    const response = await processAPIRequest({
-      action: getDomainConfig,
-      payload: { id: store.id },
-      showAlert: false,
-    });
+//   try {
+//     const response = await processAPIRequest({
+//       action: getDomainConfig,
+//       payload: { id: store.id },
+//       showAlert: false,
+//     });
 
-    if (response.code === 200 && response.data.domain) {
-      storeDomains.value[store.id] = response.data.domain;
-    }
-  } catch (err: any) {
-    console.log("Error fetching domain config:", err.message);
-  }
-};
+//     if (response.code === 200 && response.data.domain) {
+//       storeDomains.value[store.id] = response.data.domain;
+//     }
+//   } catch (err: any) {
+//     console.log("Error fetching domain config:", err.message);
+//   }
+// };
 
 const fetchAllStorefront = async () => {
   const response = await processAPIRequest({
@@ -150,7 +150,7 @@ const fetchAllStorefront = async () => {
   if (response.code === 200) {
     tableBody.length = 0;
 
-    await Promise.all(response.data.map(handleGetDomainConfig));
+    // await Promise.all(response.data.map(handleGetDomainConfig));
 
     const updatedTableBody = response.data.map((data: any, index: number) => {
       const domain =
@@ -170,7 +170,9 @@ const fetchAllStorefront = async () => {
           showSecondaryBtn: false,
           primaryBtnText: "Manage Store",
           onManageClick: () => {
-            router.push(`storefront/overview/${data.id}?storeSlug=${domain}`);
+            router.push(
+              `storefront/overview/${data.id}?storeSlug=${data.slug}`
+            );
           },
           onDeleteClick: () => handleDeleteStorefront(data),
         }),

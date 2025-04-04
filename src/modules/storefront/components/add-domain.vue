@@ -5,14 +5,14 @@
         Add a Storefront Domain
       </div>
 
-      <p class="mt-2 text-grey-600/90 text-sm leading-6 w-1/2">
+      <p class="mt-2 text-grey-600/90 text-sm leading-6 lg:w-1/2 sm:w-full">
         Enhance your brand with a custom domain, boost credibility, build trust,
         and strengthen your online presence. Set it up in minutes! 🚀
       </p>
     </div>
 
     <!-- DOMAIN SEARCH AREA -->
-    <div class="w-1/2">
+    <div class="lg:w-1/2 sm:w-full">
       <TextFieldInput
         labelId="businessEmail"
         labelTitle=""
@@ -30,7 +30,7 @@
 
       <button
         ref="btnRef"
-        class="btn btn-sm btn-primary mt-5 w-[180px]"
+        class="btn btn-sm btn-primary mt-5 lg:w-[180px] sm:w-1/2"
         :disabled="domain.trim() === ''"
         @click="handleCheckDomain"
       >
@@ -59,7 +59,7 @@
       <div class="flex items-center justify-between w-1/2">
         <div
           v-if="isDomainAvailable"
-          class="bg-green-300 p-1 rounded-full w-[100px] text-center font-semibold text-[12px]"
+          class="bg-green-300 p-2 rounded-full w-[120px] text-center font-semibold text-[12px]"
         >
           ZMW{{ formatNumber(domainDetails?.data.price) }}
         </div>
@@ -104,8 +104,14 @@ type registerDomainPayload = {
   store_id: String;
 };
 
-// !!NOTE Add type to your props @Aishat
-const props = defineProps(["store"]);
+interface StoreType {
+  id: string;
+  slug: string;
+  [key: string]: any;
+}
+
+
+const props = defineProps<{store: StoreType |  null}>()
 const eventBus = inject<Emitter<Events>>("eventBus");
 
 const { getBusiness } = useProfile();
@@ -239,7 +245,7 @@ const handleCheckDomain = async () => {
   }
 };
 
-// Register Dmonain
+// Register Domain
 const handleRegisterDomain = async () => {
   try {
     const response = await processAPIRequest({

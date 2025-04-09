@@ -3,7 +3,7 @@
     <div class="mb-8">
       <div class="text-xl font-semibold text-neutral-800">Your Domain List</div>
 
-      <p class="mt-2 text-grey-600/90 text-sm leading-6 lg:w-1/2 sm:w-full">
+      <p class="mt-2 text-sm leading-6 text-grey-600/90 lg:w-1/2 sm:w-full">
         Manage your domains effortlessly. Copy your domain for easy sharing or
         activate it to connect seamlessly.
       </p>
@@ -13,22 +13,22 @@
       <div
         v-for="(domain, index) in allDomains"
         :key="index"
-        class="relative lg:py-4 sm:py-6 mt-6 border border-grey-400/75 rounded-lg"
+        class="relative py-4 mt-6 border rounded-lg sm:py-6 border-grey-400/75"
       >
         <div
-          class="flex justify-between lg:gap-4 sm:gap-6 px-4 xl:items-center 2xl:items-center sm:flex-col sm:items-start sm:gap-4"
+          class="flex justify-between px-4 lg:gap-4 xl:items-center 2xl:items-center sm:flex-col sm:items-start sm:gap-4"
         >
-          <span class="w-1/3 font-medium text-grey-700 text-sm">{{
+          <span class="w-1/3 text-sm font-medium text-grey-700">{{
             domain
           }}</span>
 
           <div
-            class="bg-green-400/65 px-5 py-2 rounded-full w-max text-center font-medium text-xs sm:absolute right-4"
+            class="px-5 py-2 text-xs font-medium text-center rounded-full bg-green-400/65 w-max sm:absolute right-4"
           >
             Active
           </div>
 
-          <div class="flex justify-end items-center gap-2 ">
+          <div class="flex items-center justify-end gap-2 ">
             <button
               @click="copyToClipboard(domain)"
               class="btn btn-sm btn-primary text-[11px] !lg:h-[40px] sm:!h-[30px] !w-[80px]"

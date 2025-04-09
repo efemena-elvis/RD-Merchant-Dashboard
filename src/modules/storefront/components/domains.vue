@@ -23,7 +23,7 @@
           }}</span>
 
           <div
-            class="px-5 py-2 text-xs font-medium text-center rounded-full bg-green-400/65 w-max sm:absolute right-4"
+            class="px-5 py-2 text-xs font-medium text-center rounded-full bg-green-400/65 w-max sm:absolute right-4 "
           >
             Active
           </div>
@@ -31,13 +31,13 @@
           <div class="flex items-center justify-end gap-2 ">
             <button
               @click="copyToClipboard(domain)"
-              class="btn btn-sm btn-primary text-[11px] !h-[44px] sm:!h-[30px]"
+              class="btn btn-sm btn-primary text-[11px] !h-[45px] sm:!h-[35px] !w-[80px]"
             >
               {{ domainCopied === domain ? "Copied" : "Copy" }}
             </button>
 
             <button
-              class="btn btn-sm btn-alert text-[11px] !h-[44px] sm:!h-[30px]"
+              class="btn btn-sm btn-alert text-[11px] !h-[45px] sm:!h-[35px]  !w-[80px]"
             >
               Deactivate
             </button>
@@ -66,16 +66,16 @@ const copyToClipboard = async (text: string) => {
   }
 };
 
-const handleSearch = () => {
-  if (!searchInput.value.trim()) {
-    allDomains.value = [...props.domains];
-    return;
-  }
+// const handleSearch = () => {
+//   if (!searchInput.value.trim()) {
+//     allDomains.value = [...props.domains];
+//     return;
+//   }
 
-  allDomains.value = props.domains?.filter((domain: string) =>
-    domain.toLowerCase().includes(searchInput.value.toLowerCase().trim())
-  );
-};
+//   allDomains.value = props.domains?.filter((domain: string) =>
+//     domain.toLowerCase().includes(searchInput.value.toLowerCase().trim())
+//   );
+// };
 </script>
 
 <style scoped></style>

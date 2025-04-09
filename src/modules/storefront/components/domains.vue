@@ -9,7 +9,7 @@
       </p>
     </div>
 
-    <div class="domain-list-area lg:w-[70%] sm:w-full">
+    <div class="domain-list-area w-[70%] sm:w-full">
       <div
         v-for="(domain, index) in allDomains"
         :key="index"
@@ -31,12 +31,14 @@
           <div class="flex items-center justify-end gap-2 ">
             <button
               @click="copyToClipboard(domain)"
-              class="btn btn-sm btn-primary text-[11px] !lg:h-[40px] sm:!h-[30px] !w-[80px]"
+              class="btn btn-sm btn-primary text-[11px] !h-[44px] sm:!h-[30px]"
             >
               {{ domainCopied === domain ? "Copied" : "Copy" }}
             </button>
 
-            <button class="btn btn-sm btn-alert text-[11px] !lg:h-[40px] sm:!h-[30px] !w-[80px]">
+            <button
+              class="btn btn-sm btn-alert text-[11px] !h-[44px] sm:!h-[30px]"
+            >
               Deactivate
             </button>
           </div>

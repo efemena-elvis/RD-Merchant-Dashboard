@@ -89,6 +89,7 @@ import SelectFieldInput from "@/shared/components/form-comps/select-field-input.
 import { storefrontNiches } from "@/shared/constants/storefront-niches";
 import useEvents from "@/shared/composables/useEvents";
 import { useProfile } from "@/shared/composables/useProfile";
+import { useString } from "@/shared/composables/useString";
 import { useStorefrontStore } from "@/modules/storefront/store";
 
 type IStorefrontType = {
@@ -101,7 +102,8 @@ type IStorefrontType = {
 const emits = defineEmits(["closeTriggered", "reloadStorefront"]);
 
 const { getBusiness } = useProfile();
-const { processAPIRequest } = useEvents();
+const { capitalizeFirstLetter } = useString();
+const { processAPIRequest, pushToastAlert } = useEvents();
 const { createStorefront } = useStorefrontStore();
 
 const validCurrencies = ref<{ value: string; name: string }[]>([
@@ -157,6 +159,14 @@ const handleCreateStorefront = async () => {
   if (response.code === 200) {
     emits("reloadStorefront");
     emits("closeTriggered");
+  } else {
+    pushToastAlert({
+      message: capitalizeFirstLetter(
+        response.error || response.message || "Failed to create storefront"
+      ),
+      description: "Provide a valid storefront name",
+      type: "error",
+    });
   }
 };
 </script>

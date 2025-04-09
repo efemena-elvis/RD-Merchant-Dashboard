@@ -291,7 +291,7 @@
 
 <script lang="ts" setup>
 import { ref, computed, onMounted } from "vue";
-import { useRoute, useRouter } from "vue-router";
+import { useRoute } from "vue-router";
 import { useStorefrontStore } from "@/modules/storefront/store";
 import { storefrontNiches } from "@/shared/constants/storefront-niches";
 import useEvents from "@/shared/composables/useEvents";
@@ -324,8 +324,6 @@ const storePayload = ref<any>({
 
 const allDomains = ref<string[]>([storePayload?.value.slug]);
 const uploadedLogo = ref<string>("");
-
-const router = useRouter();
 
 const getUploadedLogoContent = computed(() => {
   return {
@@ -377,21 +375,21 @@ const fetchStorefrontById = async () => {
   }
 };
 
-const handleGetDomainConfig = async (): Promise<void> => {
-  try {
-    const response = await processAPIRequest({
-      action: getDomainConfig,
-      payload: { storeId: route.params.storeId },
-      showAlert: false,
-    });
+// const handleGetDomainConfig = async (): Promise<void> => {
+//   try {
+//     const response = await processAPIRequest({
+//       action: getDomainConfig,
+//       payload: { storeId: route.params.storeId },
+//       showAlert: false,
+//     });
 
-    if (response.code === 200) {
-      allDomains?.value.unshift(response.data.domain);
-    }
-  } catch (err: any) {
-    console.log(err.message);
-  }
-};
+//     if (response.code === 200) {
+//       allDomains?.value.unshift(response.data.domain);
+//     }
+//   } catch (err: any) {
+//     console.log(err.message);
+//   }
+// };
 
 const updateStorefrontDetails = async () => {
   const response = await processAPIRequest({
@@ -421,7 +419,7 @@ const updateStorefrontDetails = async () => {
 
 onMounted(() => {
   fetchStorefrontById();
-  handleGetDomainConfig();
+  // handleGetDomainConfig();
 });
 </script>
 

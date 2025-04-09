@@ -117,10 +117,10 @@ export function useString() {
       const millions = value / 1_000_000;
       return millions.toFixed(1) + "M";
     } else if (value >= 1_000) {
-      // Format for thousands and append '.00'
-      return value.toLocaleString() + ".00";
+      // Format for thousands with exactly 2 decimal places
+      return value.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",");
     } else {
-      // Format for less than 1000 and append '.00'
+      // Format for less than 1000 with 2 decimal places
       return value.toFixed(2);
     }
   };

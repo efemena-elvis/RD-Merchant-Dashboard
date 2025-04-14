@@ -100,7 +100,11 @@ const domainCheckError = ref('');
 const isPaymentLoading = ref(false);
 const domainPattern = /^[a-zA-Z0-9-]+\.[a-zA-Z]{2,}$/;
 
-const newProfile = ref(null);
+interface Profile {
+  businessMode: string;
+}
+
+const newProfile = ref<Profile | null>(null);
 watch(getBusiness(), (newVal) => {
   if (newVal) newProfile.value = newVal;
 }, { immediate: true });

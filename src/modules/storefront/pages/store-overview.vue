@@ -56,6 +56,7 @@
                 <input
                   type="text"
                   placeholder="storefront url"
+              className = "bg-transparent"
                   disabled
                   v-model="storePayload.slug"
                 />

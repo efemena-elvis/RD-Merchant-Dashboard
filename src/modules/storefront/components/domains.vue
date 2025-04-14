@@ -49,12 +49,23 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from "vue";
+import { ref, watch } from "vue";
 
-const props = defineProps(["store", "domains"]);
-const allDomains = ref<string[]>([...props.domains]);
+const props = defineProps<{
+  store: any;
+  domains: string[];
+}>();
+
+const allDomains = ref<string[]>([]);
 const domainCopied = ref<string>("");
-const searchInput = ref<string>("");
+
+watch(
+  () => props.domains,
+  (newVal) => {
+    allDomains.value = Array.isArray(newVal) ? [...newVal] : [];
+  },
+  { immediate: true }
+);
 
 const copyToClipboard = async (text: string) => {
   try {
@@ -65,6 +76,9 @@ const copyToClipboard = async (text: string) => {
     console.error("Failed to copy:", err);
   }
 };
+
+
+
 
 // const handleSearch = () => {
 //   if (!searchInput.value.trim()) {

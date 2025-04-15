@@ -134,9 +134,3 @@ export const addDomainConfig = async (payload: any) => {
   })
 }
 
-export const getDomainConfig = async (payload: any) => {
-  return await $api.fetch(`${storeRoutes.getDomainConfig}?store_id=${payload.id}`, {
-    resolve: true,
-    requiresPublicKey: true
-  })
-}

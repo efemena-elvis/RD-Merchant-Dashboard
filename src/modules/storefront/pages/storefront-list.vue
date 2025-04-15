@@ -72,9 +72,9 @@ const { getBoldTableText, getStatus, createPreviewLink, formatNumber } =
 const router = useRouter();
 const { getBusiness } = useProfile();
 
-const { fetchStorefront, getDomainConfig } = useStorefrontStore();
+const { fetchStorefront } = useStorefrontStore();
 const { processAPIRequest } = useEvents();
-const storeDomains = ref<Record<string, string>>({});
+
 
 const isLoading = ref<boolean>(true);
 
@@ -120,23 +120,7 @@ const processFilterSelection = (selectedPeriod: string) => {
   console.log("FILTERING BY PERIOD", selectedPeriod);
 };
 
-// const handleGetDomainConfig = async (store: any): Promise<void> => {
-//   if (!store || storeDomains.value[store.id]) return;
 
-//   try {
-//     const response = await processAPIRequest({
-//       action: getDomainConfig,
-//       payload: { id: store.id },
-//       showAlert: false,
-//     });
-
-//     if (response.code === 200 && response.data.domain) {
-//       storeDomains.value[store.id] = response.data.domain;
-//     }
-//   } catch (err: any) {
-//     console.log("Error fetching domain config:", err.message);
-//   }
-// };
 
 const fetchAllStorefront = async () => {
   const response = await processAPIRequest({
@@ -150,11 +134,9 @@ const fetchAllStorefront = async () => {
   if (response.code === 200) {
     tableBody.length = 0;
 
-    // await Promise.all(response.data.map(handleGetDomainConfig));
 
     const updatedTableBody = response.data.map((data: any, index: number) => {
-      const domain =
-        storeDomains.value[data.id] || `store.redstonepgs.com/${data.slug}`;
+      const domain =  data.domain_config?.domain ? data.domain_config.domain : `store.redstonepgs.com/${data.slug}`;
 
       return {
         counter: index + 1,

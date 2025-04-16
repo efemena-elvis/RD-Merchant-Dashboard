@@ -63,6 +63,9 @@
               </div>
               <div v-else class="form-input-block form-control form-input">
                 <div class="form-placeholder">
+                  https://
+                </div>
+                <div class="form-placeholder">
                   {{ storePayload?.domain }}
                 </div>
             

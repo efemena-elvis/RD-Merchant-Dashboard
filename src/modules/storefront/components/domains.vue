@@ -3,7 +3,7 @@
     <div class="mb-8">
       <div class="text-xl font-semibold text-neutral-800">Your Domain List</div>
 
-      <p class="mt-2 text-grey-600/90 text-sm leading-6 w-1/2 sm:w-full">
+      <p class="mt-2 text-sm leading-6 text-grey-600/90 lg:w-1/2 sm:w-full">
         Manage your domains effortlessly. Copy your domain for easy sharing or
         activate it to connect seamlessly.
       </p>
@@ -13,31 +13,31 @@
       <div
         v-for="(domain, index) in allDomains"
         :key="index"
-        class="relative py-3 sm:py-4 mt-6 border border-grey-400/75 rounded-lg"
+        class="relative py-4 mt-6 border rounded-lg sm:py-6 border-grey-400/75"
       >
         <div
-          class="flex justify-between gap-4 px-4 xl:items-center 2xl:items-center sm:flex-col sm:items-start"
+          class="flex justify-between px-4 lg:gap-4 xl:items-center 2xl:items-center sm:flex-col sm:items-start sm:gap-4"
         >
-          <span class="w-1/3 font-medium text-grey-700 text-sm">{{
+          <span class="w-1/3 text-sm font-medium text-grey-700">{{
             domain
           }}</span>
 
           <div
-            class="bg-green-400/65 px-5 py-2 rounded-full w-max text-center font-medium text-xs sm:absolute right-4"
+            class="px-5 py-2 text-xs font-medium text-center rounded-full bg-green-400/65 w-max sm:absolute right-4 "
           >
             Active
           </div>
 
-          <div class="flex justify-end items-center gap-2">
+          <div class="flex items-center justify-end gap-2 ">
             <button
               @click="copyToClipboard(domain)"
-              class="btn btn-sm btn-primary text-[11px] !h-[44px] sm:!h-[30px]"
+              class="btn btn-sm btn-primary text-[11px] !h-[45px] sm:!h-[35px] !w-[80px]"
             >
               {{ domainCopied === domain ? "Copied" : "Copy" }}
             </button>
 
             <button
-              class="btn btn-sm btn-alert text-[11px] !h-[44px] sm:!h-[30px]"
+              class="btn btn-sm btn-alert text-[11px] !h-[45px] sm:!h-[35px]  !w-[80px]"
             >
               Deactivate
             </button>
@@ -49,12 +49,23 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from "vue";
+import { ref, watch } from "vue";
 
-const props = defineProps(["store", "domains"]);
-const allDomains = ref<string[]>([...props.domains]);
+const props = defineProps<{
+  store: any;
+  domains: string[];
+}>();
+
+const allDomains = ref<string[]>([]);
 const domainCopied = ref<string>("");
-const searchInput = ref<string>("");
+
+watch(
+  () => props.domains,
+  (newVal) => {
+    allDomains.value = Array.isArray(newVal) ? [...newVal] : [];
+  },
+  { immediate: true }
+);
 
 const copyToClipboard = async (text: string) => {
   try {
@@ -66,16 +77,19 @@ const copyToClipboard = async (text: string) => {
   }
 };
 
-const handleSearch = () => {
-  if (!searchInput.value.trim()) {
-    allDomains.value = [...props.domains];
-    return;
-  }
 
-  allDomains.value = props.domains?.filter((domain: string) =>
-    domain.toLowerCase().includes(searchInput.value.toLowerCase().trim())
-  );
-};
+
+
+// const handleSearch = () => {
+//   if (!searchInput.value.trim()) {
+//     allDomains.value = [...props.domains];
+//     return;
+//   }
+
+//   allDomains.value = props.domains?.filter((domain: string) =>
+//     domain.toLowerCase().includes(searchInput.value.toLowerCase().trim())
+//   );
+// };
 </script>
 
 <style scoped></style>

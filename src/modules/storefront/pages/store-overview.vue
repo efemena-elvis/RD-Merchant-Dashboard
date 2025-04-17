@@ -48,21 +48,31 @@
               />
             </div>
 
-            <div class="form-input-block">
-              <div class="form-input-block form-control form-input">
+            <div  class="form-input-block">
+              <div v-if = "!storePayload.domain" class="form-input-block form-control form-input">
                 <div class="form-placeholder">
                   https://store.redstonepgs.com/
                 </div>
                 <input
                   type="text"
                   placeholder="storefront url"
+              className = "bg-transparent"
                   disabled
                   v-model="storePayload.slug"
                 />
               </div>
+              <div v-else class="form-input-block form-control form-input">
+                <div class="form-placeholder">
+                  https://
+                </div>
+                <div class="form-placeholder">
+                  {{ storePayload?.domain }}
+                </div>
+            
+              </div>
             </div>
 
-            <div class="text-grey-600/85 text-[12.5px] leading-5 mt-[1px]">
+            <div v-if = "!storePayload.domain" class="text-grey-600/85 text-[12.5px] leading-5 mt-[1px]">
               NOTE: Your storefront URL is auto-generated. Add a
               <router-link
                 class="underline"
@@ -300,7 +310,7 @@ import FileUploadInput from "@/shared/components/form-comps/file-upload-input.vu
 const route = useRoute();
 
 const { processAPIRequest } = useEvents();
-const { fetchStoreById, updateStorefront, getDomainConfig } =
+const { fetchStoreById, updateStorefront } =
   useStorefrontStore();
 
 const storeIsLoading = ref<boolean>(true);
@@ -311,6 +321,7 @@ const storefrontSlug = ref(route.query.storeSlug);
 const storePayload = ref<any>({
   name: "",
   slug: "",
+  domain: "",
   description: "",
   tag: "",
   address: "",
@@ -322,7 +333,7 @@ const storePayload = ref<any>({
   tikTok: "",
 });
 
-const allDomains = ref<string[]>([storePayload?.value.slug]);
+
 const uploadedLogo = ref<string>("");
 
 const getUploadedLogoContent = computed(() => {
@@ -365,6 +376,7 @@ const fetchStorefrontById = async () => {
     storePayload.value.address = response.data.address;
     storePayload.value.email = response.data.email;
     storePayload.value.phone_number = response.data.phone_number;
+    storePayload.value.domain = response.data.domain_config?.domain
 
     uploadedLogo.value = response.data.logo ?? "";
 
@@ -375,21 +387,7 @@ const fetchStorefrontById = async () => {
   }
 };
 
-// const handleGetDomainConfig = async (): Promise<void> => {
-//   try {
-//     const response = await processAPIRequest({
-//       action: getDomainConfig,
-//       payload: { storeId: route.params.storeId },
-//       showAlert: false,
-//     });
 
-//     if (response.code === 200) {
-//       allDomains?.value.unshift(response.data.domain);
-//     }
-//   } catch (err: any) {
-//     console.log(err.message);
-//   }
-// };
 
 const updateStorefrontDetails = async () => {
   const response = await processAPIRequest({
@@ -419,7 +417,7 @@ const updateStorefrontDetails = async () => {
 
 onMounted(() => {
   fetchStorefrontById();
-  // handleGetDomainConfig();
+
 });
 </script>
 

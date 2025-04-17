@@ -18,9 +18,9 @@
         <div
           class="flex justify-between px-4 lg:gap-4 xl:items-center 2xl:items-center sm:flex-col sm:items-start sm:gap-4"
         >
-          <span class="w-1/3 text-sm font-medium text-grey-700">{{
-            domain
-          }}</span>
+          <a :href="`https://${domain}`" class="underline xl:w-[30%] 2xl:w-[30%] sm:w-full">  
+            {{ domain }}
+          </a>
 
           <div
             class="px-5 py-2 text-xs font-medium text-center rounded-full bg-green-400/65 w-max sm:absolute right-4 "
@@ -51,6 +51,7 @@
 <script setup lang="ts">
 import { ref, watch } from "vue";
 
+
 const props = defineProps<{
   store: any;
   domains: string[];
@@ -78,18 +79,6 @@ const copyToClipboard = async (text: string) => {
 };
 
 
-
-
-// const handleSearch = () => {
-//   if (!searchInput.value.trim()) {
-//     allDomains.value = [...props.domains];
-//     return;
-//   }
-
-//   allDomains.value = props.domains?.filter((domain: string) =>
-//     domain.toLowerCase().includes(searchInput.value.toLowerCase().trim())
-//   );
-// };
 </script>
 
 <style scoped></style>

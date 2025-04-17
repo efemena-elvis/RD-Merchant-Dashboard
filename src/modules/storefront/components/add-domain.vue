@@ -78,6 +78,7 @@
 
 <script setup lang="ts">
 import { ref, computed, watch, inject } from "vue";
+import { useRouter } from "vue-router";
 import { Emitter } from "mitt";
 import TextFieldInput from "@/shared/components/form-comps/text-field-input.vue";
 import { IInputType } from "@/models/form-type";
@@ -94,6 +95,7 @@ const { createAndClickAnchor, formatNumber } = useString();
 const { processAPIRequest, pushToastAlert } = useEvents();
 const { lookUpDomain, initiateDomainPayment, registerDomain } =
   useStorefrontStore();
+const router = useRouter();
 
 const btnRef = ref(null);
 const domain = ref("");
@@ -163,7 +165,7 @@ const getPaymentPayload = computed(() => {
     narration: "Domain purchase",
     method: "mobilemoney",
     amount: domainDetails.value.data.price,
-    redirect_url: `/storefront/overview/${props.store.id}?storeSlug=${props.store.slug}`,
+    redirect_url: `/storefront/custom-domain/${props.store.id}?storeSlug=${props.store.slug}`,
     email: "",
     customer_first_name: "",
     customer_last_name: "",
@@ -235,7 +237,11 @@ const handleRegisterDomain = async () => {
         message: "Domain registered successfully.",
         type: "success",
       });
-      createAndClickAnchor(response.data.payment_link);
+      // createAndClickAnchor(response.data.payment_link);
+      router.push(
+        `/storefront/custom-domain/${props.store?.id}?storeSlug=${props.store?.slug}`
+      );
+
     } else {
       pushToastAlert({ message: "Unable to register domain.", type: "error" });
     }

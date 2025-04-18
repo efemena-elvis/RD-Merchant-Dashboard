@@ -76,7 +76,7 @@
               NOTE: Your storefront URL is auto-generated. Add a
               <router-link
                 class="underline"
-                :to="`/storefront/domains/${storefrontId}?storeSlug=${storefrontSlug}`"
+                :to="`/storefront/custom-domain/${storefrontId}?storeSlug=${storefrontSlug}`"
                 >custom domain</router-link
               >
               for a more professional and memorable address.

@@ -241,6 +241,7 @@ const handleRegisterDomain = async () => {
       router.push(
         `/storefront/custom-domain/${props.store?.id}?storeSlug=${props.store?.slug}`
       );
+      window.location.reload()
 
     } else {
       pushToastAlert({ message: "Unable to register domain.", type: "error" });

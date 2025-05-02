@@ -94,7 +94,7 @@ const isActionReady = computed(() => {
 });
 
 const handlePayoutInitiation = async () => {
-  if (payoutPayload.value.amount <= 100) {
+  if (payoutPayload.value.amount < 100) {
     pushToastAlert({
       message: "Payout initiation failed",
       description: "Please provide a minimum payout amount of ZMW100.",

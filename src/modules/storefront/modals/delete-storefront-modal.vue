@@ -55,7 +55,7 @@ const props = defineProps({
     required: true,
   },
 });
-
+ 
 const { processAPIRequest } = useEvents();
 const { deleteStorefront } = useStorefrontStore();
 

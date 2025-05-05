@@ -26,7 +26,7 @@
           <button
             class="btn btn-sm delete-btn"
             ref="deleteStorefrontBtnRef"
-            @click="handleeStorefrontDelete"
+            @click="handleStorefrontDelete"
           >
             Delete
           </button>
@@ -42,7 +42,7 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, computed } from "vue";
+import { ref } from "vue";
 import ModalDialog from "@/shared/components/global-comps/modal-dialog.vue";
 import useEvents from "@/shared/composables/useEvents";
 import { useStorefrontStore } from "@/modules/storefront/store";
@@ -55,13 +55,13 @@ const props = defineProps({
     required: true,
   },
 });
-
+ 
 const { processAPIRequest } = useEvents();
 const { deleteStorefront } = useStorefrontStore();
 
 const deleteStorefrontBtnRef = ref(null);
 
-const handleeStorefrontDelete = async () => {
+const handleStorefrontDelete = async () => {
   const response = await processAPIRequest({
     action: deleteStorefront,
     payload: { storefrontId: props.storefrontData.id },
@@ -83,10 +83,10 @@ const handleeStorefrontDelete = async () => {
   });
 
   if (response.code === 200 || response.status === 200) {
-    emits("reloadStorefront");
     emits("closeTriggered");
+    window.location.reload();
   }
-};
+}
 </script>
 
 <style lang="scss" scoped>

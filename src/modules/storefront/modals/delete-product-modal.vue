@@ -26,7 +26,7 @@
           <button
             class="btn btn-sm delete-btn"
             ref="deleteProductBtnRef"
-            @click="handleeProductDelete"
+            @click="handleProductDelete"
           >
             Delete
           </button>
@@ -61,7 +61,7 @@ const { deleteStoreProduct } = useStorefrontStore();
 
 const deleteProductBtnRef = ref(null);
 
-const handleeProductDelete = async () => {
+const handleProductDelete = async () => {
   const response = await processAPIRequest({
     action: deleteStoreProduct,
     payload: { productId: props.productData.id },

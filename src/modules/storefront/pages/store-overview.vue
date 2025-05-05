@@ -48,31 +48,34 @@
               />
             </div>
 
-            <div  class="form-input-block">
-              <div v-if = "!storePayload.domain" class="form-input-block form-control form-input">
+            <div class="form-input-block">
+              <div
+                v-if="!storePayload.domain"
+                class="form-input-block form-control form-input"
+              >
                 <div class="form-placeholder">
                   https://store.redstonepgs.com/
                 </div>
                 <input
                   type="text"
                   placeholder="storefront url"
-              className = "bg-transparent"
+                  className="bg-transparent"
                   disabled
                   v-model="storePayload.slug"
                 />
               </div>
               <div v-else class="form-input-block form-control form-input">
-                <div class="form-placeholder">
-                  https://
-                </div>
+                <div class="form-placeholder">https://</div>
                 <div class="form-placeholder">
                   {{ storePayload?.domain }}
                 </div>
-            
               </div>
             </div>
 
-            <div v-if = "!storePayload.domain" class="text-grey-600/85 text-[12.5px] leading-5 mt-[1px]">
+            <div
+              v-if="!storePayload.domain"
+              class="text-grey-600/85 text-[12.5px] leading-5 mt-[1px]"
+            >
               NOTE: Your storefront URL is auto-generated. Add a
               <router-link
                 class="underline"
@@ -281,22 +284,25 @@
         </div>
       </div>
 
-      <div class="input-row">
-        <div class="flex items-center justify-end button-actions gap-x-3">
-          <button class="btn btn-sm btn-secondary" @click="fetchStorefrontById">
-            Cancel
-          </button>
-          <button
-            class="btn btn-sm btn-primary"
-            ref="updateStorefrontBtnRef"
-            @click="updateStorefrontDetails"
-          >
-            Save Profile
-          </button>
-        </div>
+      <div class="top-area--right button-actions">
+        <div class="spinner-icon icon-spinner-ios" v-if="storeIsLoading"></div>
+
+        <button class="btn btn-sm btn-secondary" @click="fetchStorefrontById">
+          Cancel
+        </button>
+        <button
+          class="btn btn-sm btn-primary"
+          ref="updateStorefrontBtnRef"
+          @click="updateStorefrontDetails"
+        >
+          Save Profile
+        </button>
       </div>
     </div>
   </div>
+  
+
+   
 </template>
 
 <script lang="ts" setup>
@@ -307,11 +313,11 @@ import { storefrontNiches } from "@/shared/constants/storefront-niches";
 import useEvents from "@/shared/composables/useEvents";
 import FileUploadInput from "@/shared/components/form-comps/file-upload-input.vue";
 
+
 const route = useRoute();
 
 const { processAPIRequest } = useEvents();
-const { fetchStoreById, updateStorefront } =
-  useStorefrontStore();
+const { fetchStoreById, updateStorefront } = useStorefrontStore();
 
 const storeIsLoading = ref<boolean>(true);
 const updateStorefrontBtnRef = ref(null);
@@ -332,7 +338,6 @@ const storePayload = ref<any>({
   twitter: "",
   tikTok: "",
 });
-
 
 const uploadedLogo = ref<string>("");
 
@@ -357,6 +362,8 @@ const getStorefrontPayload = computed(() => {
   };
 });
 
+
+
 const fetchStorefrontById = async () => {
   storeIsLoading.value = true;
 
@@ -376,7 +383,7 @@ const fetchStorefrontById = async () => {
     storePayload.value.address = response.data.address;
     storePayload.value.email = response.data.email;
     storePayload.value.phone_number = response.data.phone_number;
-    storePayload.value.domain = response.data.domain_config?.domain
+    storePayload.value.domain = response.data.domain_config?.domain;
 
     uploadedLogo.value = response.data.logo ?? "";
 
@@ -386,8 +393,6 @@ const fetchStorefrontById = async () => {
     storePayload.value.tikTok = response.data.tikTok ?? "";
   }
 };
-
-
 
 const updateStorefrontDetails = async () => {
   const response = await processAPIRequest({
@@ -417,7 +422,6 @@ const updateStorefrontDetails = async () => {
 
 onMounted(() => {
   fetchStorefrontById();
-
 });
 </script>
 

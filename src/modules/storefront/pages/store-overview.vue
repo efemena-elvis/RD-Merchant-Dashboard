@@ -286,9 +286,7 @@
 
       <div class="input-row">
         <div class="flex items-center justify-end button-actions gap-x-3">
-          <!-- <button class="btn btn-sm btn-secondary" @click="fetchStorefrontById">
-            Cancel
-          </button> -->
+          <div class="spinner-icon icon-spinner-ios" v-if="storeIsLoading"></div>
           <button
             class="btn !text-white btn-alert"
             ref="deleteStorefrontBtnRef"

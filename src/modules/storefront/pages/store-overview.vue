@@ -284,28 +284,25 @@
         </div>
       </div>
 
-      <div class="input-row">
-        <div class="flex items-center justify-end button-actions gap-x-3">
-          <div class="spinner-icon icon-spinner-ios" v-if="storeIsLoading"></div>
-          <button
-            class="btn !text-white btn-alert"
-            ref="deleteStorefrontBtnRef"
-            @click="toggleDeleteStorefrontModal"
-          >
-            Delete Storefront
-          </button>
-        </div>
+      <div class="top-area--right button-actions">
+        <div class="spinner-icon icon-spinner-ios" v-if="storeIsLoading"></div>
+
+        <button class="btn btn-sm btn-secondary" @click="fetchStorefrontById">
+          Cancel
+        </button>
+        <button
+          class="btn btn-sm btn-primary"
+          ref="updateStorefrontBtnRef"
+          @click="updateStorefrontDetails"
+        >
+          Save Profile
+        </button>
       </div>
     </div>
   </div>
   
 
-      <DeleteStorefrontModal
-        v-if="showDeleteStorefrontModal"
-        :storefrontData="getStorefrontPayload"
-        @closeTriggered="toggleDeleteStorefrontModal"
-        @reloadStorefront="fetchStorefrontById"
-      />
+   
 </template>
 
 <script lang="ts" setup>
@@ -315,7 +312,7 @@ import { useStorefrontStore } from "@/modules/storefront/store";
 import { storefrontNiches } from "@/shared/constants/storefront-niches";
 import useEvents from "@/shared/composables/useEvents";
 import FileUploadInput from "@/shared/components/form-comps/file-upload-input.vue";
-import DeleteStorefrontModal from "../modals/delete-storefront-modal.vue";
+
 
 const route = useRoute();
 
@@ -324,8 +321,6 @@ const { fetchStoreById, updateStorefront } = useStorefrontStore();
 
 const storeIsLoading = ref<boolean>(true);
 const updateStorefrontBtnRef = ref(null);
-const deleteStorefrontBtnRef = ref(null);
-const showDeleteStorefrontModal = ref(false);
 const storefrontId = ref(route.params.storeId);
 const storefrontSlug = ref(route.query.storeSlug);
 
@@ -367,9 +362,7 @@ const getStorefrontPayload = computed(() => {
   };
 });
 
-const toggleDeleteStorefrontModal = () => {
-  showDeleteStorefrontModal.value = !showDeleteStorefrontModal.value;
-};
+
 
 const fetchStorefrontById = async () => {
   storeIsLoading.value = true;

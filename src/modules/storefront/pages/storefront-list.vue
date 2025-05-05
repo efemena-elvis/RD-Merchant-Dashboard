@@ -149,13 +149,14 @@ const fetchAllStorefront = async () => {
         status: `${getStatus("success", "Active")}`,
         action: h(TableActionBtn, {
           showPrimaryBtn: true,
-          showSecondaryBtn: false,
+          showSecondaryBtn: true,
           primaryBtnText: "Manage Store",
           onManageClick: () => {
             router.push(
               `storefront/overview/${data.id}?storeSlug=${data.slug}`
             );
           },
+      
           onDeleteClick: () => handleDeleteStorefront(data),
         }),
       };

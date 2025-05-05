@@ -42,11 +42,10 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, computed } from "vue";
+import { ref } from "vue";
 import ModalDialog from "@/shared/components/global-comps/modal-dialog.vue";
 import useEvents from "@/shared/composables/useEvents";
 import { useStorefrontStore } from "@/modules/storefront/store";
-import router from "@/router";
 
 const emits = defineEmits(["closeTriggered", "reloadStorefront"]);
 
@@ -85,7 +84,7 @@ const handleStorefrontDelete = async () => {
 
   if (response.code === 200 || response.status === 200) {
     emits("closeTriggered");
-    router.push("/storefront");
+    window.location.reload();
   }
 };
 </script>

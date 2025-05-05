@@ -86,7 +86,7 @@ const handleStorefrontDelete = async () => {
     emits("closeTriggered");
     window.location.reload();
   }
-};
+}
 </script>
 
 <style lang="scss" scoped>

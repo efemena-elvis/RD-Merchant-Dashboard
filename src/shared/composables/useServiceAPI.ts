@@ -93,7 +93,11 @@ class ServiceApi {
 
       const response = await axios.get<T>(
         hashed_url,
-        this.getHeaders(option.is_attach, option.requiresPublicKey, option.customHeaders || {})
+        this.getHeaders(
+          option.is_attach,
+          option.requiresPublicKey,
+          option.customHeaders || {}
+        )
       );
 
       // Reset to initial base URL after the request
@@ -129,7 +133,7 @@ class ServiceApi {
       resolve = true,
       is_attach = false,
       requiresPublicKey = false,
-      customHeaders = {}
+      customHeaders = {},
     }: {
       payload?: any;
       resolve?: boolean;
@@ -171,7 +175,7 @@ class ServiceApi {
       resolve = true,
       is_attach = false,
       requiresPublicKey = false,
-      customHeaders = {}
+      customHeaders = {},
     }: {
       payload?: any;
       resolve?: boolean;
@@ -188,7 +192,7 @@ class ServiceApi {
       const response = await axios.put<T>(
         url,
         payload,
-        this.getHeaders(is_attach, requiresPublicKey,customHeaders)
+        this.getHeaders(is_attach, requiresPublicKey, customHeaders)
       );
 
       // Reset to initial base URL after the request
@@ -213,7 +217,7 @@ class ServiceApi {
       resolve = true,
       is_attach = false,
       requiresPublicKey = false,
-      customHeaders = {}
+      customHeaders = {},
     }: {
       payload?: any;
       resolve?: boolean;
@@ -268,7 +272,11 @@ class ServiceApi {
 
       const response = await axios.delete<T>(url, {
         data: option.payload,
-        ...this.getHeaders(false, option.requiresPublicKey, option.customHeaders || {}),
+        ...this.getHeaders(
+          false,
+          option.requiresPublicKey,
+          option.customHeaders || {}
+        ),
       });
 
       // Reset to initial base URL after the request
@@ -324,7 +332,10 @@ class ServiceApi {
   // ===============================
   // SETUP REQUEST HEADERS
   getHeaders(
-attach: boolean = false, requiresPublicKey: boolean = false, customHeaders: Record<string, string | null>  ): AxiosRequestConfig {
+    attach: boolean = false,
+    requiresPublicKey: boolean = false,
+    customHeaders: Record<string, string | null>
+  ): AxiosRequestConfig {
     const authUserToken = getStorage({
       storage_name: constants.REDSTONE_AUTH_TOKEN,
     }) as string | null;

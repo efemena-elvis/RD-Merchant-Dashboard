@@ -136,7 +136,7 @@ const processDocumentUpload = async ($event: Event) => {
 
   if (!processFileSize(uploadedFile.size)) {
     pushToastAlert({
-      message: "Upload a maximum file size of 5mb",
+      message: "Upload a maximum file size of 1mb",
       type: "warning",
     });
 

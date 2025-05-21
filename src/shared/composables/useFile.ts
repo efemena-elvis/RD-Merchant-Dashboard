@@ -6,7 +6,7 @@ export function useFile() {
   };
 
   const processFileSize = (size: number) => {
-    if (size > 5000000) return false;
+    if (size > 1000000) return false;
 
     return size.toString().length >= 6
       ? `${(size / 1000000).toFixed(1)}mb`

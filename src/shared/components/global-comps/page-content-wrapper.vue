@@ -18,6 +18,7 @@
       </div>
 
       <div class="top-row--right">
+        
         <OverviewFilter
           v-if="showFilterSelection"
           filterSize="lg"
@@ -27,6 +28,7 @@
         />
 
         <template name="customActionBtn" v-if="showCustomActionBtn">
+
           <button
             class="btn btn-sm btn-primary custom-action-btn"
             @click="$emit('customActionBtnClicked')"

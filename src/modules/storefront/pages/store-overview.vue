@@ -300,9 +300,6 @@
       </div>
     </div>
   </div>
-  
-
-   
 </template>
 
 <script lang="ts" setup>
@@ -312,7 +309,6 @@ import { useStorefrontStore } from "@/modules/storefront/store";
 import { storefrontNiches } from "@/shared/constants/storefront-niches";
 import useEvents from "@/shared/composables/useEvents";
 import FileUploadInput from "@/shared/components/form-comps/file-upload-input.vue";
-
 
 const route = useRoute();
 
@@ -361,8 +357,6 @@ const getStorefrontPayload = computed(() => {
     logo: uploadedLogo.value,
   };
 });
-
-
 
 const fetchStorefrontById = async () => {
   storeIsLoading.value = true;

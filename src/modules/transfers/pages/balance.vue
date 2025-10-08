@@ -10,7 +10,7 @@
     :filterListValue="periodList"
     pageDescription="Total balance history"
     :pagingData="tablePaging"
-    :hasPayload="tableBody.length > 0"
+    :hasPayload="filteredTableBody.length > 0"
     :pageKeys="{ green: 'Inflow', red: 'Outflow' }"
     :showCustomActionBtn="false"
     @searchEntered="processSearchEntry"
@@ -18,7 +18,7 @@
   >
     <TableContainer
       :tableHeader="tableHeader"
-      :tableBody="tableBody"
+      :tableBody="filteredTableBody"
       :isLoading="isLoading"
       :emptyData="{
         title: 'No balance history yet',
@@ -27,7 +27,7 @@
       }"
     >
       <TableContainerBody
-        v-for="(payload, index) in tableBody"
+        v-for="(payload, index) in filteredTableBody"
         :key="index"
         :tableHeader="tableHeader"
         :tableData="payload"
@@ -37,7 +37,7 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, reactive, onMounted } from "vue";
+import { ref, reactive, onMounted, computed } from "vue";
 import { useString } from "@/shared/composables/useString";
 import { useTransferStore } from "@/modules/transfers/store/";
 import useDate from "@/shared/composables/useDate";
@@ -72,7 +72,7 @@ const tableHeader = ref<TableHeaderType[]>([
 const tableBody = reactive<any[]>([]);
 const tablePaging = ref<any>({});
 
-const activePeriod = ref<string>("This month");
+const activePeriod = ref<string>("All Time");
 const periodList = ref<string[]>([
   "Today",
   "Last 7 days",
@@ -86,12 +86,37 @@ const processSearchEntry = (searchValue: string) => {
 };
 
 const processFilterSelection = (selectedPeriod: string) => {
+  activePeriod.value = selectedPeriod;
   console.log("FILTERING BY PERIOD", selectedPeriod);
 };
 
 const getTransactionDate = (date: string) => {
   let { w2, m3, d3, y1 } = useDate.formatDate(date).getAll();
   return `${w2}, ${d3} ${m3}, ${y1}`;
+};
+
+const isWithinPeriod = (date: Date, period: string): boolean => {
+  const now = new Date();
+  const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+  const startOfLastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+  const endOfLastMonth = new Date(now.getFullYear(), now.getMonth(), 0);
+  const sevenDaysAgo = new Date(now);
+  sevenDaysAgo.setDate(now.getDate() - 7);
+
+  switch (period) {
+    case "Today":
+      return date >= startOfToday;
+    case "Last 7 days":
+      return date >= sevenDaysAgo;
+    case "This month":
+      return date >= startOfMonth;
+    case "Last month":
+      return date >= startOfLastMonth && date <= endOfLastMonth;
+    case "All time":
+    default:
+      return true;
+  }
 };
 
 const fetchBalanceHistory = async () => {
@@ -106,6 +131,7 @@ const fetchBalanceHistory = async () => {
   if (response.code === 200) {
     response.data.map((data: any) => {
       tableBody.push({
+        raw_date: data.balance_at, 
         status: transactionFlowIcon(
           data.type === "credit" ? "receive" : "send"
         ),
@@ -123,6 +149,14 @@ const fetchBalanceHistory = async () => {
     tablePaging.value = response.pagination[0];
   }
 };
+
+const filteredTableBody = computed(() => {
+  return tableBody.filter((tx) => {
+    const rawDate = tx.raw_date ? new Date(tx.raw_date) : null;
+    const matchesDate = rawDate ? isWithinPeriod(rawDate, activePeriod.value) : true;
+    return matchesDate;
+  });
+});
 
 onMounted(() => {
   fetchBalanceHistory();

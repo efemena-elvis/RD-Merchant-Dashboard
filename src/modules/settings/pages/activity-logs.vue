@@ -54,7 +54,7 @@ const tableHeader = ref<TableHeaderType[]>([
 const tableBody = reactive<any[]>([]);
 const tablePaging = ref<any>({});
 
-const activePeriod = ref<string>("This month");
+const activePeriod = ref<string>("All Time");
 const periodList = ref<string[]>([
   "Today",
   "Last 7 days",

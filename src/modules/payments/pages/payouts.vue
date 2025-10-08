@@ -32,7 +32,7 @@
         
         <div class="relative">
           <div
-            class="flex justify-between items-center gap-x-2 p-4 border rounded-md  cursor-pointer text-sm w-[120px]"
+            class="flex justify-between items-center gap-x-2 p-4 text-teal-800 font-semibold border rounded-md  cursor-pointer text-sm w-[120px]"
             @click="showDropdown = !showDropdown"
           >
             <span>{{ activePeriod }}</span>

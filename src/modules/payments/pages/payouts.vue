@@ -1,7 +1,8 @@
 <template>
   <PageContentWrapper
     searchInputPlaceholder="Search by payout reference id"
-    :showFilterSelection="false"
+    :showFilterSelection="true"
+    :filterActiveValue="activePeriod"
     pageDescription="All payouts"
     :pagingData="tablePaging"
     :pageKeys="{ green: 'Successful', yellow: 'Pending', red: 'Failed' }"
@@ -12,49 +13,26 @@
     @searchEntered="processSearchEntry"
     @filterSelected="processFilterSelection"
   >
-
-    <div class="flex gap-4 mb-4" v-if="!isLoading">
-     
+    <div class="flex gap-4 mb-4" v-if="tableBody.length > 0 && !isLoading">
+      <div class="relative">
         <select
           v-model="selectedStatus"
-          class="p-4 text-sm border rounded-md cursor-pointer focus:outline-none text-teal-800 font-semibold"
+          class="p-4 text-sm font-semibold text-teal-800 border rounded-md appearance-none cursor-pointer w-36 focus:outline-none"
         >
           <option value="">Status</option>
           <option
             v-for="(status, index) in statusOptions"
-            :value="status"
+            :value="status.toLowerCase()"
             :key="index"
           >
             {{ status }}
           </option>
         </select>
-
-        
-        <div class="relative">
-          <div
-            class="flex justify-between items-center gap-x-2 p-4 text-teal-800 font-semibold border rounded-md  cursor-pointer text-sm w-[120px]"
-            @click="showDropdown = !showDropdown"
-          >
-            <span>{{ activePeriod }}</span>
-            <span class="icon-calendar transition-transform duration-200"></span>
-          </div>
-
-          <div
-            v-if="showDropdown"
-            class="absolute z-10 mt-1 bg-white border rounded-md shadow-md w-full"
-          >
-            <div
-              v-for="(period, index) in periodList"
-              :key="index"
-              @click="processFilterSelection(period); showDropdown = false"
-              class="px-4 py-2 text-sm cursor-pointer hover:bg-indigo-50"
-            >
-              {{ period }}
-            </div>
-          </div>
-        </div>
-      
+        <div
+          class="absolute text-[16px] text-teal-800 -translate-y-1/2 pointer-events-none icon icon-caret-down right-4 top-1/2"
+        ></div>
       </div>
+    </div>
     <TableContainer
       :tableHeader="tableHeader"
       :tableBody="filteredTableBody"
@@ -99,18 +77,10 @@ const { fetchAllPayouts } = usePaymentStore();
 const { processAPIRequest } = useEvents();
 
 const isLoading = ref<boolean>(true);
-
+const searchQuery = ref<string>("")
 const showInitiatePayoutModal = ref(false);
-const activePeriod = ref("All Time");
-const showDropdown = ref(false);
 
-const periodList = ref([
-  "Today",
-  "Last 7 days",
-  "This month",
-  "Last month",
-  "All time",
-]);
+const activePeriod = ref<[Date, Date] | null>(null);
 
 const toggleInitiatePayoutModal = () => {
   showInitiatePayoutModal.value = !showInitiatePayoutModal.value;
@@ -118,7 +88,7 @@ const toggleInitiatePayoutModal = () => {
 
 const tableHeader = ref<TableHeaderType[]>([
   { title: "Date Initiated", slug: "date_created" },
-  { title: "Payout Reference", slug: "reference_id" },
+  { title: "Payout Reference", slug: "reference" },
   { title: "Amount Requested", slug: "amount_requested" },
   { title: "Payout Narration", slug: "narration" },
   { title: "Status", slug: "status" },
@@ -129,45 +99,43 @@ const tablePaging = ref<any>({});
 const selectedStatus = ref("");
 const statusOptions = ["Successful", "Pending", "Failed"];
 
-
 const processSearchEntry = (searchValue: string) => {
-  console.log("SEARCH VALUE", searchValue);
+   searchQuery.value = searchValue.trim();
 };
-
-
 
 const getDateCreated = (date: string) => {
   let { w2, m3, d3, y1 } = useDate.formatDate(date).getAll();
   return `${w2}, ${d3} ${m3}, ${y1}`;
 };
 
-const processFilterSelection = (selectedPeriod: string) => {
-  activePeriod.value = selectedPeriod;
+const normalizeDate = (date: Date) => {
+  const d = new Date(date);
+  d.setHours(0, 0, 0, 0);
+  return d;
 };
 
-const normalize = (val: string) => val?.trim().toLowerCase() || "";
+const isWithinRange = (date: Date, range: [Date, Date] | null): boolean => {
+  if (!range || !range[0] || !range[1]) return true;
 
-const isWithinPeriod = (date: Date, period: string): boolean => {
-  const now = new Date();
-  const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-  const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-  const startOfLastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
-  const endOfLastMonth = new Date(now.getFullYear(), now.getMonth(), 0);
-  const sevenDaysAgo = new Date(now);
-  sevenDaysAgo.setDate(now.getDate() - 7);
+  const start = normalizeDate(new Date(range[0]));
+  const end = new Date(range[1]);
+  end.setHours(23, 59, 59, 999);
 
-  switch (period) {
-    case "Today":
-      return date >= startOfToday;
-    case "Last 7 days":
-      return date >= sevenDaysAgo;
-    case "This month":
-      return date >= startOfMonth;
-    case "Last month":
-      return date >= startOfLastMonth && date <= endOfLastMonth;
-    case "All time":
-    default:
-      return true;
+  const target = new Date(date);
+  return target >= start && target <= end;
+};
+
+const processFilterSelection = (
+  selectedRange: [Date | string, Date | string]
+) => {
+  if (selectedRange && selectedRange.length === 2) {
+    const normalizedRange: [Date, Date] = [
+      new Date(selectedRange[0]),
+      new Date(selectedRange[1]),
+    ];
+    activePeriod.value = normalizedRange;
+  } else {
+    activePeriod.value = null;
   }
 };
 
@@ -187,9 +155,9 @@ const fetchPayouts = async () => {
       raw_status: data.status,
 
       // formatted values (for display)
-     
+
       date_created: getDateCreated(data.created_at),
-      reference_id: data.reference,
+      reference: data.reference,
       amount_requested: getBoldTableText(
         `${data.currency} ${formatNumber(data.amount)}`
       ),
@@ -201,18 +169,22 @@ const fetchPayouts = async () => {
   }
 };
 
-
 const filteredTableBody = computed(() =>
-
-
-    tableBody.value.filter((tx) => {
-      const rawDate = tx.raw_date ? new Date(tx.raw_date) : null;
+  tableBody.value.filter((tx) => {
+    const rawDate = tx.raw_date ? new Date(tx.raw_date) : null;
     const matchesStatus = selectedStatus.value
       ? tx.raw_status.toLowerCase() === selectedStatus.value.toLowerCase()
       : true;
 
-     const matchesDate = rawDate ? isWithinPeriod(rawDate, activePeriod.value) : true;
-    return matchesStatus && matchesDate;
+    const matchesDate = rawDate
+      ? isWithinRange(rawDate, activePeriod.value)
+      : true;
+
+      const matchesSearch =
+      !searchQuery.value ||
+      tx.reference.toLowerCase().includes(searchQuery.value);
+      
+    return matchesStatus && matchesDate && matchesSearch;
   })
 );
 

@@ -1,22 +1,25 @@
 <template>
   <PageContentWrapper
-    searchInputPlaceholder="Search transaction"
+    searchInputPlaceholder="Search transaction by reference id"
     :filterActiveValue="activePeriod"
-    :filterListValue="periodList"
     pageDescription="All transactions"
     :pagingData="tablePaging"
     :hasPayload="tableBody.length > 0"
     :pageKeys="{ green: 'Successful', yellow: 'Pending', red: 'Failed' }"
-    :showCustomActionBtn="false"
+    :showCustomActionBtn="true"
+    :customActionBtnText="'Export'"
+    @customActionBtnClicked="exportToExcel"
     @searchEntered="processSearchEntry"
     @filterSelected="processFilterSelection"
   >
-    <!-- Filters -->
-    <div v-if="!isLoading" class="flex justify-between items-center mb-4">
-      <div class="flex gap-4 mb-4" >
+    <div
+      class="flex items-center gap-4 mb-4"
+      v-if="tableBody.length > 0 && !isLoading"
+    >
+      <div class="relative">
         <select
           v-model="selectedMethod"
-          class="p-4 text-sm border rounded-md cursor-pointer focus:outline-none text-teal-800 font-semibold"
+          class="w-48 p-4 text-sm font-semibold text-teal-800 border rounded-md appearance-none cursor-pointer focus:outline-none"
         >
           <option value="">Payment Method</option>
           <option
@@ -27,24 +30,31 @@
             {{ method }}
           </option>
         </select>
+        <div
+          class="absolute text-[16px] text-teal-800 -translate-y-1/2 pointer-events-none icon icon-caret-down right-4 top-1/2"
+        ></div>
+      </div>
+
+      <div class="relative">
         <select
           v-model="selectedStatus"
-          class="p-4 text-sm border rounded-md cursor-pointer focus:outline-none text-teal-800 font-semibold"
+          class="p-4 text-sm font-semibold text-teal-800 border rounded-md appearance-none cursor-pointer w-36 focus:outline-none"
         >
           <option value="">Status</option>
           <option
             v-for="(status, index) in statusOptions"
-            :value="status"
+            :value="status.toLowerCase()"
             :key="index"
           >
             {{ status }}
           </option>
         </select>
+        <div
+          class="absolute text-[16px] text-teal-800 -translate-y-1/2 pointer-events-none icon icon-caret-down right-4 top-1/2"
+        ></div>
       </div>
-       <button @click="exportToExcel" class=" p-4 rounded-md w-[150px] hover:bg-grey-200 cursor-pointer border font-semibold text-teal-800">Export</button>
     </div>
 
-   
     <TableContainer
       :tableHeader="tableHeader"
       :tableBody="filteredTableBody"
@@ -66,7 +76,7 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, onMounted, computed, h } from "vue";
+import { ref, onMounted, computed, h, watch } from "vue";
 import { useString } from "@/shared/composables/useString";
 import { TableHeaderType } from "@/models/dashboard-type";
 import { usePaymentStore } from "../store";
@@ -87,11 +97,12 @@ const selectedMethod = ref("");
 const selectedStatus = ref("");
 const tableBody = ref<any[]>([]);
 const tablePaging = ref<any>({});
-const activePeriod = ref("All Time");
+const searchQuery = ref<string>("")
 
-const statusOptions = ["Successful", "Failed"];
+const activePeriod = ref<[Date, Date] | null>(null);
+
+const statusOptions = ["Successful", "Pending", "Failed"];
 const paymentMethods = ["Card", "Mobilemoney"];
-const periodList = ref(["Today", "Last 7 days", "This month", "Last month", "All time"]);
 
 const tableHeader = ref<TableHeaderType[]>([
   { title: "Created On", slug: "date_created" },
@@ -107,61 +118,65 @@ const getTransactionDate = (date: string) => {
   return `${w2}, ${d3} ${m3}, ${y1}`;
 };
 
-const normalize = (val: string) => val?.trim().toLowerCase() || "";
-
-const isWithinPeriod = (date: Date, period: string): boolean => {
-  const now = new Date();
-  const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-  const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-  const startOfLastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
-  const endOfLastMonth = new Date(now.getFullYear(), now.getMonth(), 0);
-  const sevenDaysAgo = new Date(now);
-  sevenDaysAgo.setDate(now.getDate() - 7);
-
-  switch (period) {
-    case "Today":
-      return date >= startOfToday;
-    case "Last 7 days":
-      return date >= sevenDaysAgo;
-    case "This month":
-      return date >= startOfMonth;
-    case "Last month":
-      return date >= startOfLastMonth && date <= endOfLastMonth;
-    case "All time":
-    default:
-      return true;
-  }
+const normalizeDate = (date: Date) => {
+  const d = new Date(date);
+  d.setHours(0, 0, 0, 0);
+  return d;
 };
 
+const isWithinRange = (date: Date, range: [Date, Date] | null): boolean => {
+  if (!range || !range[0] || !range[1]) return true;
+
+  const start = normalizeDate(new Date(range[0]));
+  const end = new Date(range[1]);
+  end.setHours(23, 59, 59, 999); 
+
+  const target = new Date(date);
+  return target >= start && target <= end;
+};
 
 const filteredTableBody = computed(() => {
   return tableBody.value.filter((tx) => {
-    const method = normalize(tx.raw?.payment_details);
-    const status = normalize(tx.raw?.status);
+    const method = tx.raw?.payment_details;
+    const status = tx.raw?.status;
     const rawDate = tx.raw?.raw_date ? new Date(tx.raw.raw_date) : null;
 
     const matchesMethod = selectedMethod.value
-      ? method === normalize(selectedMethod.value)
+      ? method === selectedMethod.value
       : true;
 
     const matchesStatus = selectedStatus.value
-      ? status === normalize(selectedStatus.value)
+      ? status === selectedStatus.value
       : true;
 
-    const matchesDate = rawDate ? isWithinPeriod(rawDate, activePeriod.value) : true;
+    const matchesDate = rawDate
+      ? isWithinRange(rawDate, activePeriod.value)
+      : true;
 
-    return matchesMethod && matchesStatus && matchesDate;
+    const matchesSearch =
+      !searchQuery.value ||
+      tx.reference.toLowerCase().includes(searchQuery.value);
+      
+    return matchesMethod && matchesStatus && matchesDate && matchesSearch;
   });
 });
 
-const processSearchEntry = (searchValue: string) => {
-  console.log("SEARCH VALUE:", searchValue);
+const processFilterSelection = (
+  selectedRange: [Date | string, Date | string]
+) => {
+  if (selectedRange && selectedRange.length === 2) {
+    const normalizedRange: [Date, Date] = [
+      new Date(selectedRange[0]),
+      new Date(selectedRange[1]),
+    ];
+    activePeriod.value = normalizedRange;
+  } else {
+    activePeriod.value = null;
+  }
 };
 
-
-const processFilterSelection = (selectedPeriod: string) => {
-  console.log("FILTERING BY PERIOD:", selectedPeriod);
-  activePeriod.value = selectedPeriod;
+const processSearchEntry = (searchValue: string) => {
+  searchQuery.value = searchValue.trim();
 };
 
 const fetchPaymentTransactions = async () => {
@@ -176,12 +191,14 @@ const fetchPaymentTransactions = async () => {
   if (response?.code === 200) {
     tableBody.value = response.data.map((data: any) => {
       const formattedAmount = `${data.currency} ${formatNumber(data.amount)}`;
-      const chargeAmount = `Charge: ${data.currency} ${formatNumber(data.charge)}`;
+      const chargeAmount = `Charge: ${data.currency} ${formatNumber(
+        data.charge
+      )}`;
       const customerName = data.customer
         ? `${data.customer.firstname} ${data.customer.lastname}`
         : "No customer info";
       const customerEmail = data.customer ? data.customer.email : "";
-      const createdDate = new Date(data.created_at);
+      const createdDate = new Date(Date.parse(data.created_at));
 
       return {
         date_created: getTransactionDate(data.created_at),
@@ -203,7 +220,6 @@ const fetchPaymentTransactions = async () => {
         }),
         status: getStatus(data.status, data.status),
         reference: data.reference,
-
         raw: {
           date_created: getTransactionDate(data.created_at),
           customer_details: `${customerName} (${customerEmail})`,
@@ -219,7 +235,6 @@ const fetchPaymentTransactions = async () => {
     tablePaging.value = response.pagination?.[0] || {};
   }
 };
-
 
 const exportToExcel = () => {
   const dataToExport = filteredTableBody.value.map((tx) => tx.raw);
@@ -254,4 +269,3 @@ onMounted(() => {
   margin-bottom: 1rem;
 }
 </style>
- 

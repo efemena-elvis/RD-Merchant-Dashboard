@@ -63,7 +63,7 @@ import Pagination from "@/shared/components/global-comps/pagination.vue";
 
 interface IPageContentType {
   searchInputPlaceholder: string;
-  filterActiveValue?: string;
+  filterActiveValue?:[Date, Date ] | null;
   filterListValue?: string[];
   showFilterSelection?: boolean;
   pageDescription: string;

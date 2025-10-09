@@ -5,12 +5,12 @@
   </div>
 
   <PageContentWrapper
-    searchInputPlaceholder="Search by payment reference"
+    searchInputPlaceholder="Search by reference id"
     :filterActiveValue="activePeriod"
-    :filterListValue="periodList"
+    :showFilterSelection="true"
     pageDescription="Total balance history"
     :pagingData="tablePaging"
-    :hasPayload="filteredTableBody.length > 0"
+    :hasPayload="tableBody.length > 0"
     :pageKeys="{ green: 'Inflow', red: 'Outflow' }"
     :showCustomActionBtn="false"
     @searchEntered="processSearchEntry"
@@ -57,8 +57,9 @@ const {
 
 const { getBalanceHistory } = useTransferStore();
 const { processAPIRequest } = useEvents();
-
+const activePeriod = ref<[Date, Date] | null>(null);
 const isLoading = ref<boolean>(true);
+const searchQuery = ref<string>("");
 
 const tableHeader = ref<TableHeaderType[]>([
   { title: "", slug: "status" },
@@ -67,57 +68,56 @@ const tableHeader = ref<TableHeaderType[]>([
   { title: "Balance Before", slug: "balance_before" },
   { title: "Change", slug: "change" },
   { title: "Balance After", slug: "balance_after" },
+  { title: "Reference", slug: "reference" },
 ]);
 
 const tableBody = reactive<any[]>([]);
 const tablePaging = ref<any>({});
 
-const activePeriod = ref<string>("All Time");
-const periodList = ref<string[]>([
-  "Today",
-  "Last 7 days",
-  "This month",
-  "Last month",
-  "All time",
-]);
+
 
 const processSearchEntry = (searchValue: string) => {
-  console.log("SEARCH VALUE", searchValue);
+ searchQuery.value = searchValue.trim()
 };
 
-const processFilterSelection = (selectedPeriod: string) => {
-  activePeriod.value = selectedPeriod;
-  console.log("FILTERING BY PERIOD", selectedPeriod);
-};
 
 const getTransactionDate = (date: string) => {
   let { w2, m3, d3, y1 } = useDate.formatDate(date).getAll();
   return `${w2}, ${d3} ${m3}, ${y1}`;
 };
 
-const isWithinPeriod = (date: Date, period: string): boolean => {
-  const now = new Date();
-  const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-  const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-  const startOfLastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
-  const endOfLastMonth = new Date(now.getFullYear(), now.getMonth(), 0);
-  const sevenDaysAgo = new Date(now);
-  sevenDaysAgo.setDate(now.getDate() - 7);
+const normalizeDate = (date: Date) => {
+  const d = new Date(date);
+  d.setHours(0, 0, 0, 0);
+  return d;
+};
 
-  switch (period) {
-    case "Today":
-      return date >= startOfToday;
-    case "Last 7 days":
-      return date >= sevenDaysAgo;
-    case "This month":
-      return date >= startOfMonth;
-    case "Last month":
-      return date >= startOfLastMonth && date <= endOfLastMonth;
-    case "All time":
-    default:
-      return true;
+const isWithinRange = (date: Date, range: [Date, Date] | null): boolean => {
+  if (!range || !range[0] || !range[1]) return true;
+
+  const start = normalizeDate(new Date(range[0]));
+  const end = new Date(range[1]);
+  end.setHours(23, 59, 59, 999); 
+
+  const target = new Date(date);
+  return target >= start && target <= end;
+};
+
+
+const processFilterSelection = (
+  selectedRange: [Date | string, Date | string]
+) => {
+  if (selectedRange && selectedRange.length === 2) {
+    const normalizedRange: [Date, Date] = [
+      new Date(selectedRange[0]),
+      new Date(selectedRange[1]),
+    ];
+    activePeriod.value = normalizedRange;
+  } else {
+    activePeriod.value = null;
   }
 };
+
 
 const fetchBalanceHistory = async () => {
   const response = await processAPIRequest({
@@ -143,6 +143,7 @@ const fetchBalanceHistory = async () => {
           data.type === "credit" ? "text-green-600" : "text-red-600"
         ),
         balance_after: `ZMW ${formatNumber(data.balance_after)}`,
+        reference : data.reference
       });
     });
 
@@ -153,8 +154,13 @@ const fetchBalanceHistory = async () => {
 const filteredTableBody = computed(() => {
   return tableBody.filter((tx) => {
     const rawDate = tx.raw_date ? new Date(tx.raw_date) : null;
-    const matchesDate = rawDate ? isWithinPeriod(rawDate, activePeriod.value) : true;
-    return matchesDate;
+    const matchesDate = rawDate ? isWithinRange(rawDate, activePeriod.value) : true;
+    
+     const matchesSearch =
+      !searchQuery.value ||
+      tx.reference.toLowerCase().includes(searchQuery.value);
+      
+    return matchesDate && matchesSearch;
   });
 });
 

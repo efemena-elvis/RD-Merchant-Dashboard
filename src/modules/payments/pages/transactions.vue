@@ -16,10 +16,10 @@
       class="flex items-center gap-4 mb-4"
       v-if="tableBody.length > 0 && !isLoading"
     >
-      <div class="relative">
+      <div class="relative w-52">
         <select
           v-model="selectedMethod"
-          class="w-48 p-4 text-sm font-semibold text-teal-800 border rounded-md appearance-none cursor-pointer focus:outline-none"
+          class="w-52 p-4 text-sm font-semibold text-teal-800 border rounded-md appearance-none cursor-pointer focus:outline-none"
         >
           <option value="">Payment Method</option>
           <option
@@ -35,10 +35,10 @@
         ></div>
       </div>
 
-      <div class="relative">
+      <div class="relative w-44">
         <select
           v-model="selectedStatus"
-          class="p-4 text-sm font-semibold text-teal-800 border rounded-md appearance-none cursor-pointer w-36 focus:outline-none"
+          class="p-4 text-sm font-semibold text-teal-800 border rounded-md appearance-none cursor-pointer w-44 focus:outline-none"
         >
           <option value="">Status</option>
           <option
@@ -70,7 +70,7 @@
         :key="index"
         :tableHeader="tableHeader"
         :tableData="payload"
-      />
+      ></TableContainerBody>
     </TableContainer>
   </PageContentWrapper>
 </template>
@@ -188,16 +188,19 @@ const fetchPaymentTransactions = async () => {
 
   isLoading.value = false;
 
-  if (response?.code === 200) {
+  if (response?.code === 200 && Array.isArray(response.data)) {
     tableBody.value = response.data.map((data: any) => {
-      const formattedAmount = `${data.currency} ${formatNumber(data.amount)}`;
-      const chargeAmount = `Charge: ${data.currency} ${formatNumber(
-        data.charge
-      )}`;
+      const amountValue = data?.amount ?? 0;
+      const chargeValue = data?.charge ?? 0;
+      const currencyValue = data?.currency ?? "";
+
+      const formattedAmount = `${formatNumber(amountValue)}`;
+      const chargeAmount = `Charge: ${currencyValue} ${formatNumber(chargeValue)}`;
+
       const customerName = data.customer
-        ? `${data.customer.firstname} ${data.customer.lastname}`
+        ? `${data.customer.firstname ?? ""} ${data.customer.lastname ?? ""}`.trim()
         : "No customer info";
-      const customerEmail = data.customer ? data.customer.email : "";
+      const customerEmail = data.customer?.email ?? "";
       const createdDate = new Date(Date.parse(data.created_at));
 
       return {
@@ -210,7 +213,7 @@ const fetchPaymentTransactions = async () => {
         }),
         payment_details: h(TableDoubleColumn, {
           entry: {
-            primaryText: capitalizeFirstLetter(data.method),
+            primaryText: capitalizeFirstLetter(data.method ?? "-"),
             secondaryText: `Type: ${
               data.redirect_url?.startsWith("https://store.redstonepgs.com/")
                 ? "Storefront"
@@ -218,23 +221,27 @@ const fetchPaymentTransactions = async () => {
             }`,
           },
         }),
-        status: getStatus(data.status, data.status),
-        reference: data.reference,
+        status: getStatus(data.status ?? "-", data.status ?? "-"),
+        reference: data.reference ?? "-",
         raw: {
           date_created: getTransactionDate(data.created_at),
           customer_details: `${customerName} (${customerEmail})`,
-          amount: `${formattedAmount} (${chargeAmount})`,
-          payment_details: capitalizeFirstLetter(data.method),
-          status: data.status,
-          reference: data.reference,
+          amount: formattedAmount,
+          payment_details: capitalizeFirstLetter(data.method ?? "-"),
+          status: data.status ?? "-",
+          reference: data.reference ?? "-",
           raw_date: createdDate,
         },
       };
+      
     });
-
+  
     tablePaging.value = response.pagination?.[0] || {};
+  } else {
+    tableBody.value = [];
   }
 };
+
 
 const exportToExcel = () => {
   const dataToExport = filteredTableBody.value.map((tx) => tx.raw);
@@ -250,7 +257,7 @@ const exportToExcel = () => {
   const worksheet = XLSX.utils.json_to_sheet(cleanData);
   const workbook = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(workbook, worksheet, "Merchant Transactions");
-  XLSX.writeFile(workbook, "transactions.xlsx");
+  XLSX.writeFile(workbook, "Merchant_Transactions.xlsx");
 };
 
 onMounted(() => {
@@ -259,13 +266,5 @@ onMounted(() => {
 </script>
 
 <style lang="scss" scoped>
-.flex {
-  display: flex;
-}
-.gap-4 {
-  gap: 1rem;
-}
-.mb-4 {
-  margin-bottom: 1rem;
-}
+
 </style>

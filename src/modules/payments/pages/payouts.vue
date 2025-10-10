@@ -66,6 +66,7 @@ import { TableHeaderType } from "@/models/dashboard-type";
 import { usePaymentStore } from "../store";
 import useDate from "@/shared/composables/useDate";
 import useEvents from "@/shared/composables/useEvents";
+import * as XLSX from "xlsx";
 import InitiatePayoutModal from "@/modules/payments/modals/initiate-payout-modal.vue";
 import PageContentWrapper from "@/shared/components/global-comps/page-content-wrapper.vue";
 import TableContainer from "@/shared/components/table-comps/table-container.vue";
@@ -187,6 +188,23 @@ const filteredTableBody = computed(() =>
     return matchesStatus && matchesDate && matchesSearch;
   })
 );
+
+const exportToExcel = () => {
+  const dataToExport = filteredTableBody.value.map((tx) => tx.raw);
+  const cleanData = dataToExport.map((tx) => ({
+    "Date Created": tx.date_created,
+    "Customer Details": tx.customer_details || "-",
+    Amount: tx.amount || "-",
+    "Payment Method": tx.payment_details,
+    Status: tx.status,
+    Reference: tx.reference,
+  }));
+
+  const worksheet = XLSX.utils.json_to_sheet(cleanData);
+  const workbook = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(workbook, worksheet, "Merchant Payouts");
+  XLSX.writeFile(workbook, "Merchant_Payouts.xlsx");
+};
 
 fetchPayouts();
 </script>

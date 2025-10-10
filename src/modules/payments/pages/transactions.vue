@@ -35,10 +35,10 @@
         ></div>
       </div>
 
-      <div class="relative w-42">
+      <div class="relative w-44">
         <select
           v-model="selectedStatus"
-          class="p-4 text-sm font-semibold text-teal-800 border rounded-md appearance-none cursor-pointer w-42 focus:outline-none"
+          class="p-4 text-sm font-semibold text-teal-800 border rounded-md appearance-none cursor-pointer w-44 focus:outline-none"
         >
           <option value="">Status</option>
           <option
@@ -266,8 +266,5 @@ onMounted(() => {
 </script>
 
 <style lang="scss" scoped>
-.overview-filter {
-  @apply flex flex-wrap items-center gap-4 md:gap-6 lg:gap-8 mb-6;
-}
 
 </style>

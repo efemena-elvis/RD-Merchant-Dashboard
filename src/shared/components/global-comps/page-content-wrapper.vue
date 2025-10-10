@@ -98,7 +98,7 @@ const handleSearchEntry = (searchValue: string) => {
   emits("searchEntered", searchValue);
 };
 
-// Handle filter functionality
+
 const handleFilterSelection = (filterValue: string) => {
   emits("filterSelected", filterValue);
 };

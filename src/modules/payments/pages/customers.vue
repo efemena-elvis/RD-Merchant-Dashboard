@@ -84,7 +84,7 @@ const tableHeader = ref<TableHeaderType[]>([
   { title: "Added On", slug: "date_created" },
   { title: "Full Name", slug: "full_name" },
   { title: "Customer Email", slug: "customer_email" },
-  { title: "Phone Number", slug: "phone_number" },
+{ title: "Phone Number", slug: "phone_number" },
   { title: "Status", slug: "status" },
 ]);
 

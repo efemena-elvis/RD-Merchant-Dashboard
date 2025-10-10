@@ -16,10 +16,10 @@
       class="flex items-center gap-4 mb-4"
       v-if="tableBody.length > 0 && !isLoading"
     >
-      <div class="relative">
+      <div class="relative w-52">
         <select
           v-model="selectedMethod"
-          class="w-48 p-4 text-sm font-semibold text-teal-800 border rounded-md appearance-none cursor-pointer focus:outline-none"
+          class="w-52 p-4 text-sm font-semibold text-teal-800 border rounded-md appearance-none cursor-pointer focus:outline-none"
         >
           <option value="">Payment Method</option>
           <option
@@ -35,10 +35,10 @@
         ></div>
       </div>
 
-      <div class="relative">
+      <div class="relative w-42">
         <select
           v-model="selectedStatus"
-          class="p-4 text-sm font-semibold text-teal-800 border rounded-md appearance-none cursor-pointer w-36 focus:outline-none"
+          class="p-4 text-sm font-semibold text-teal-800 border rounded-md appearance-none cursor-pointer w-42 focus:outline-none"
         >
           <option value="">Status</option>
           <option
@@ -70,7 +70,7 @@
         :key="index"
         :tableHeader="tableHeader"
         :tableData="payload"
-      />
+      ></TableContainerBody>
     </TableContainer>
   </PageContentWrapper>
 </template>
@@ -195,7 +195,7 @@ const fetchPaymentTransactions = async () => {
       const currencyValue = data?.currency ?? "";
 
       const formattedAmount = `${formatNumber(amountValue)}`;
-    const chargeAmount = `Charge: ${data.currency} ${formatNumber(data.charge)}`;
+      const chargeAmount = `Charge: ${currencyValue} ${formatNumber(chargeValue)}`;
 
       const customerName = data.customer
         ? `${data.customer.firstname ?? ""} ${data.customer.lastname ?? ""}`.trim()
@@ -270,7 +270,4 @@ onMounted(() => {
   @apply flex flex-wrap items-center gap-4 md:gap-6 lg:gap-8 mb-6;
 }
 
-select {
-  @apply w-full p-4 text-sm font-semibold text-teal-800 border border-gray-300 rounded-md cursor-pointer appearance-none focus:outline-none focus:ring-2 focus:ring-teal-200 bg-white;
-}
 </style>

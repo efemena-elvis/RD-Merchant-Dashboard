@@ -21,7 +21,7 @@ const dateRange = ref<[Date, Date] | null>(null);
 
 interface IFilterType {
   filterSize: string;
-  activePeriod: Date |  string | null;
+ activePeriod: [Date, Date] | null;
   periodList: string[];
 }
 

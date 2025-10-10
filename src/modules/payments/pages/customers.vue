@@ -128,22 +128,7 @@ const filteredTableBody = computed(() => {
   });
 });
 
-// const tableBody: [] = [
-// {
-//   status: getStatus("success"),
-//   date_created: "22nd July, 2024",
-//   customer_email: "elvis@vesicash.com",
-//   full_name: "Efemena Elvis",
-//   phone_number: "+234 813 117 7703",
-// },
-// {
-//   status: getStatus("success"),
-//   date_created: "26th July, 2024",
-//   customer_email: "oluwasegun@gmail.com",
-//   full_name: "Oluwasegun Joseph",
-//   phone_number: "+234 803 440 8121",
-// },
-// ];
+
 
 const processSearchEntry = (searchValue: string) => {
   searchQuery.value = searchValue.trim();

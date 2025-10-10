@@ -27,7 +27,7 @@
           @onFilterSelected="handleFilterSelection"
         />
 
-        <template name="customActionBtn" v-if="showCustomActionBtn">
+        <template  v-if="showCustomActionBtn">
 
           <button
             class="btn btn-sm btn-primary custom-action-btn"
@@ -63,7 +63,7 @@ import Pagination from "@/shared/components/global-comps/pagination.vue";
 
 interface IPageContentType {
   searchInputPlaceholder: string;
-  filterActiveValue?:[Date, Date ] | null;
+  filterActiveValue?:[Date, Date ] | null ;
   filterListValue?: string[];
   showFilterSelection?: boolean;
   pageDescription: string;
@@ -76,7 +76,7 @@ interface IPageContentType {
 
 const props = withDefaults(defineProps<IPageContentType>(), {
   searchInputPlaceholder: "Search data",
-  filterActiveValue: "",
+  filterActiveValue: null,
   filterListValue: () => [],
   showFilterSelection: true,
   pageDescription: "",
@@ -93,7 +93,7 @@ const emits = defineEmits([
   "customActionBtnClicked",
 ]);
 
-// Handle search functionality
+
 const handleSearchEntry = (searchValue: string) => {
   emits("searchEntered", searchValue);
 };

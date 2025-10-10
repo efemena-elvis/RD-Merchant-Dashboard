@@ -259,13 +259,11 @@ onMounted(() => {
 </script>
 
 <style lang="scss" scoped>
-.flex {
-  display: flex;
+.overview-filter {
+  @apply flex flex-wrap items-center gap-4 md:gap-6 lg:gap-8 mb-6;
 }
-.gap-4 {
-  gap: 1rem;
-}
-.mb-4 {
-  margin-bottom: 1rem;
+
+select {
+  @apply w-full p-4 text-sm font-semibold text-teal-800 border border-gray-300 rounded-md cursor-pointer appearance-none focus:outline-none focus:ring-2 focus:ring-teal-200 bg-white;
 }
 </style>

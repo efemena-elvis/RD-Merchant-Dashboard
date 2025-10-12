@@ -107,26 +107,6 @@ const isWithinRange = (date: Date, range: [Date, Date] | null): boolean => {
   return target >= start && target <= end;
 };
 
-const filteredTableBody = computed(() => {
-  return tableBody.value.filter((tx) => {
-    const status = tx.raw?.status;
-    const rawDate = tx.raw?.raw_date ? new Date(tx.raw.raw_date) : null;
-
-    const matchesStatus = selectedStatus.value
-      ? status === selectedStatus.value
-      : true;
-
-    const matchesDate = rawDate
-      ? isWithinRange(rawDate, activePeriod.value)
-      : true;
-
-    const matchesSearch =
-      !searchQuery.value ||
-      tx.customer_email?.toLowerCase().includes(searchQuery.value);
-
-    return matchesStatus && matchesDate && matchesSearch;
-  });
-});
 
 
 
@@ -192,6 +172,28 @@ const processFilterSelection = (
     activePeriod.value = null;
   }
 };
+
+const filteredTableBody = computed(() => {
+  return tableBody.value.filter((tx) => {
+    const status = tx.raw?.status;
+    const rawDate = tx.raw?.raw_date ? new Date(tx.raw.raw_date) : null;
+
+    const matchesStatus = selectedStatus.value
+      ? status === selectedStatus.value
+      : true;
+
+    const matchesDate = rawDate
+      ? isWithinRange(rawDate, activePeriod.value)
+      : true;
+
+    const matchesSearch =
+      !searchQuery.value ||
+      tx.customer_email?.toLowerCase().includes(searchQuery.value);
+
+    return matchesStatus && matchesDate && matchesSearch;
+  });
+});
+
 
 onMounted(() => {
   fetchCustomers();

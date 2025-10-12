@@ -30,7 +30,7 @@
         <template  v-if="showCustomActionBtn">
 
           <button
-            class="p-[1.13rem] rounded-lg btn-primary "
+            class="p-[1.1rem] rounded-lg btn-primary "
             @click="$emit('customActionBtnClicked')"
           >
             {{ customActionBtnText }}

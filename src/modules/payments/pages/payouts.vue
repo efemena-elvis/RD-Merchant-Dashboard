@@ -159,6 +159,7 @@ const fetchPayouts = async () => {
   if (response.code === 200) {
     tableBody.value = response.data.map((data: any) => {
       const formattedAmount = `${formatNumber(data.amount)}`
+     const createdDate = new Date(Date.parse(data.created_at));
    
 return {
       date_created: getDateCreated(data.created_at),
@@ -170,12 +171,11 @@ return {
       status: getStatus(data.status, data.status),
 
          raw: {
-          date_created: getDateCreated(data.created_at),
-        
+          raw_date: createdDate,
           amount: formattedAmount,
-         
           status: data.status ?? "-",
           reference: data.reference ?? "-",
+          date_created : getDateCreated(data.created_at),
         
         },
       }
@@ -187,9 +187,9 @@ return {
 
 const filteredTableBody = computed(() =>
   tableBody.value.filter((tx) => {
-    const rawDate = tx.raw_date ? new Date(tx.raw_date) : null;
+    const rawDate = tx.raw?.raw_date ? new Date(tx.raw?.raw_date) : null;
     const matchesStatus = selectedStatus.value
-      ? tx.raw_status.toLowerCase() === selectedStatus.value.toLowerCase()
+      ? tx.raw?.status.toLowerCase() === selectedStatus.value.toLowerCase()
       : true;
 
     const matchesDate = rawDate
@@ -207,7 +207,7 @@ const filteredTableBody = computed(() =>
 const exportToExcel = () => {
   const dataToExport = filteredTableBody.value.map((tx) => tx.raw);
   const cleanData = dataToExport.map((tx) => ({
-    "Date Created": tx.date_created,
+    "Date Initiated": tx.date_created || "-",
     "Amount": tx.amount || "-",
     "Status": tx.status,
     "Reference": tx.reference,

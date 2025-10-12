@@ -139,7 +139,7 @@ const filteredTableBody = computed(() => {
   return tableBody.value.filter((tx) => {
     const method = tx.raw?.payment_details;
     const status = tx.raw?.status;
-    const rawDate = tx.raw?.raw_date ? new Date(tx.raw.raw_date) : null;
+    const rawDate = tx.raw?.raw_date ? new Date(tx.raw?.raw_date) : null;
 
     const matchesMethod = selectedMethod.value
       ? method === selectedMethod.value
@@ -196,7 +196,7 @@ const fetchPaymentTransactions = async () => {
 
       const formattedAmount = `${formatNumber(amountValue)}`;
       const chargeAmount = `Charge: ${currencyValue} ${formatNumber(chargeValue)}`;
-
+ const createdDate = new Date(Date.parse(data.created_at));
       const customerName = data.customer
         ? `${data.customer.firstname ?? ""} ${data.customer.lastname ?? ""}`.trim()
         : "No customer info";
@@ -224,12 +224,13 @@ const fetchPaymentTransactions = async () => {
         status: getStatus(data.status ?? "-", data.status ?? "-"),
         reference: data.reference ?? "-",
         raw: {
-          date_created: getTransactionDate(data.created_at),
+          raw_date: createdDate,
           customer_details: `${customerName} (${customerEmail})`,
           amount: formattedAmount,
           payment_details: capitalizeFirstLetter(data.method ?? "-"),
           status: data.status ?? "-",
           reference: data.reference ?? "-",
+          date_created: getTransactionDate(data.created_at),
     
         },
       };

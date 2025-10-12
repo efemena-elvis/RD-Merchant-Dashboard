@@ -30,7 +30,7 @@
         <template  v-if="showCustomActionBtn">
 
           <button
-            class="btn btn-sm btn-primary custom-action-btn"
+            class="p-[1.13rem] rounded-lg btn-primary "
             @click="$emit('customActionBtnClicked')"
           >
             {{ customActionBtnText }}
@@ -122,9 +122,7 @@ const handleFilterSelection = (filterValue: string) => {
     &--right {
       @apply flex justify-end items-center gap-3 sm:w-full;
 
-      .custom-action-btn {
-        @apply px-7 font-normal text-[14px];
-      }
+     
     }
   }
 

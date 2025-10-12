@@ -201,7 +201,7 @@ const fetchPaymentTransactions = async () => {
         ? `${data.customer.firstname ?? ""} ${data.customer.lastname ?? ""}`.trim()
         : "No customer info";
       const customerEmail = data.customer?.email ?? "";
-      const createdDate = new Date(Date.parse(data.created_at));
+    
 
       return {
         date_created: getTransactionDate(data.created_at),
@@ -230,7 +230,7 @@ const fetchPaymentTransactions = async () => {
           payment_details: capitalizeFirstLetter(data.method ?? "-"),
           status: data.status ?? "-",
           reference: data.reference ?? "-",
-          raw_date: createdDate,
+    
         },
       };
       

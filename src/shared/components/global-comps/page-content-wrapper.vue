@@ -106,7 +106,7 @@ const handleFilterSelection = (filterValue: string) => {
 
 <style lang="scss">
 .page-content-wrapper {
-  @apply w-full h-full flex flex-col justify-between items-start gap-y-9 pb-10;
+  @apply w-full h-full flex flex-col justify-between items-start gap-y-9 pb-10 overflow-x-hidden;
 
   .top-row {
     @apply flex sm:flex-wrap justify-between items-start gap-4 sm:gap-3 w-full;

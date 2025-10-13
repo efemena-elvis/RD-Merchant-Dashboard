@@ -30,7 +30,7 @@
         <template  v-if="showCustomActionBtn">
 
           <button
-            class="btn btn-sm btn-primary custom-action-btn"
+            class="p-[1.1rem] rounded-lg btn-primary "
             @click="$emit('customActionBtnClicked')"
           >
             {{ customActionBtnText }}
@@ -106,7 +106,7 @@ const handleFilterSelection = (filterValue: string) => {
 
 <style lang="scss">
 .page-content-wrapper {
-  @apply w-full h-full flex flex-col justify-between items-start gap-y-9 pb-10;
+  @apply w-full h-full flex flex-col justify-between items-start gap-y-9 pb-10 overflow-x-hidden;
 
   .top-row {
     @apply flex sm:flex-wrap justify-between items-start gap-4 sm:gap-3 w-full;
@@ -122,9 +122,7 @@ const handleFilterSelection = (filterValue: string) => {
     &--right {
       @apply flex justify-end items-center gap-3 sm:w-full;
 
-      .custom-action-btn {
-        @apply px-7 font-normal text-[14px];
-      }
+     
     }
   }
 

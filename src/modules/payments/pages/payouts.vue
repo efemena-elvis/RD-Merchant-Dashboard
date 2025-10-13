@@ -8,12 +8,13 @@
     :pageKeys="{ green: 'Successful', yellow: 'Pending', red: 'Failed' }"
     :hasPayload="tableBody.length > 0"
     :showCustomActionBtn="true"
-    :customActionBtnText="'Initiate a payout'"
-    @customActionBtnClicked="toggleInitiatePayoutModal"
+    :customActionBtnText="'Export'"
+    @customActionBtnClicked="exportToExcel"
     @searchEntered="processSearchEntry"
     @filterSelected="processFilterSelection"
   >
-    <div class="flex gap-4 mb-4" v-if="tableBody.length > 0 && !isLoading">
+
+    <div class="flex justify-between items-center mb-4" v-if="tableBody.length > 0 && !isLoading">
       <div class="relative">
         <select
           v-model="selectedStatus"
@@ -32,7 +33,13 @@
           class="absolute text-[16px] text-teal-800 -translate-y-1/2 pointer-events-none icon icon-caret-down right-4 top-1/2"
         ></div>
       </div>
+
+       <div class="">
+ <button @click="toggleInitiatePayoutModal" class = "btn-primary rounded-md p-3">Initiate a Payout</button>
+  </div>
     </div>
+ 
+
     <TableContainer
       :tableHeader="tableHeader"
       :tableBody="filteredTableBody"
@@ -89,10 +96,10 @@ const toggleInitiatePayoutModal = () => {
 
 const tableHeader = ref<TableHeaderType[]>([
   { title: "Date Initiated", slug: "date_created" },
-  { title: "Payout Reference", slug: "reference" },
   { title: "Amount Requested", slug: "amount_requested" },
   { title: "Payout Narration", slug: "narration" },
   { title: "Status", slug: "status" },
+   { title: "Payout Reference", slug: "reference" },
 ]);
 
 const tableBody = ref<any[]>([]);
@@ -150,13 +157,11 @@ const fetchPayouts = async () => {
   isLoading.value = false;
 
   if (response.code === 200) {
-    tableBody.value = response.data.map((data: any) => ({
-      // raw values (for filtering)
-      raw_date: data.created_at,
-      raw_status: data.status,
-
-      // formatted values (for display)
-
+    tableBody.value = response.data.map((data: any) => {
+      const formattedAmount = `${formatNumber(data.amount)}`
+     const createdDate = new Date(Date.parse(data.created_at));
+   
+return {
       date_created: getDateCreated(data.created_at),
       reference: data.reference,
       amount_requested: getBoldTableText(
@@ -164,7 +169,17 @@ const fetchPayouts = async () => {
       ),
       narration: data.narration,
       status: getStatus(data.status, data.status),
-    }));
+
+         raw: {
+          raw_date: createdDate,
+          amount: formattedAmount,
+          status: data.status ?? "-",
+          reference: data.reference ?? "-",
+          date_created : getDateCreated(data.created_at),
+        
+        },
+      }
+    });
 
     tablePaging.value = response.pagination[0];
   }
@@ -172,9 +187,9 @@ const fetchPayouts = async () => {
 
 const filteredTableBody = computed(() =>
   tableBody.value.filter((tx) => {
-    const rawDate = tx.raw_date ? new Date(tx.raw_date) : null;
+    const rawDate = tx.raw?.raw_date ? new Date(tx.raw?.raw_date) : null;
     const matchesStatus = selectedStatus.value
-      ? tx.raw_status.toLowerCase() === selectedStatus.value.toLowerCase()
+      ? tx.raw?.status.toLowerCase() === selectedStatus.value.toLowerCase()
       : true;
 
     const matchesDate = rawDate
@@ -192,12 +207,10 @@ const filteredTableBody = computed(() =>
 const exportToExcel = () => {
   const dataToExport = filteredTableBody.value.map((tx) => tx.raw);
   const cleanData = dataToExport.map((tx) => ({
-    "Date Created": tx.date_created,
-    "Customer Details": tx.customer_details || "-",
-    Amount: tx.amount || "-",
-    "Payment Method": tx.payment_details,
-    Status: tx.status,
-    Reference: tx.reference,
+    "Date Initiated": tx.date_created || "-",
+    "Amount": tx.amount || "-",
+    "Status": tx.status,
+    "Reference": tx.reference,
   }));
 
   const worksheet = XLSX.utils.json_to_sheet(cleanData);

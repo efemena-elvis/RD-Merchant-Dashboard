@@ -37,7 +37,7 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, reactive, onMounted, computed } from "vue";
+import { ref, reactive, onMounted, computed, h } from "vue";
 import { useString } from "@/shared/composables/useString";
 import { useTransferStore } from "@/modules/transfers/store/";
 import useDate from "@/shared/composables/useDate";
@@ -46,6 +46,7 @@ import { TableHeaderType } from "@/models/dashboard-type";
 import PageContentWrapper from "@/shared/components/global-comps/page-content-wrapper.vue";
 import TableContainer from "@/shared/components/table-comps/table-container.vue";
 import TableContainerBody from "@/shared/components/table-comps/table-container-body.vue";
+import TableDoubleColumn from "@/shared/components/table-comps/table-double-column.vue";
 import BalanceOverview from "@/modules/transfers/components/balance-overview.vue";
 
 const {
@@ -135,7 +136,12 @@ const fetchBalanceHistory = async () => {
         status: transactionFlowIcon(
           data.type === "credit" ? "receive" : "send"
         ),
-        date_created: getTransactionDate(data.balance_at),
+          date_created: h(TableDoubleColumn, {
+          entry: {
+            primaryText: getTransactionDate(data.balance_at),
+            secondaryText: useDate.formatTime(data.balance_at),
+          },
+        }),
         summary: capitalizeFirstLetter(data.action.split("-").join(" ")),
         balance_before: `ZMW ${formatNumber(data.balance_before)}`,
         change: getBoldTableText(

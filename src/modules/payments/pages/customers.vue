@@ -137,7 +137,12 @@ const fetchCustomers = async () => {
       const createdDate = new Date(Date.parse(data.created_at));
 
       return {
-        date_created: getDateAdded(data.created_at),
+        date_created: h(TableDoubleColumn, {
+          entry: {
+            primaryText: getDateAdded(data.created_at),
+            secondaryText: useDate.formatTime(data.created_at),
+          },
+        }),
         full_name: `${data.firstname} ${data.lastname}`,
         customer_email: data.email,
         phone_number: data.phone_number

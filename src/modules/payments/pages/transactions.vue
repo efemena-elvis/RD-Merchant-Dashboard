@@ -19,7 +19,7 @@
       <div class="relative w-52">
         <select
           v-model="selectedMethod"
-          class="w-52 p-4 text-sm font-semibold text-teal-800 border rounded-md appearance-none cursor-pointer focus:outline-none"
+          class="p-4 text-sm font-semibold text-teal-800 border rounded-md appearance-none cursor-pointer w-52 focus:outline-none"
         >
           <option value="">Payment Method</option>
           <option
@@ -204,7 +204,12 @@ const fetchPaymentTransactions = async () => {
     
 
       return {
-        date_created: getTransactionDate(data.created_at),
+            date_created: h(TableDoubleColumn, {
+          entry: {
+            primaryText: getTransactionDate(data.created_at),
+            secondaryText: useDate.formatTime(data.created_at),
+          },
+        }),
         customer_details: h(TableDoubleColumn, {
           entry: { primaryText: customerName, secondaryText: customerEmail },
         }),

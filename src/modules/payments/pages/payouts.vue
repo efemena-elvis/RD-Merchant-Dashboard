@@ -14,7 +14,7 @@
     @filterSelected="processFilterSelection"
   >
 
-    <div class="flex justify-between items-center mb-4" v-if="tableBody.length > 0 && !isLoading">
+    <div class="flex items-center justify-between mb-4" v-if="tableBody.length > 0 && !isLoading">
       <div class="relative">
         <select
           v-model="selectedStatus"
@@ -35,7 +35,7 @@
       </div>
 
        <div class="">
- <button @click="toggleInitiatePayoutModal" class = "btn-primary rounded-md p-3">Initiate a Payout</button>
+ <button @click="toggleInitiatePayoutModal" class = "p-3 rounded-md btn-primary">Initiate a Payout</button>
   </div>
     </div>
  
@@ -67,7 +67,7 @@
 </template>
 
 <script lang="ts" setup>
-import { computed, ref } from "vue";
+import { computed, ref, h } from "vue";
 import { useString } from "@/shared/composables/useString";
 import { TableHeaderType } from "@/models/dashboard-type";
 import { usePaymentStore } from "../store";
@@ -78,6 +78,7 @@ import InitiatePayoutModal from "@/modules/payments/modals/initiate-payout-modal
 import PageContentWrapper from "@/shared/components/global-comps/page-content-wrapper.vue";
 import TableContainer from "@/shared/components/table-comps/table-container.vue";
 import TableContainerBody from "@/shared/components/table-comps/table-container-body.vue";
+import TableDoubleColumn from "@/shared/components/table-comps/table-double-column.vue";
 
 const { getBoldTableText, formatNumber, getStatus } = useString();
 
@@ -162,7 +163,12 @@ const fetchPayouts = async () => {
      const createdDate = new Date(Date.parse(data.created_at));
    
 return {
-      date_created: getDateCreated(data.created_at),
+       date_created: h(TableDoubleColumn, {
+          entry: {
+            primaryText: getDateCreated(data.created_at),
+            secondaryText: useDate.formatTime(data.created_at),
+          },
+        }),
       reference: data.reference,
       amount_requested: getBoldTableText(
         `${data.currency} ${formatNumber(data.amount)}`
@@ -171,7 +177,7 @@ return {
       status: getStatus(data.status, data.status),
 
          raw: {
-          raw_date: createdDate,
+          raw_date: `${getDateCreated(data.created_at)} - ${useDate.formatTime(data.created_at)}`,
           amount: formattedAmount,
           status: data.status ?? "-",
           reference: data.reference ?? "-",

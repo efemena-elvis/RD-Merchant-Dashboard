@@ -11,6 +11,7 @@
     @customActionBtnClicked="exportToExcel"
     @searchEntered="processSearchEntry"
     @filterSelected="processFilterSelection"
+    :fetchDataByPage="fetchPaymentTransactions"
   >
     <div
       class="flex items-center gap-4 mb-4"
@@ -179,10 +180,11 @@ const processSearchEntry = (searchValue: string) => {
   searchQuery.value = searchValue.trim();
 };
 
-const fetchPaymentTransactions = async () => {
+const fetchPaymentTransactions = async (page = 1) => {
+   tablePaging.value.current_page = page;
   const response = await processAPIRequest({
     action: getTransactions,
-    payload: {},
+    payload: { page },
     showAlert: false,
   });
 

@@ -8,17 +8,17 @@
 
       <div class="page-keys">
         <div class="page-key-item" v-if="pageKeys.green">
-          <div class="status-key bg-green-400"></div>
+          <div class="bg-green-400 status-key"></div>
           <div class="status-text">{{ pageKeys.green }}</div>
         </div>
 
         <div class="page-key-item" v-if="pageKeys.yellow">
-          <div class="status-key bg-yellow-400"></div>
+          <div class="bg-yellow-400 status-key"></div>
           <div class="status-text">{{ pageKeys.yellow }}</div>
         </div>
 
         <div class="page-key-item" v-if="pageKeys.red">
-          <div class="status-key bg-red-400"></div>
+          <div class="bg-red-400 status-key"></div>
           <div class="status-text">{{ pageKeys.red }}</div>
         </div>
       </div>
@@ -28,6 +28,7 @@
       <div
         class="nav btn btn-sm"
         :class="pagingData.current_page === 1 ? 'disabled' : null"
+        @click="goToPrevPage"
       >
         <div class="icon icon-caret-left"></div>
         <div class="nav-text">Prev</div>
@@ -38,6 +39,7 @@
         <input
           type="number"
           class="form-control"
+           v-model.number="inputPage"
           onkeypress="return event.charCode >= 48"
           min="1"
           max="10"
@@ -45,7 +47,7 @@
         />
         <div class="page-slash">/</div>
         <div class="page-total">{{ pagingData.total_pages_count }}</div>
-        <button class="btn btn-primary btn-sm page-btn">Go</button>
+        <button class="btn btn-primary btn-sm page-btn" @click="goToPage">Go</button>
       </div>
 
       <div
@@ -55,6 +57,7 @@
             ? 'disabled'
             : null
         "
+        @click="goToNextPage"
       >
         <div class="nav-text">Next</div>
         <div class="icon icon-caret-right"></div>
@@ -64,6 +67,8 @@
 </template>
 
 <script lang="ts" setup>
+import { ref, watch } from "vue";
+
 interface IPaging {
   current_page: number;
   page_count: number;
@@ -81,6 +86,39 @@ interface IPaginationType {
 }
 
 const props = defineProps<IPaginationType>();
+
+const emit = defineEmits(["page-change"]);
+
+const inputPage = ref(props.pagingData.current_page);
+
+watch (
+  () => props.pagingData.current_page,
+  (newVal) => {
+    inputPage.value = newVal;
+  }
+);
+
+const goToPage = () => {
+  if (
+    inputPage.value >= 1 &&
+    inputPage.value <= props.pagingData.total_pages_count
+  ) {
+    emit("page-change", inputPage.value);
+  }
+};
+
+const goToPrevPage = () => {
+  if (props.pagingData.current_page > 1) {
+    emit("page-change", props.pagingData.current_page - 1);
+  }
+};
+
+const goToNextPage = () => {
+  if (props.pagingData.current_page < props.pagingData.total_pages_count) {
+    emit("page-change", props.pagingData.current_page + 1);
+  }
+};
+
 </script>
 
 <style lang="scss" scoped>

@@ -50,6 +50,8 @@
         :pageDescription="pageDescription"
         :pagingData="pagingData"
         :pageKeys="pageKeys"
+        @page-change="(page) => fetchDataByPage(page)"
+        
       />
     </template>
   </div>
@@ -72,6 +74,7 @@ interface IPageContentType {
   hasPayload: boolean;
   showCustomActionBtn?: boolean;
   customActionBtnText?: string;
+  fetchDataByPage?: (page: number) => void;
 }
 
 const props = withDefaults(defineProps<IPageContentType>(), {
@@ -85,6 +88,7 @@ const props = withDefaults(defineProps<IPageContentType>(), {
   hasPayload: false,
   showCustomActionBtn: false,
   customActionBtnText: "",
+  fetchDataByPage: () => {}
 });
 
 const emits = defineEmits([

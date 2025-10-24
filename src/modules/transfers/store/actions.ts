@@ -1,8 +1,8 @@
 import $api from "@/shared/composables/useServiceAPI";
 import { transferRoutes } from "./transfer-routes";
 
-export const getBalanceHistory = async () => {
-  return await $api.fetch(transferRoutes.getBalanceHistory, {
+export const getBalanceHistory = async (payload: any) => {
+  return await $api.fetch(`${transferRoutes.getBalanceHistory}?page=${payload.page}`, {
     resolve: true,
     requiresPublicKey: true,
   });

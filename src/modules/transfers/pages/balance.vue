@@ -15,6 +15,7 @@
     :showCustomActionBtn="false"
     @searchEntered="processSearchEntry"
     @filterSelected="processFilterSelection"
+    :fetchDataByPage="fetchBalanceHistory"
   >
     <TableContainer
       :tableHeader="tableHeader"
@@ -120,10 +121,11 @@ const processFilterSelection = (
 };
 
 
-const fetchBalanceHistory = async () => {
+const fetchBalanceHistory = async (page = 1) => {
+  tablePaging.value.current_page = page;
   const response = await processAPIRequest({
     action: getBalanceHistory,
-    payload: {},
+    payload: { page },
     showAlert: false,
   });
 

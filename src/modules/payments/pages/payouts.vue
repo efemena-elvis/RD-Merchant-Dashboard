@@ -12,6 +12,7 @@
     @customActionBtnClicked="exportToExcel"
     @searchEntered="processSearchEntry"
     @filterSelected="processFilterSelection"
+    :fetchDataByPage="fetchPayouts"
   >
 
     <div class="flex items-center justify-between mb-4" v-if="tableBody.length > 0 && !isLoading">
@@ -148,10 +149,11 @@ const processFilterSelection = (
   }
 };
 
-const fetchPayouts = async () => {
+const fetchPayouts = async (page = 1) => {
+   tablePaging.value.current_page = page;
   const response = await processAPIRequest({
     action: fetchAllPayouts,
-    payload: {},
+    payload: {page},
     showAlert: false,
   });
 

@@ -79,6 +79,7 @@ export function useString() {
   };
 
   const capitalizeFirstLetter = (string: string) => {
+    if (!string|| typeof string !== 'string') return '';
     const words = string.split(" ");
 
     if (words.length > 0) {

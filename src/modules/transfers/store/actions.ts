@@ -7,3 +7,10 @@ export const getBalanceHistory = async (payload: any) => {
     requiresPublicKey: true,
   });
 };
+
+export const getTransactionStats = async (payload: any) => {
+  return await $api.fetch(transferRoutes.getTransactionStats, {
+    resolve: true,
+    requiresPublicKey: true,
+  });
+};

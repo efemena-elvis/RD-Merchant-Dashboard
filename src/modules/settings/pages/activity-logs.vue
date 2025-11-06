@@ -2,20 +2,27 @@
   <PageContentWrapper
     searchInputPlaceholder="Search activity logs"
     :filterActiveValue="activePeriod"
-    :filterListValue="periodList"
     pageDescription="All logged activities"
     :pagingData="tablePaging"
     :pageKeys="{ green: 'Successful logs' }"
     @searchEntered="processSearchEntry"
     @filterSelected="processFilterSelection"
+     :hasPayload="tableBody.length > 0"
+    :fetchDataByPage="fetchAuditLogs"
   >
+      
     <TableContainer
       :tableHeader="tableHeader"
-      :tableBody="tableBody"
+      :tableBody="filteredTableBody"
       :isLoading="isLoading"
+       :emptyData="{
+        title: 'No activity yet',
+        description:
+          'We haven\'t received any activity on this account yet. This is where you\'ll be able to see all your activities.',
+      }"
     >
       <TableContainerBody
-        v-for="(payload, index) in tableBody"
+        v-for="(payload, index) in filteredTableBody"
         :key="index"
         :tableHeader="tableHeader"
         :tableData="payload"
@@ -25,7 +32,7 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, onMounted, reactive } from "vue";
+import { ref, onMounted, computed } from "vue";
 import { useString } from "@/shared/composables/useString";
 import { TableHeaderType } from "@/models/dashboard-type";
 import { useSettingsStore } from "../store";
@@ -35,73 +42,109 @@ import PageContentWrapper from "@/shared/components/global-comps/page-content-wr
 import TableContainer from "@/shared/components/table-comps/table-container.vue";
 import TableContainerBody from "@/shared/components/table-comps/table-container-body.vue";
 
-const { getStatus, notAvailable } = useString();
-
+const { getStatus } = useString();
 const { getAuditLogs } = useSettingsStore();
 const { processAPIRequest } = useEvents();
 
-const isLoading = ref<boolean>(true);
-
+const isLoading = ref(true);
 const tableHeader = ref<TableHeaderType[]>([
-  { title: "", slug: "status" },
   { title: "Time Logged", slug: "date_created" },
   { title: "Initiated By", slug: "initiated_by" },
   { title: "Action Type", slug: "action_type" },
   { title: "Activity", slug: "activity" },
-  // { title: "Action", slug: "action" },
 ]);
+const statusOptions = ["Successful", "Pending", "Failed"];
 
-const tableBody = reactive<any[]>([]);
+const tableBody = ref<any[]>([]);
 const tablePaging = ref<any>({});
+const searchQuery = ref("");
+const activePeriod = ref<[Date, Date] | null>(null);
 
-const activePeriod = ref<string>("All Time");
-const periodList = ref<string[]>([
-  "Today",
-  "Last 7 days",
-  "This month",
-  "Last month",
-  "All time",
-]);
+const normalizeDate = (date: Date) => {
+  const d = new Date(date);
+  d.setHours(0, 0, 0, 0);
+  return d;
+};
+
+const isWithinRange = (date: Date, range: [Date, Date] | null) => {
+  if (!range) return true;
+  const start = normalizeDate(new Date(range[0]));
+  const end = new Date(range[1]);
+  end.setHours(23, 59, 59, 999);
+  const target = new Date(date);
+  return target >= start && target <= end;
+};
 
 const processSearchEntry = (searchValue: string) => {
-  console.log("SEARCH VALUE", searchValue);
+  searchQuery.value = searchValue.trim();
 };
 
-const processFilterSelection = (selectedPeriod: string) => {
-  console.log("FILTERING BY PERIOD", selectedPeriod);
+const processFilterSelection = (selectedRange: [Date | string, Date | string]) => {
+  if (selectedRange && selectedRange.length === 2) {
+    activePeriod.value = [new Date(selectedRange[0]), new Date(selectedRange[1])];
+  } else {
+    activePeriod.value = null;
+  }
 };
 
-const getUserName = (user: any) => {
-  return user.first_name ? user.first_name + " " + user.last_name : user.email;
-};
+const getUserName = (user: any) =>
+  user.first_name ? `${user.first_name} ${user.last_name}` : user.email;
 
 const getActivityDate = (date: string) => {
   let { w2, m3, d3, y1 } = useDate.formatDate(date).getAll();
   return `${w2}, ${d3} ${m3}, ${y1}`;
 };
 
-const fetchAuditLogs = async () => {
+const filteredTableBody = computed(() => {
+  return tableBody.value.filter((tx) => {
+    const rawDate = tx.raw?.raw_date ? new Date(tx.raw.raw_date) : null;
+
+
+    const matchesDate = rawDate
+      ? isWithinRange(rawDate, activePeriod.value)
+      : true;
+
+    const matchesSearch =
+      !searchQuery.value ||
+      (tx.activity || "")
+        .toLowerCase()
+        .includes(searchQuery.value.toLowerCase());
+
+    return  matchesDate && matchesSearch;
+  });
+});
+
+const fetchAuditLogs = async (page = 1) => {
+  tablePaging.value.current_page = page;
   const response = await processAPIRequest({
     action: getAuditLogs,
-    payload: {},
+    payload: { page },
     showAlert: false,
   });
 
   isLoading.value = false;
 
   if (response.code === 200) {
-    response.data.map((data: any) => {
-      tableBody.push({
-        status: getStatus("success"),
+    tableBody.value = response.data.map((data: any) => {
+      const createdDate = new Date(Date.parse(data.created_at));
+      return {
+                status: getStatus(data.status ?? "-", data.status ?? "-"),
+
         date_created: getActivityDate(data.created_at),
         initiated_by: getUserName(data.user),
         action_type: data.action_type,
         activity: data.activity,
-        // action: notAvailable("No action available"),
-      });
+        raw: {
+          status: data.status,
+          raw_date: createdDate,
+          initiated_by: getUserName(data.user),
+          action_type: data.action_type,
+          activity: data.activity,
+        },
+      };
     });
 
-    tablePaging.value = response.pagination[0];
+    tablePaging.value = response.pagination?.[0] || {};
   }
 };
 
@@ -109,5 +152,6 @@ onMounted(() => {
   fetchAuditLogs();
 });
 </script>
+
 
 <style lang="scss" scoped></style>

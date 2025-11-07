@@ -21,7 +21,7 @@
           <div class = "flex flex-col gap-2">
             <p class = "text-teal-800 text-[16px] font-semibold"> Successful Transactions</p>
          
-          <span class="text-[18px] font-semibold">ZMW{{ transactionStats?.successful_transactions_value }}</span>
+          <span class="text-[18px] font-semibold">ZMW{{ formatNumber(transactionStats?.successful_transactions_value ?? 0) }}</span>
         </div>
        
       </div>
@@ -30,8 +30,8 @@
       <div class="column-wrapper">
           <div class = "flex flex-col gap-2">
             <p class = "text-teal-700 text-[16px] font-semibold"> Total Payouts</p>
-         
-          <span class="text-[18px] font-semibold">ZMW{{ transactionStats?.total_payouts_value }}</span>
+
+          <span class="text-[18px] font-semibold">ZMW{{ formatNumber(transactionStats?.total_payouts_value ?? 0) }}</span>
         </div>
       </div>
     </div>
@@ -39,7 +39,11 @@
 </template>
 
 <script lang="ts" setup>
+import { useString } from '@/shared/composables/useString';
 // import BalanceOverviewColumn from "@/modules/transfers/components/balance-overview-column.vue";
+
+
+const {formatNumber} = useString();
 
 interface ITransactionStats {
   total_transactions: number;

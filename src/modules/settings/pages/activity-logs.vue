@@ -53,7 +53,6 @@ const tableHeader = ref<TableHeaderType[]>([
   { title: "Action Type", slug: "action_type" },
   { title: "Activity", slug: "activity" },
 ]);
-const statusOptions = ["Successful", "Pending", "Failed"];
 
 const tableBody = ref<any[]>([]);
 const tablePaging = ref<any>({});

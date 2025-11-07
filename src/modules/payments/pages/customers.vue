@@ -10,6 +10,7 @@
     :showCustomActionBtn="false"
     @searchEntered="processSearchEntry"
     @filterSelected="processFilterSelection"
+    :fetchDataByPage="fetchCustomers"
   >
     <div
       class="flex items-center gap-4 mb-4"
@@ -119,10 +120,11 @@ const getDateAdded = (date: string) => {
   return `${w2}, ${d3} ${m3}, ${y1}`;
 };
 
-const fetchCustomers = async () => {
+const fetchCustomers = async (page = 1) => {
+   tablePaging.value.current_page = page;
   const response = await processAPIRequest({
     action: getCustomers,
-    payload: {},
+    payload: {page},
     showAlert: false,
   });
 

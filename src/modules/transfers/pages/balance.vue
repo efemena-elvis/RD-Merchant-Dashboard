@@ -1,7 +1,7 @@
 <template>
   <!-- BALANCE AREA -->
-  <div class="balance-area" v-if="false">
-    <BalanceOverview />
+  <div class="balance-area" >
+    <BalanceOverview v-if="transactionStats" :transactionStats="transactionStats"/>
   </div>
 
   <PageContentWrapper
@@ -15,6 +15,7 @@
     :showCustomActionBtn="false"
     @searchEntered="processSearchEntry"
     @filterSelected="processFilterSelection"
+    :fetchDataByPage="fetchBalanceHistory"
   >
     <TableContainer
       :tableHeader="tableHeader"
@@ -56,11 +57,12 @@ const {
   formatNumber,
 } = useString();
 
-const { getBalanceHistory } = useTransferStore();
+const { getBalanceHistory, getTransactionStats } = useTransferStore();
 const { processAPIRequest } = useEvents();
 const activePeriod = ref<[Date, Date] | null>(null);
 const isLoading = ref<boolean>(true);
 const searchQuery = ref<string>("");
+const transactionStats = ref(null)
 
 const tableHeader = ref<TableHeaderType[]>([
   { title: "", slug: "status" },
@@ -120,10 +122,11 @@ const processFilterSelection = (
 };
 
 
-const fetchBalanceHistory = async () => {
+const fetchBalanceHistory = async (page = 1) => {
+  tablePaging.value.current_page = page;
   const response = await processAPIRequest({
     action: getBalanceHistory,
-    payload: {},
+    payload: { page },
     showAlert: false,
   });
 
@@ -157,6 +160,19 @@ const fetchBalanceHistory = async () => {
   }
 };
 
+const fetchTransactionStats = async () => {
+  const response = await processAPIRequest({
+    action: getTransactionStats,
+    payload: { },
+    showAlert: false,
+  });
+
+  if (response.code === 200) {
+transactionStats.value = response.data
+
+  }
+};
+
 const filteredTableBody = computed(() => {
   return tableBody.filter((tx) => {
     const rawDate = tx.raw_date ? new Date(tx.raw_date) : null;
@@ -172,6 +188,7 @@ const filteredTableBody = computed(() => {
 
 onMounted(() => {
   fetchBalanceHistory();
+  fetchTransactionStats()
 });
 </script>
 

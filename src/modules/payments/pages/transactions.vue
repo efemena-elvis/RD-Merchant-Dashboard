@@ -177,7 +177,7 @@ const processFilterSelection = (
 };
 
 const processSearchEntry = (searchValue: string) => {
-  searchQuery.value = searchValue.trim();
+  searchQuery.value = searchValue.toLocaleLowerCase().trim();
 };
 
 const fetchPaymentTransactions = async (page = 1) => {

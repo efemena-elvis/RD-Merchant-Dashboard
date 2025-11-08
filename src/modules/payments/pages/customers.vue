@@ -112,7 +112,7 @@ const isWithinRange = (date: Date, range: [Date, Date] | null): boolean => {
 
 
 const processSearchEntry = (searchValue: string) => {
-  searchQuery.value = searchValue.trim();
+  searchQuery.value = searchValue.toLocaleLowerCase().trim();
 };
 
 const getDateAdded = (date: string) => {

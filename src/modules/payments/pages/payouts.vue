@@ -110,7 +110,7 @@ const selectedStatus = ref("");
 const statusOptions = ["Successful", "Pending", "Failed"];
 
 const processSearchEntry = (searchValue: string) => {
-   searchQuery.value = searchValue.trim();
+   searchQuery.value = searchValue.toLocaleLowerCase().trim();
 };
 
 const getDateCreated = (date: string) => {

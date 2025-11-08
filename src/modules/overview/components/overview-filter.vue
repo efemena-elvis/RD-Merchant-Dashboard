@@ -60,7 +60,7 @@ useClickOutside(dialogRef, togglerRef, toggleDropdown);
   @apply relative;
 
   :deep(.dp__input) {
-    @apply p-5 border border-gray-300 rounded-md text-sm font-semibold text-teal-800 bg-white cursor-pointer transition duration-200 ease-in-out focus:outline-none;
+    @apply py-5 px-6 w-[200px] border border-gray-300 rounded-md text-sm font-semibold text-teal-800 bg-white cursor-pointer transition duration-200 ease-in-out focus:outline-none;
   }
 
   :deep(.dp__input::placeholder) {
@@ -85,7 +85,7 @@ useClickOutside(dialogRef, togglerRef, toggleDropdown);
   }
 
   :deep(.dp__icon) {
-    @apply text-teal-800;
+    @apply text-teal-800 relative;
   }
 }
 </style>

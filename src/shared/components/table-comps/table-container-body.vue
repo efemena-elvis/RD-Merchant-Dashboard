@@ -61,7 +61,7 @@ const renderLogicClass = (headerData, tableData) => {
 
 const handleTableRowClicked = (event) => {
   if (!event.target.classList.contains("checkbox-select-input")) {
-    props.onTableClicked?.(1);
+    props.onTableClicked?.(props.tableData);
   }
 };
 </script>

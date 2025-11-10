@@ -5,21 +5,18 @@
   </div>
 
   <PageContentWrapper
-    searchInputPlaceholder="Search by reference id"
-    :filterActiveValue="activePeriod"
-    :showFilterSelection="true"
+    searchInputPlaceholder=""
+    :showFilterSelection="false"
     pageDescription="Total balance history"
     :pagingData="tablePaging"
-    :hasPayload="tableBody.length > 0"
+    :hasPayload="false"
     :pageKeys="{ green: 'Inflow', red: 'Outflow' }"
     :showCustomActionBtn="false"
-    @searchEntered="processSearchEntry"
-    @filterSelected="processFilterSelection"
     :fetchDataByPage="fetchBalanceHistory"
   >
     <TableContainer
       :tableHeader="tableHeader"
-      :tableBody="filteredTableBody"
+      :tableBody="tableBody"
       :isLoading="isLoading"
       :emptyData="{
         title: 'No balance history yet',
@@ -28,7 +25,7 @@
       }"
     >
       <TableContainerBody
-        v-for="(payload, index) in filteredTableBody"
+        v-for="(payload, index) in tableBody"
         :key="index"
         :tableHeader="tableHeader"
         :tableData="payload"
@@ -38,7 +35,7 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, reactive, onMounted, computed, h } from "vue";
+import { ref, reactive, onMounted,h } from "vue";
 import { useString } from "@/shared/composables/useString";
 import { useTransferStore } from "@/modules/transfers/store/";
 import useDate from "@/shared/composables/useDate";
@@ -59,9 +56,7 @@ const {
 
 const { getBalanceHistory, getTransactionStats } = useTransferStore();
 const { processAPIRequest } = useEvents();
-const activePeriod = ref<[Date, Date] | null>(null);
 const isLoading = ref<boolean>(true);
-const searchQuery = ref<string>("");
 const transactionStats = ref(null)
 
 const tableHeader = ref<TableHeaderType[]>([
@@ -76,13 +71,6 @@ const tableHeader = ref<TableHeaderType[]>([
 
 const tableBody = reactive<any[]>([]);
 const tablePaging = ref<any>({});
-
-
-
-const processSearchEntry = (searchValue: string) => {
- searchQuery.value = searchValue.trim()
-};
-
 
 const getTransactionDate = (date: string) => {
   let { w2, m3, d3, y1 } = useDate.formatDate(date).getAll();
@@ -107,19 +95,6 @@ const isWithinRange = (date: Date, range: [Date, Date] | null): boolean => {
 };
 
 
-const processFilterSelection = (
-  selectedRange: [Date | string, Date | string]
-) => {
-  if (selectedRange && selectedRange.length === 2) {
-    const normalizedRange: [Date, Date] = [
-      new Date(selectedRange[0]),
-      new Date(selectedRange[1]),
-    ];
-    activePeriod.value = normalizedRange;
-  } else {
-    activePeriod.value = null;
-  }
-};
 
 
 const fetchBalanceHistory = async (page = 1) => {
@@ -160,10 +135,11 @@ const fetchBalanceHistory = async (page = 1) => {
   }
 };
 
+
 const fetchTransactionStats = async () => {
   const response = await processAPIRequest({
     action: getTransactionStats,
-    payload: { },
+    payload: {},
     showAlert: false,
   });
 
@@ -172,19 +148,6 @@ transactionStats.value = response.data
 
   }
 };
-
-const filteredTableBody = computed(() => {
-  return tableBody.filter((tx) => {
-    const rawDate = tx.raw_date ? new Date(tx.raw_date) : null;
-    const matchesDate = rawDate ? isWithinRange(rawDate, activePeriod.value) : true;
-    
-     const matchesSearch =
-      !searchQuery.value ||
-      tx.reference.toLowerCase().includes(searchQuery.value);
-      
-    return matchesDate && matchesSearch;
-  });
-});
 
 onMounted(() => {
   fetchBalanceHistory();

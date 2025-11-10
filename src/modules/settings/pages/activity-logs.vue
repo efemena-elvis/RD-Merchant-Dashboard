@@ -7,15 +7,14 @@
     :pageKeys="{ green: 'Successful logs' }"
     @searchEntered="processSearchEntry"
     @filterSelected="processFilterSelection"
-     :hasPayload="tableBody.length > 0"
+    :hasPayload="tableBody.length > 0"
     :fetchDataByPage="fetchAuditLogs"
   >
-      
     <TableContainer
       :tableHeader="tableHeader"
       :tableBody="filteredTableBody"
       :isLoading="isLoading"
-       :emptyData="{
+      :emptyData="{
         title: 'No activity yet',
         description:
           'We haven\'t received any activity on this account yet. This is where you\'ll be able to see all your activities.',
@@ -78,9 +77,14 @@ const processSearchEntry = (searchValue: string) => {
   searchQuery.value = searchValue.trim();
 };
 
-const processFilterSelection = (selectedRange: [Date | string, Date | string]) => {
+const processFilterSelection = (
+  selectedRange: [Date | string, Date | string]
+) => {
   if (selectedRange && selectedRange.length === 2) {
-    activePeriod.value = [new Date(selectedRange[0]), new Date(selectedRange[1])];
+    activePeriod.value = [
+      new Date(selectedRange[0]),
+      new Date(selectedRange[1]),
+    ];
   } else {
     activePeriod.value = null;
   }
@@ -98,7 +102,6 @@ const filteredTableBody = computed(() => {
   return tableBody.value.filter((tx) => {
     const rawDate = tx.raw?.raw_date ? new Date(tx.raw.raw_date) : null;
 
-
     const matchesDate = rawDate
       ? isWithinRange(rawDate, activePeriod.value)
       : true;
@@ -109,7 +112,7 @@ const filteredTableBody = computed(() => {
         .toLowerCase()
         .includes(searchQuery.value.toLowerCase());
 
-    return  matchesDate && matchesSearch;
+    return matchesDate && matchesSearch;
   });
 });
 
@@ -125,11 +128,11 @@ const fetchAuditLogs = async (page = 1) => {
 
   if (response.code === 200) {
     tableBody.value = response.data.map((data: any) => {
-      const createdDate = new Date(Date.parse(data.created_at));
-      return {
-                status: getStatus(data.status ?? "-", data.status ?? "-"),
+      const createdDate = new Date(data.created_at);
 
-        date_created: getActivityDate(data.created_at),
+      return {
+        status: getStatus(data.status ?? "-", data.status ?? "-"),
+        date_created: `${getActivityDate(data.created_at)} . ${useDate.formatTime(data.created_at)}`,
         initiated_by: getUserName(data.user),
         action_type: data.action_type,
         activity: data.activity,
@@ -151,6 +154,5 @@ onMounted(() => {
   fetchAuditLogs();
 });
 </script>
-
 
 <style lang="scss" scoped></style>

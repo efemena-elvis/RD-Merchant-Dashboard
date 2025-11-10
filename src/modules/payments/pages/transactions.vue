@@ -71,9 +71,16 @@
         :key="index"
         :tableHeader="tableHeader"
         :tableData="payload"
+        :on-table-clicked="() => openTransactionLog(payload)"
       ></TableContainerBody>
     </TableContainer>
   </PageContentWrapper>
+  <teleport to="body" v-if="showTransactionDetailsModal">
+    <TransactionDetailsModal
+      @closeTriggered="toggleTransactionDetailsModal"
+      :transaction="selectedTransaction"
+    />
+  </teleport>
 </template>
 
 <script lang="ts" setup>
@@ -88,6 +95,7 @@ import TableContainer from "@/shared/components/table-comps/table-container.vue"
 import TableContainerBody from "@/shared/components/table-comps/table-container-body.vue";
 import TableDoubleColumn from "@/shared/components/table-comps/table-double-column.vue";
 import * as XLSX from "xlsx";
+import TransactionDetailsModal from "../modals/transaction-details-modal.vue";
 
 const { getStatus, capitalizeFirstLetter, formatNumber } = useString();
 const { getTransactions } = usePaymentStore();
@@ -98,12 +106,14 @@ const selectedMethod = ref("");
 const selectedStatus = ref("");
 const tableBody = ref<any[]>([]);
 const tablePaging = ref<any>({});
-const searchQuery = ref<string>("")
+const searchQuery = ref<string>("");
 
 const activePeriod = ref<[Date, Date] | null>(null);
+const selectedTransaction = ref(null);
 
 const statusOptions = ["Successful", "Pending", "Failed"];
 const paymentMethods = ["Card", "Mobilemoney"];
+const showTransactionDetailsModal = ref(false);
 
 const tableHeader = ref<TableHeaderType[]>([
   { title: "Created On", slug: "date_created" },
@@ -111,8 +121,18 @@ const tableHeader = ref<TableHeaderType[]>([
   { title: "Amount", slug: "amount" },
   { title: "Payment Method", slug: "payment_details" },
   { title: "Status", slug: "status" },
+  { title: "Reason", slug: "reason_for_failure" },
   { title: "Transaction Reference", slug: "reference" },
 ]);
+
+const openTransactionLog = (row: any) => {
+  selectedTransaction.value = row.raw;
+  toggleTransactionDetailsModal();
+};
+
+const toggleTransactionDetailsModal = () => {
+  showTransactionDetailsModal.value = !showTransactionDetailsModal.value;
+};
 
 const getTransactionDate = (date: string) => {
   let { w2, m3, d3, y1 } = useDate.formatDate(date).getAll();
@@ -130,7 +150,7 @@ const isWithinRange = (date: Date, range: [Date, Date] | null): boolean => {
 
   const start = normalizeDate(new Date(range[0]));
   const end = new Date(range[1]);
-  end.setHours(23, 59, 59, 999); 
+  end.setHours(23, 59, 59, 999);
 
   const target = new Date(date);
   return target >= start && target <= end;
@@ -157,7 +177,7 @@ const filteredTableBody = computed(() => {
     const matchesSearch =
       !searchQuery.value ||
       tx.reference.toLowerCase().includes(searchQuery.value);
-      
+
     return matchesMethod && matchesStatus && matchesDate && matchesSearch;
   });
 });
@@ -177,11 +197,11 @@ const processFilterSelection = (
 };
 
 const processSearchEntry = (searchValue: string) => {
-  searchQuery.value = searchValue.trim();
+  searchQuery.value = searchValue.toLocaleLowerCase().trim();
 };
 
 const fetchPaymentTransactions = async (page = 1) => {
-   tablePaging.value.current_page = page;
+  tablePaging.value.current_page = page;
   const response = await processAPIRequest({
     action: getTransactions,
     payload: { page },
@@ -198,15 +218,14 @@ const fetchPaymentTransactions = async (page = 1) => {
 
       const formattedAmount = `${formatNumber(amountValue)}`;
       const chargeAmount = `Charge: ${currencyValue} ${formatNumber(chargeValue)}`;
- const createdDate = new Date(Date.parse(data.created_at));
+      const createdDate = new Date(Date.parse(data.created_at));
       const customerName = data.customer
         ? `${data.customer.firstname ?? ""} ${data.customer.lastname ?? ""}`.trim()
         : "No customer info";
       const customerEmail = data.customer?.email ?? "";
-    
 
       return {
-            date_created: h(TableDoubleColumn, {
+        date_created: h(TableDoubleColumn, {
           entry: {
             primaryText: getTransactionDate(data.created_at),
             secondaryText: useDate.formatTime(data.created_at),
@@ -229,6 +248,8 @@ const fetchPaymentTransactions = async (page = 1) => {
           },
         }),
         status: getStatus(data.status ?? "-", data.status ?? "-"),
+        reason_for_failure:
+        data.reason_for_failure.length > 0 ? data.reason_for_failure : "-",
         reference: data.reference ?? "-",
         raw: {
           raw_date: createdDate,
@@ -238,18 +259,15 @@ const fetchPaymentTransactions = async (page = 1) => {
           status: data.status ?? "-",
           reference: data.reference ?? "-",
           date_created: getTransactionDate(data.created_at),
-    
         },
       };
-      
     });
-  
+
     tablePaging.value = response.pagination?.[0] || {};
   } else {
     tableBody.value = [];
   }
 };
-
 
 const exportToExcel = () => {
   const dataToExport = filteredTableBody.value.map((tx) => tx.raw);
@@ -273,6 +291,4 @@ onMounted(() => {
 });
 </script>
 
-<style lang="scss" scoped>
-
-</style>
+<style lang="scss" scoped></style>

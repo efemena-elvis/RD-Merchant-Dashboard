@@ -127,7 +127,6 @@ const tableHeader = ref<TableHeaderType[]>([
 
 const openTransactionLog = (row: any) => {
   selectedTransaction.value = row.raw;
-  console.log("Selected Transaction:", selectedTransaction.value);
   toggleTransactionDetailsModal();
 };
 

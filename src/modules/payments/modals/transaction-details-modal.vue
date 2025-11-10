@@ -9,8 +9,13 @@
 
     <!-- MODAL BODY -->
     <template #modal-cover-body>
-      <div class="modal-cover-body mt-3 space-y-3 max-h-[400px] overflow-y-auto flex items-center justify-center">
-        <div v-if="isLoading" class="flex flex-col items-center justify-center text-teal-700">
+      <div
+        class="modal-cover-body mt-3 space-y-3 max-h-[400px] overflow-y-auto flex items-center justify-center"
+      >
+        <div
+          v-if="isLoading"
+          class="flex flex-col items-center justify-center text-teal-700"
+        >
           <svg
             class="animate-spin h-6 w-6 mb-2 text-teal-600"
             xmlns="http://www.w3.org/2000/svg"

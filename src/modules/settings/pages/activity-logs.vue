@@ -46,6 +46,7 @@ const { getStatus } = useString();
 const { getAuditLogs } = useSettingsStore();
 const { processAPIRequest } = useEvents();
 
+
 const isLoading = ref(true);
 const tableHeader = ref<TableHeaderType[]>([
   { title: "Time Logged", slug: "date_created" },
@@ -123,28 +124,31 @@ const fetchAuditLogs = async (page = 1) => {
 
   isLoading.value = false;
 
-  if (response.code === 200) {
-    tableBody.value = response.data.map((data: any) => {
-      const createdDate = new Date(Date.parse(data.created_at));
-      return {
-                status: getStatus(data.status ?? "-", data.status ?? "-"),
+if (response.code === 200) {
+  tableBody.value = response.data.map((data: any) => {
+    const createdDate = new Date(data.created_at);
 
-        date_created: getActivityDate(data.created_at),
+   
+
+    return {
+      status: getStatus(data.status ?? "-", data.status ?? "-"),
+      date_created: `${getActivityDate(data.created_at)} . ${useDate.formatTime(data.created_at)}`, 
+      initiated_by: getUserName(data.user),
+      action_type: data.action_type,
+      activity: data.activity,
+      raw: {
+        status: data.status,
+        raw_date: createdDate,
         initiated_by: getUserName(data.user),
         action_type: data.action_type,
         activity: data.activity,
-        raw: {
-          status: data.status,
-          raw_date: createdDate,
-          initiated_by: getUserName(data.user),
-          action_type: data.action_type,
-          activity: data.activity,
-        },
-      };
-    });
+      },
+    };
+  });
 
-    tablePaging.value = response.pagination?.[0] || {};
-  }
+  tablePaging.value = response.pagination?.[0] || {};
+}
+
 };
 
 onMounted(() => {

@@ -97,7 +97,7 @@ onMounted(() => {
 
 <style lang="scss" scoped>
 .modal-cover-body {
-  @apply h-[200px];
+  @apply h-[300px];
 }
 
 .modal-cover-title {

@@ -8,6 +8,13 @@ export const getTransactions = async (payload: any) => {
   });
 };
 
+export const getSingleTransaction = async (payload: any) => {
+  return await $api.fetch(`${paymentRoutes.getTransactionByRef}/${payload.ref}`, {
+    resolve: true,
+    requiresPublicKey: true,
+  });
+};
+
 export const getCustomers = async (payload: any) => {
   return await $api.fetch(`${paymentRoutes.getCustomers}?page=${payload.page}`, {
     resolve: true,

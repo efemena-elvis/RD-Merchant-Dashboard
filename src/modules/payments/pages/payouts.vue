@@ -162,7 +162,6 @@ const fetchPayouts = async (page = 1) => {
   if (response.code === 200) {
     tableBody.value = response.data.map((data: any) => {
       const formattedAmount = `${formatNumber(data.amount)}`
-     const createdDate = new Date(Date.parse(data.created_at));
    
 return {
        date_created: h(TableDoubleColumn, {

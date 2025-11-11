@@ -1,20 +1,18 @@
 <template>
   <ModalDialog @closeModal="$emit('closeTriggered')">
-    <!-- MODAL COVER HEADER -->
+    <!-- HEADER -->
     <template #modal-cover-header>
       <div class="modal-cover-header">
-        <div class="modal-cover-title">Transaction Log</div>
+        <div class="modal-cover-title">Transaction Details</div>
       </div>
     </template>
 
-    <!-- MODAL BODY -->
+    <!-- BODY -->
     <template #modal-cover-body>
-      <div
-        class="modal-cover-body mt-3 space-y-3 max-h-[400px] overflow-y-auto flex items-center justify-center"
-      >
+      <div class="modal-cover-body mt-3 max-h-[500px]">
         <div
           v-if="isLoading"
-          class="flex flex-col items-center justify-center text-teal-700"
+          class="flex flex-col items-center justify-center text-teal-700 py-6"
         >
           <svg
             class="animate-spin h-6 w-6 mb-2 text-teal-600"
@@ -39,11 +37,38 @@
           <p>Loading transaction log...</p>
         </div>
 
-        <div
-          v-else-if="transactionLog"
-          class="rounded-lg p-3 flex justify-between items-start hover:bg-grey-50 transition w-full"
-        >
-          {{ transactionLog }}
+        <div v-else-if="transactionData" class="p-4 rounded-lg">
+          <div class="grid grid-cols-3 gap-4 text-sm">
+            <div v-for="(field, index) in displayFields" :key="index">
+              <p class="text-gray-500 uppercase text-xs">{{ field.label }}</p>
+              <p
+                v-if="field.key === 'status'"
+                :class="[
+                  'font-semibold rounded-full p-1 text-center text-white w-24 mt-1',
+                  transactionData.status === 'successful'
+                    ? 'bg-green-100 text-green-800'
+                    : transactionData.status === 'pending'
+                      ? 'bg-yellow-100 text-yellow-800'
+                      : 'bg-red-100 text-red-800',
+                ]"
+              >
+                {{ capitalize(transactionData.status) }}
+              </p>
+              <p
+                v-else
+                class="font-semibold text-grey-900 break-all text-sm mt-1"
+              >
+                {{ formatValue(field.key) }}
+              </p>
+            </div>
+          </div>
+
+          <div class="mt-4" v-if="transactionData.status === 'failed'">
+            <p class="text-gray-500">Reason</p>
+            <p class="font-sm text-gray-700 mt-1">
+              {{ transactionData.reason_for_failure || "—" }}
+            </p>
+          </div>
         </div>
 
         <div v-else class="text-center text-[16px] text-teal-700">
@@ -58,29 +83,44 @@
 import ModalDialog from "@/shared/components/global-comps/modal-dialog.vue";
 import useEvents from "@/shared/composables/useEvents";
 import { usePaymentStore } from "../store";
-import { ref, onMounted } from "vue";
+import { ref, onMounted, computed } from "vue";
+import useDate from "@/shared/composables/useDate";
+import { useString } from "@/shared/composables/useString";
 
 const { processAPIRequest } = useEvents();
 const { getSingleTransaction } = usePaymentStore();
+const { formatNumber } = useString();
 
-const transactionLog = ref(null);
 const isLoading = ref(false);
+const transactionData = ref<any>(null);
 
 const emits = defineEmits(["closeTriggered"]);
+const props = defineProps<{ transaction: any }>();
 
-interface Transaction {
-  description: string;
-  raw_date: string;
-  time: string;
-  amount: number;
-  type: "credit" | "debit";
-  status: "success" | "failed" | "pending";
-  reference: string;
-}
+const displayFields = [
+  { label: "Amount Paid", key: "amount" },
+  { label: "Reference ID", key: "reference" },
+  { label: "Date", key: "created_at" },
+  { label: "Time", key: "created_at_time" },
+  { label: "Payment Method", key: "method" },
+  { label: "Customer Name", key: "full_name" },
+  { label: "Email", key: "email" },
+  { label: "MOMO Number", key: "phone_number" },
+  { label: "Operator", key: "operator" },
+  { label: "Currency", key: "currency" },
+  { label: "Business ID", key: "business_id" },
+  { label: "Type", key: "type" },
+  { label: "Charge", key: "charge" },
+  { label: "Attempts", key: "attempts" },
+  { label: "Status", key: "status" },
+];
 
-const props = defineProps<{
-  transaction: Transaction | null;
-}>();
+const getTransactionDate = (date: string) => {
+  let { w2, m3, d3, y1 } = useDate.formatDate(date).getAll();
+  return `${w2}, ${d3} ${m3}, ${y1}`;
+};
+const capitalize = (text: string) =>
+  text ? text.charAt(0).toUpperCase() + text.slice(1) : "";
 
 const fetchSingleTransaction = async () => {
   isLoading.value = true;
@@ -89,23 +129,43 @@ const fetchSingleTransaction = async () => {
     payload: { ref: props.transaction?.reference },
   });
 
-  if (response.code === 200) {
-    transactionLog.value = response;
-  }
+  transactionData.value =
+    response.code === 200 ? response.data : props.transaction;
   isLoading.value = false;
 };
 
-onMounted(() => {
-  fetchSingleTransaction();
-});
+const formatValue = (key: string) => {
+  if (!transactionData.value) return "";
+
+  switch (key) {
+    case "amount":
+      return `${transactionData.value.currency}${formatNumber(transactionData.value.amount).toLocaleString()}`;
+    case "created_at":
+      return getTransactionDate(transactionData.value.created_at);
+    case "created_at_time":
+      return useDate.formatTime(transactionData.value.created_at);
+    case "full_name":
+      return transactionData.value.customer_first_name &&
+        transactionData.value.customer_last_name
+        ? `${transactionData.value.customer_first_name} ${transactionData.value.customer_last_name}`
+        : "—";
+    case "charge":
+      return `${transactionData.value.currency}${formatNumber(transactionData.value.charge).toLocaleString()}`;
+    default:
+      return transactionData.value[key].length > 0
+        ? transactionData.value[key]
+        : "—";
+  }
+};
+
+onMounted(fetchSingleTransaction);
 </script>
 
 <style lang="scss" scoped>
 .modal-cover-body {
-  @apply h-[300px];
+  @apply h-[350px];
 }
-
 .modal-cover-title {
-  @apply text-lg font-semibold text-grey-800;
+  @apply text-lg font-semibold text-gray-800;
 }
 </style>

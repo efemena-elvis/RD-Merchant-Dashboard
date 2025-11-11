@@ -1,7 +1,10 @@
 <template>
   <!-- BALANCE AREA -->
-  <div class="balance-area" >
-    <BalanceOverview v-if="transactionStats" :transactionStats="transactionStats"/>
+  <div class="balance-area">
+    <BalanceOverview
+      v-if="transactionStats"
+      :transactionStats="transactionStats"
+    />
   </div>
 
   <PageContentWrapper
@@ -35,7 +38,7 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, reactive, onMounted,h } from "vue";
+import { ref, reactive, onMounted, h } from "vue";
 import { useString } from "@/shared/composables/useString";
 import { useTransferStore } from "@/modules/transfers/store/";
 import useDate from "@/shared/composables/useDate";
@@ -57,7 +60,7 @@ const {
 const { getBalanceHistory, getTransactionStats } = useTransferStore();
 const { processAPIRequest } = useEvents();
 const isLoading = ref<boolean>(true);
-const transactionStats = ref(null)
+const transactionStats = ref(null);
 
 const tableHeader = ref<TableHeaderType[]>([
   { title: "", slug: "status" },
@@ -77,24 +80,6 @@ const getTransactionDate = (date: string) => {
   return `${w2}, ${d3} ${m3}, ${y1}`;
 };
 
-const normalizeDate = (date: Date) => {
-  const d = new Date(date);
-  d.setHours(0, 0, 0, 0);
-  return d;
-};
-
-const isWithinRange = (date: Date, range: [Date, Date] | null): boolean => {
-  if (!range || !range[0] || !range[1]) return true;
-
-  const start = normalizeDate(new Date(range[0]));
-  const end = new Date(range[1]);
-  end.setHours(23, 59, 59, 999); 
-
-  const target = new Date(date);
-  return target >= start && target <= end;
-};
-
-
 
 
 const fetchBalanceHistory = async (page = 1) => {
@@ -110,31 +95,30 @@ const fetchBalanceHistory = async (page = 1) => {
   if (response.code === 200) {
     response.data.map((data: any) => {
       tableBody.push({
-        raw_date: data.balance_at, 
+        raw_date: data.balance_at,
         status: transactionFlowIcon(
           data.type === "credit" ? "receive" : "send"
         ),
-          date_created: h(TableDoubleColumn, {
+        date_created: h(TableDoubleColumn, {
           entry: {
             primaryText: getTransactionDate(data.balance_at),
             secondaryText: useDate.formatTime(data.balance_at),
           },
         }),
         summary: capitalizeFirstLetter(data.action.split("-").join(" ")),
-        balance_before: `ZMW ${formatNumber(data.balance_before)}`,
+        balance_before: `${data.currency_code} ${formatNumber(data.balance_before)}`,
         change: getBoldTableText(
-          `ZMW ${formatNumber(data.amount)}`,
+          `${data.currency_code} ${formatNumber(data.amount)}`,
           data.type === "credit" ? "text-green-600" : "text-red-600"
         ),
-        balance_after: `ZMW ${formatNumber(data.balance_after)}`,
-        reference : data.reference
+        balance_after: `${data.currency_code} ${formatNumber(data.balance_after)}`,
+        reference: data.reference,
       });
     });
 
     tablePaging.value = response.pagination[0];
   }
 };
-
 
 const fetchTransactionStats = async () => {
   const response = await processAPIRequest({
@@ -144,14 +128,13 @@ const fetchTransactionStats = async () => {
   });
 
   if (response.code === 200) {
-transactionStats.value = response.data
-
+    transactionStats.value = response.data;
   }
 };
 
 onMounted(() => {
   fetchBalanceHistory();
-  fetchTransactionStats()
+  fetchTransactionStats();
 });
 </script>
 

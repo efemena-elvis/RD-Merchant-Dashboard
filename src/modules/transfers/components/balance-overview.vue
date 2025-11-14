@@ -7,12 +7,12 @@
           <div class = "flex flex-col gap-2">
             <p class = "text-teal-800 text-[16px] font-semibold"> All Transactions</p>
          
-          <span class="text-[18px] font-semibold">{{ transactionStats?.total_transactions }}</span>
+          <span class="text-[18px] font-semibold">{{ transactionStats?.total_transactions ||  0}}</span>
         </div>
         <!--
         <BalanceOverviewColumn
           title="Available Collection Balance"
-          :amountList="[80, 220, 200]"
+          :amountList="[80, 220, 200]" 
         />
         -->
       </div>
@@ -21,7 +21,7 @@
           <div class = "flex flex-col gap-2">
             <p class = "text-teal-800 text-[16px] font-semibold"> Successful Transactions</p>
          
-          <span class="text-[18px] font-semibold">ZMW{{ formatNumber(transactionStats?.successful_transactions_value ?? 0) }}</span>
+          <span class="text-[18px] font-semibold">ZMW{{ formatNumber(transactionStats?.successful_transactions_value ?? 0) }} </span>
         </div>
        
       </div>

@@ -235,7 +235,7 @@ const fetchPaymentTransactions = async (page = 1) => {
           entry: { primaryText: customerName, secondaryText: customerEmail },
         }),
         amount: h(TableDoubleColumn, {
-          entry: { primaryText: formattedAmount, secondaryText: chargeAmount },
+          entry: { primaryText: `${currencyValue} ${formattedAmount}`, secondaryText: chargeAmount },
         }),
         payment_details: h(TableDoubleColumn, {
           entry: {

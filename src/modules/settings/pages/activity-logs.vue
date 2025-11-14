@@ -40,6 +40,8 @@ import useEvents from "@/shared/composables/useEvents";
 import PageContentWrapper from "@/shared/components/global-comps/page-content-wrapper.vue";
 import TableContainer from "@/shared/components/table-comps/table-container.vue";
 import TableContainerBody from "@/shared/components/table-comps/table-container-body.vue";
+import TableDoubleColumn from "@/shared/components/table-comps/table-double-column.vue";
+import { h } from "vue";
 
 const { getStatus } = useString();
 const { getAuditLogs } = useSettingsStore();
@@ -132,7 +134,12 @@ const fetchAuditLogs = async (page = 1) => {
 
       return {
         status: getStatus(data.status ?? "-", data.status ?? "-"),
-        date_created: `${getActivityDate(data.created_at)} . ${useDate.formatTime(data.created_at)}`,
+         date_created: h(TableDoubleColumn, {
+          entry: {
+            primaryText: getActivityDate(data.created_at),
+            secondaryText: useDate.formatTime(data.created_at),
+          },
+        }),
         initiated_by: getUserName(data.user),
         action_type: data.action_type,
         activity: data.activity,

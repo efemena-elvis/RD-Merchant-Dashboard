@@ -18,7 +18,7 @@
   }
 
   .modal-cover {
-    @apply relative bg-neutral-10 sm:p-2;
+    @apply relative bg-neutral-10 sm:p-2 ;
     z-index: 3999;
 
     .modal-cover-body-wrapper {

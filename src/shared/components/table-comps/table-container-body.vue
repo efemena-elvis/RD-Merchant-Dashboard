@@ -12,7 +12,7 @@
         ]"
       >
         <template v-if="isVNode(tableData[header.slug])">
-          <!-- Render the VNode directly if it is a component -->
+   
           <component :is="tableData[header.slug]" />
         </template>
         

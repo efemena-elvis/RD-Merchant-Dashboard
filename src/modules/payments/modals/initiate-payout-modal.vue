@@ -72,7 +72,7 @@ type IPayoutType = {
   narration: string;
 };
 
-const emits = defineEmits(["closeTriggered", "reloadStorefront"]);
+const emits = defineEmits(["closeTriggered", "reloadPayouts"]);
 
 const { capitalizeFirstLetter } = useString();
 const { getUser } = useProfile();
@@ -117,14 +117,14 @@ const handlePayoutInitiation = async () => {
 
       // 400: {
       //   message: "Payout initiation failed",
-      //   description: "Please provide a valid payout details",
+      //   description: "Please provide valid payout details.",
       //   type: "error",
       // },
     },
   });
 
   if (response.code === 200) {
-    emits("reloadStorefront");
+    emits("reloadPayouts");
     emits("closeTriggered");
   }
 

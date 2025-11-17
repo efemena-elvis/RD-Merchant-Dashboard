@@ -63,7 +63,7 @@
   </PageContentWrapper>
 
   <teleport to="body" v-if="showInitiatePayoutModal">
-    <InitiatePayoutModal @closeTriggered="toggleInitiatePayoutModal" />
+    <InitiatePayoutModal @closeTriggered="toggleInitiatePayoutModal" @reloadPayouts="fetchPayouts"/>
   </teleport>
 </template>
 

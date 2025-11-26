@@ -248,7 +248,7 @@ const fetchPaymentTransactions = async (page = 1) => {
           },
         }),
         status: getStatus(data.status ?? "-", data.status ?? "-"),
-        reason_for_failure:
+        reason_f:
         data.reason_for_failure.length > 0 ? data.reason_for_failure : "-",
         reference: data.reference ?? "-",
         raw: {

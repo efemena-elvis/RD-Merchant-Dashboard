@@ -35,6 +35,12 @@ export const initiatePayout = async (payload: any) => {
     requiresPublicKey: true,
   });
 };
+export const requestRefund = async (payload: any) => {
+  return await $api.push(paymentRoutes.requestRefund, {
+    payload,
+    requiresPublicKey: true,
+  });
+};
 
 export const getPayouts = async (payload: any) => {
   return await $api.fetch(`${paymentRoutes.getAllPayouts}?page=${payload.page}`, {

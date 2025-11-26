@@ -8,6 +8,13 @@ export const getTransactions = async (payload: any) => {
   });
 };
 
+export const getAllTransactions = async (payload: any) => {
+  return await $api.fetch(`${paymentRoutes.getPaymentTransactions}?limit=100000`, {
+    resolve: true,
+    requiresPublicKey: true,
+  });
+};
+
 export const getSingleTransaction = async (payload: any) => {
   return await $api.fetch(`${paymentRoutes.getTransactionByRef}/${payload.ref}`, {
     resolve: true,
@@ -29,8 +36,15 @@ export const initiatePayout = async (payload: any) => {
   });
 };
 
-export const fetchAllPayouts = async (payload: any) => {
+export const getPayouts = async (payload: any) => {
   return await $api.fetch(`${paymentRoutes.getAllPayouts}?page=${payload.page}`, {
+    resolve: true,
+    requiresPublicKey: true,
+  });
+};
+
+export const fetchAllPayouts = async () => {
+  return await $api.fetch(`${paymentRoutes.getAllPayouts}?limit=100000`, {
     resolve: true,
     requiresPublicKey: true,
   });

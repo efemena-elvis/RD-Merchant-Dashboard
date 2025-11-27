@@ -187,7 +187,7 @@ const fetchPayouts = async (page = 1) => {
 
         status: getStatus(data.status, data.status),
         reason_for_failure: data.reason_for_failure ?? "-",
-        momo_number: "",
+        momo_number: "-",
         raw: {
           raw_date: new Date(data.created_at),
           date_created: `${getDateCreated(data.created_at)} - ${useDate.formatTime(data.created_at)}`,

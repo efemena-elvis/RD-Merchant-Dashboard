@@ -37,25 +37,24 @@
         ></div>
       </div>
 
-      <div class="">
+      <!-- <div class="">
         <button
           @click="toggleRequestRefundModal"
           class="p-3 rounded-md btn-primary"
         >
           Request a Refund
         </button>
-      </div>
+      </div> -->
     </div>
     <TableContainer
       :tableHeader="tableHeader"
       :tableBody="filteredTableBody"
       :isLoading="isLoading"
-      @onActionClicked="toggleRequestRefundModal"
       :emptyData="{
         title: 'No refund request',
         description:
           'We haven\'t received any refund request on this account. This is where you\'ll be able to see all initiated refund requests',
-        actionText: 'Request a Refund',
+    
       }"
     >
       <TableContainerBody
@@ -66,12 +65,12 @@
       />
     </TableContainer>
   </PageContentWrapper>
-  <teleport to="body" v-if="showRequestRefundModal">
+  <!-- <teleport to="body" v-if="showRequestRefundModal">
     <RequestRefundModal
       @closeTriggered="toggleRequestRefundModal"
       @reloadRefunds="fetchRefunds"
     />
-  </teleport>
+  </teleport> -->
 </template>
 
 <script lang="ts" setup>
@@ -86,7 +85,7 @@ import PageContentWrapper from "@/shared/components/global-comps/page-content-wr
 import TableContainer from "@/shared/components/table-comps/table-container.vue";
 import TableContainerBody from "@/shared/components/table-comps/table-container-body.vue";
 import TableDoubleColumn from "@/shared/components/table-comps/table-double-column.vue";
-import RequestRefundModal from "../modals/request-refund-modal.vue";
+// import RequestRefundModal from "../modals/request-refund-modal.vue";
 
 const { getBoldTableText, formatNumber, getStatus } = useString();
 
@@ -110,11 +109,11 @@ const selectedStatus = ref("");
 const activePeriod = ref<[Date, Date] | null>(null);
 const isLoading = ref<boolean>(true);
 const searchQuery = ref<string>("");
-const showRequestRefundModal = ref(false);
+// const showRequestRefundModal = ref(false);
 
-const toggleRequestRefundModal = () => {
-  showRequestRefundModal.value = !showRequestRefundModal.value;
-};
+// const toggleRequestRefundModal = () => {
+//   showRequestRefundModal.value = !showRequestRefundModal.value;
+// };
 
 const processSearchEntry = (searchValue: string) => {
   searchQuery.value = searchValue.toLocaleLowerCase().trim();

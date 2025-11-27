@@ -98,7 +98,7 @@ import * as XLSX from "xlsx";
 import TransactionDetailsModal from "../modals/transaction-details-modal.vue";
 
 const { getStatus, capitalizeFirstLetter, formatNumber } = useString();
-const { getTransactions } = usePaymentStore();
+const { getTransactions, getAllTransactions } = usePaymentStore();
 const { processAPIRequest } = useEvents();
 
 const isLoading = ref(true);
@@ -248,7 +248,7 @@ const fetchPaymentTransactions = async (page = 1) => {
           },
         }),
         status: getStatus(data.status ?? "-", data.status ?? "-"),
-        reason_for_failure:
+        reason_f:
         data.reason_for_failure.length > 0 ? data.reason_for_failure : "-",
         reference: data.reference ?? "-",
         raw: {
@@ -269,22 +269,80 @@ const fetchPaymentTransactions = async (page = 1) => {
   }
 };
 
-const exportToExcel = () => {
-  const dataToExport = filteredTableBody.value.map((tx) => tx.raw);
-  const cleanData = dataToExport.map((tx) => ({
+const fetchAllTransactions = async () => {
+  let page = 1;
+  let all: any[] = [];
+  let totalPages = 1;
+
+  do {
+    const response = await processAPIRequest({
+      action: getAllTransactions,
+      payload: { page },
+      showAlert: false,
+    });
+
+    if (response?.code !== 200) break;
+
+    const mapped = response.data.map((data: any) => {
+      const customerName = data.customer ? `${data.customer.firstname} ${data.customer.lastname}` : "No customer info";
+      const customerEmail = data.customer ? data.customer.email : "";
+
+      return {
+        date_created: `${getTransactionDate(data.created_at)} - ${useDate.formatTime(data.created_at)}`,
+        raw_date: new Date(data.created_at),
+        customer_details: `${customerName} (${customerEmail})`,
+        amount: formatNumber(data.amount),
+        payment_details: capitalizeFirstLetter(data.method),
+        status: data.status,
+        reason: data.reason_for_failure || "-",
+        reference: data.reference,
+      };
+    });
+
+    all.push(...mapped);
+
+    totalPages = response.pagination[0]?.total_pages ?? 1;
+    page++;
+
+  } while (page <= totalPages);
+
+  return all;
+};
+
+
+const exportToExcel = async () => {
+  const allTransactions = await fetchAllTransactions();
+
+  if (!allTransactions || allTransactions.length === 0) return;
+
+  const filtered = allTransactions.filter((tx) => {
+    const method = tx.payment_details.toLowerCase();
+    const status = tx.status.toLowerCase();
+    const date = tx.raw_date ? new Date(tx.raw_date) : null;
+
+    const matchesMethod = selectedMethod.value ? method === selectedMethod.value.toLowerCase() : true;
+    const matchesStatus = selectedStatus.value ? status === selectedStatus.value : true;
+    const matchesDate = date ? isWithinRange(date, activePeriod.value) : true;
+
+    return matchesMethod && matchesStatus && matchesDate;
+  });
+
+  const cleanData = filtered.map((tx) => ({
     "Date Created": tx.date_created,
-    "Customer Details": tx.customer_details || "-",
-    Amount: tx.amount || "-",
+    "Customer Details": tx.customer_details,
+    Amount: tx.amount,
     "Payment Method": tx.payment_details,
     Status: tx.status,
+    Reason: tx.reason,
     Reference: tx.reference,
   }));
 
   const worksheet = XLSX.utils.json_to_sheet(cleanData);
   const workbook = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(workbook, worksheet, "Merchant Transactions");
-  XLSX.writeFile(workbook, "Merchant_Transactions.xlsx");
+  XLSX.utils.book_append_sheet(workbook, worksheet, "Transactions");
+  XLSX.writeFile(workbook, "All_Merchant_Transactions.xlsx");
 };
+
 
 onMounted(() => {
   fetchPaymentTransactions();

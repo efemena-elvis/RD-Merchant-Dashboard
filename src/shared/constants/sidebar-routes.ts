@@ -37,17 +37,18 @@ export const sidebarRoutes: ISidebarRouteType = {
       icon: "icon-profile-users",
       active: true,
     },
-    // {
-    //   link: "/payments/refunds",
-    //   title: "Refunds",
-    //   icon: "icon-rotate-left",
-    //   active: true,
-    // },
+  
     {
       link: "/payments/payouts",
       title: "Payouts",
       icon: "icon-export",
       active: true,
+    },
+      {
+     link: "/payments/refunds",
+     title: "Refunds",
+    icon: "icon-rotate-left",
+    active: true,
     },
     // {
     //   link: "/payments/disputes",

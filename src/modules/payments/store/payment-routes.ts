@@ -3,5 +3,7 @@ export const paymentRoutes = {
   getTransactionByRef: "payment",
   getCustomers: "customers",
   initiatePayout: "payouts/request",
+  requestRefund: "refunds/request",
   getAllPayouts: "payouts",
+  getAllRefunds: "refunds",
 };

@@ -14,8 +14,10 @@
     @filterSelected="processFilterSelection"
     :fetchDataByPage="fetchPayouts"
   >
-
-    <div class="flex items-center justify-between mb-4" v-if="tableBody.length > 0 && !isLoading">
+    <div
+      class="flex items-center justify-between mb-4"
+      v-if="tableBody.length > 0 && !isLoading"
+    >
       <div class="relative">
         <select
           v-model="selectedStatus"
@@ -35,11 +37,15 @@
         ></div>
       </div>
 
-       <div class="">
- <button @click="toggleInitiatePayoutModal" class = "p-3 rounded-md btn-primary">Initiate a Payout</button>
-  </div>
+      <div class="">
+        <button
+          @click="toggleInitiatePayoutModal"
+          class="p-3 rounded-md btn-primary"
+        >
+          Initiate a Payout
+        </button>
+      </div>
     </div>
- 
 
     <TableContainer
       :tableHeader="tableHeader"
@@ -63,7 +69,10 @@
   </PageContentWrapper>
 
   <teleport to="body" v-if="showInitiatePayoutModal">
-    <InitiatePayoutModal @closeTriggered="toggleInitiatePayoutModal" />
+    <InitiatePayoutModal
+      @closeTriggered="toggleInitiatePayoutModal"
+      @reloadPayouts="fetchPayouts"
+    />
   </teleport>
 </template>
 
@@ -83,11 +92,11 @@ import TableDoubleColumn from "@/shared/components/table-comps/table-double-colu
 
 const { getBoldTableText, formatNumber, getStatus } = useString();
 
-const { fetchAllPayouts } = usePaymentStore();
+const { getPayouts, fetchAllPayouts } = usePaymentStore();
 const { processAPIRequest } = useEvents();
 
 const isLoading = ref<boolean>(true);
-const searchQuery = ref<string>("")
+const searchQuery = ref<string>("");
 const showInitiatePayoutModal = ref(false);
 
 const activePeriod = ref<[Date, Date] | null>(null);
@@ -99,9 +108,10 @@ const toggleInitiatePayoutModal = () => {
 const tableHeader = ref<TableHeaderType[]>([
   { title: "Date Initiated", slug: "date_created" },
   { title: "Amount Requested", slug: "amount_requested" },
-  { title: "Payout Narration", slug: "narration" },
   { title: "Status", slug: "status" },
-   { title: "Payout Reference", slug: "reference" },
+  { title: "Reason", slug: "reason_for_failure" },
+  { title: "Customer's Number", slug: "momo_number" },
+  { title: "Payout Reference", slug: "reference" },
 ]);
 
 const tableBody = ref<any[]>([]);
@@ -110,7 +120,7 @@ const selectedStatus = ref("");
 const statusOptions = ["Successful", "Pending", "Failed"];
 
 const processSearchEntry = (searchValue: string) => {
-   searchQuery.value = searchValue.toLocaleLowerCase().trim();
+  searchQuery.value = searchValue.toLocaleLowerCase().trim();
 };
 
 const getDateCreated = (date: string) => {
@@ -150,10 +160,10 @@ const processFilterSelection = (
 };
 
 const fetchPayouts = async (page = 1) => {
-   tablePaging.value.current_page = page;
+  tablePaging.value.current_page = page;
   const response = await processAPIRequest({
-    action: fetchAllPayouts,
-    payload: {page},
+    action: getPayouts,
+    payload: { page },
     showAlert: false,
   });
 
@@ -161,31 +171,32 @@ const fetchPayouts = async (page = 1) => {
 
   if (response.code === 200) {
     tableBody.value = response.data.map((data: any) => {
-      const formattedAmount = `${formatNumber(data.amount)}`
-   
-return {
-       date_created: h(TableDoubleColumn, {
+      const formattedAmount = `${formatNumber(data.amount)}`;
+
+      return {
+        date_created: h(TableDoubleColumn, {
           entry: {
             primaryText: getDateCreated(data.created_at),
             secondaryText: useDate.formatTime(data.created_at),
           },
         }),
-      reference: data.reference,
-      amount_requested: getBoldTableText(
-        `${data.currency} ${formatNumber(data.amount)}`
-      ),
-      narration: data.narration,
-      status: getStatus(data.status, data.status),
+        reference: data.reference,
+        amount_requested: getBoldTableText(
+          `${data.currency} ${formatNumber(data.amount)}`
+        ),
 
-         raw: {
-          raw_date: `${getDateCreated(data.created_at)} - ${useDate.formatTime(data.created_at)}`,
+        status: getStatus(data.status, data.status),
+        reason_for_failure: data.reason_for_failure ?? "-",
+        momo_number: "-",
+        raw: {
+          raw_date: new Date(data.created_at),
+          date_created: `${getDateCreated(data.created_at)} - ${useDate.formatTime(data.created_at)}`,
           amount: formattedAmount,
           status: data.status ?? "-",
           reference: data.reference ?? "-",
-          date_created : getDateCreated(data.created_at),
-        
+          momo_number: "",
         },
-      }
+      };
     });
 
     tablePaging.value = response.pagination[0];
@@ -203,21 +214,70 @@ const filteredTableBody = computed(() =>
       ? isWithinRange(rawDate, activePeriod.value)
       : true;
 
-      const matchesSearch =
+    const matchesSearch =
       !searchQuery.value ||
       tx.reference.toLowerCase().includes(searchQuery.value);
-      
+
     return matchesStatus && matchesDate && matchesSearch;
   })
 );
 
-const exportToExcel = () => {
-  const dataToExport = filteredTableBody.value.map((tx) => tx.raw);
-  const cleanData = dataToExport.map((tx) => ({
-    "Date Initiated": tx.date_created || "-",
-    "Amount": tx.amount || "-",
-    "Status": tx.status,
-    "Reference": tx.reference,
+const fetchAllPayoutPages = async () => {
+  let page = 1;
+  let all: any[] = [];
+  let totalPages = 1;
+
+  do {
+    const response = await processAPIRequest({
+      action: fetchAllPayouts,
+      payload: { page },
+      showAlert: false,
+    });
+
+    if (response?.code !== 200) break;
+
+    const mapped = response.data.map((data: any) => {
+      return {
+        date_created: `${getDateCreated(data.created_at)} - ${useDate.formatTime(data.created_at)}`,
+        raw_date: new Date(data.created_at),
+        amount: `${formatNumber(data.amount)}`,
+        status: data.status ?? "-",
+        reason_for_failure: data.reason_for_failure ?? "-",
+        momo_number: "",
+        reference: data.reference ?? "-",
+      };
+    });
+
+    all.push(...mapped);
+
+    totalPages = response.pagination[0]?.total_pages ?? 1;
+    page++;
+  } while (page <= totalPages);
+
+  return all;
+};
+
+const exportToExcel = async () => {
+  const allPayouts = await fetchAllPayoutPages();
+
+  const filtered = allPayouts.filter((tx) => {
+    const status = tx.status.toLowerCase();
+    const date = tx.raw_date ? new Date(tx.raw_date) : null;
+
+    const matchesStatus = selectedStatus.value
+      ? status === selectedStatus.value
+      : true;
+    const matchesDate = date ? isWithinRange(date, activePeriod.value) : true;
+
+    return matchesStatus && matchesDate;
+  });
+
+  const cleanData = filtered.map((tx) => ({
+    "Date Created": tx.date_created,
+    Amount: tx.amount || "-",
+    Status: tx.status,
+    Reference: tx.reference,
+    Reason: tx.reason_for_failure ?? "-",
   }));
 
   const worksheet = XLSX.utils.json_to_sheet(cleanData);

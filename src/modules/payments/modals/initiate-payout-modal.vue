@@ -8,7 +8,7 @@
     </template>
 
     <template #modal-cover-body>
-      <div class="modal-cover-body mt-3">
+      <div class="mt-3 modal-cover-body">
         <!-- PAYOUT AMOUNT -->
         <TextFieldInput
           labelId="payoutAmount"
@@ -38,13 +38,14 @@
           }"
         />
       </div>
+      
     </template>
 
     <!-- MODAL COVER FOOTER -->
     <template #modal-cover-footer>
-      <div class="modal-cover-footer -mt-4">
+      <div class="-mt-4 modal-cover-footer">
         <button
-          class="btn btn-primary w-full"
+          class="w-full btn btn-primary"
           ref="initiatePayoutBtnRef"
           :disabled="isActionReady"
           @click="handlePayoutInitiation"
@@ -72,7 +73,7 @@ type IPayoutType = {
   narration: string;
 };
 
-const emits = defineEmits(["closeTriggered", "reloadStorefront"]);
+const emits = defineEmits(["closeTriggered", "reloadPayouts"]);
 
 const { capitalizeFirstLetter } = useString();
 const { getUser } = useProfile();
@@ -117,14 +118,14 @@ const handlePayoutInitiation = async () => {
 
       // 400: {
       //   message: "Payout initiation failed",
-      //   description: "Please provide a valid payout details",
+      //   description: "Please provide valid payout details.",
       //   type: "error",
       // },
     },
   });
 
   if (response.code === 200) {
-    emits("reloadStorefront");
+    emits("reloadPayouts");
     emits("closeTriggered");
   }
 

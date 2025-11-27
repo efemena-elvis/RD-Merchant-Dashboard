@@ -5,4 +5,5 @@ export const paymentRoutes = {
   initiatePayout: "payouts/request",
   requestRefund: "refunds/request",
   getAllPayouts: "payouts",
+  getAllRefunds: "refunds",
 };

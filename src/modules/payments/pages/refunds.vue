@@ -8,14 +8,16 @@
     :showCustomActionBtn="true"
     :customActionBtnText="'Export'"
     @customActionBtnClicked="exportToExcel"
-    :fetchDataByPage="fetchPayouts"
+    :fetchDataByPage="fetchRefunds"
     :pageCount="10"
     :pageKeys="{ green: 'Refunded', yellow: 'Pending', red: 'Declined' }"
     @searchEntered="processSearchEntry"
     @filterSelected="processFilterSelection"
   >
-
-     <div class="flex items-center justify-between mb-4" v-if="tableBody.length > 0 && !isLoading">
+    <div
+      class="flex items-center justify-between mb-4"
+      v-if="tableBody.length > 0 && !isLoading"
+    >
       <div class="relative">
         <select
           v-model="selectedStatus"
@@ -35,14 +37,19 @@
         ></div>
       </div>
 
-       <div class="">
- <button @click="toggleRequestRefundModal" class = "p-3 rounded-md btn-primary">Request a Refund</button>
-  </div>
+      <div class="">
+        <button
+          @click="toggleRequestRefundModal"
+          class="p-3 rounded-md btn-primary"
+        >
+          Request a Refund
+        </button>
+      </div>
     </div>
     <TableContainer
       :tableHeader="tableHeader"
       :tableBody="filteredTableBody"
-        :isLoading="isLoading"
+      :isLoading="isLoading"
       @onActionClicked="toggleRequestRefundModal"
       :emptyData="{
         title: 'No refund request',
@@ -59,10 +66,10 @@
       />
     </TableContainer>
   </PageContentWrapper>
-    <teleport to="body" v-if="showRequestRefundModal">
+  <teleport to="body" v-if="showRequestRefundModal">
     <RequestRefundModal
       @closeTriggered="toggleRequestRefundModal"
-      @reloadRefunds="fetchPayouts"
+      @reloadRefunds="fetchRefunds"
     />
   </teleport>
 </template>
@@ -81,24 +88,20 @@ import TableContainerBody from "@/shared/components/table-comps/table-container-
 import TableDoubleColumn from "@/shared/components/table-comps/table-double-column.vue";
 import RequestRefundModal from "../modals/request-refund-modal.vue";
 
-
 const { getBoldTableText, formatNumber, getStatus } = useString();
 
-const { getPayouts, fetchAllPayouts } = usePaymentStore();
+const { getRefunds, fetchAllRefunds } = usePaymentStore();
 const { processAPIRequest } = useEvents();
-
 
 const statusOptions = ["Successful", "Pending", "Failed"];
 const tableHeader = ref<TableHeaderType[]>([
   { title: "Date Initiated", slug: "date_initiated" },
   { title: "Refund Amount", slug: "refund_amount" },
-  { title: "Customer's Number", slug: "momo_number" },
-
-  { title: "Customer's Email", slug: "customer_email" },
+  // { title: "Customer's Number", slug: "momo_number" },
   { title: "Refund Status", slug: "refund_status" },
-    { title: "Reason", slug: "reason_for_failure" },
-  { title: "Refunded On", slug: "date_refunded" },
-     { title: "Refund Reference", slug: "reference" },
+  { title: "Reason", slug: "reason_for_failure" },
+  // { title: "Refunded On", slug: "date_refunded" },
+  { title: "Refund Reference", slug: "reference" },
 ]);
 
 const tableBody = ref<any[]>([]);
@@ -106,16 +109,15 @@ const tablePaging = ref<any>({});
 const selectedStatus = ref("");
 const activePeriod = ref<[Date, Date] | null>(null);
 const isLoading = ref<boolean>(true);
-const searchQuery = ref<string>("")
+const searchQuery = ref<string>("");
 const showRequestRefundModal = ref(false);
-
 
 const toggleRequestRefundModal = () => {
   showRequestRefundModal.value = !showRequestRefundModal.value;
 };
 
 const processSearchEntry = (searchValue: string) => {
-   searchQuery.value = searchValue.toLocaleLowerCase().trim();
+  searchQuery.value = searchValue.toLocaleLowerCase().trim();
 };
 
 const getDateCreated = (date: string) => {
@@ -154,11 +156,11 @@ const processFilterSelection = (
   }
 };
 
-const fetchPayouts = async (page = 1) => {
-   tablePaging.value.current_page = page;
+const fetchRefunds = async (page = 1) => {
+  tablePaging.value.current_page = page;
   const response = await processAPIRequest({
-    action: getPayouts,
-    payload: {page},
+    action: getRefunds,
+    payload: { page },
     showAlert: false,
   });
 
@@ -166,33 +168,32 @@ const fetchPayouts = async (page = 1) => {
 
   if (response.code === 200) {
     tableBody.value = response.data.map((data: any) => {
-      const formattedAmount = `${formatNumber(data.amount)}`
-   
-return {
-       date_initiated: h(TableDoubleColumn, {
+      const formattedAmount = `${formatNumber(data.amount)}`;
+
+      return {
+        date_initiated: h(TableDoubleColumn, {
           entry: {
             primaryText: getDateCreated(data.created_at),
             secondaryText: useDate.formatTime(data.created_at),
           },
         }),
-      reference: data.reference,
-      refund_amount: getBoldTableText(
-        `${data.currency} ${formatNumber(data.amount)}`
-      ),
-     
-      refund_status: getStatus(data.status, data.status),
-      reason_for_failure: data.reason_for_failure ?? "-",
-      momo_number: "",
-         raw: {
-         date_initiated: `${getDateCreated(data.created_at)} - ${useDate.formatTime(data.created_at)}`,
-          raw_date: new Date(data.created_at), 
+        reference: data.reference,
+        refund_amount: getBoldTableText(
+          `${data.currency} ${formatNumber(data.amount)}`
+        ),
+
+        refund_status: getStatus(data.status, data.status),
+        reason_for_failure: data.reason_for_failure ?? "-",
+        momo_number: "",
+        raw: {
+          date_initiated: `${getDateCreated(data.created_at)} - ${useDate.formatTime(data.created_at)}`,
+          raw_date: new Date(data.created_at),
           refund_amount: formattedAmount,
           refund_status: data.status ?? "-",
           reference: data.reference ?? "-",
-          momo_number:"",
-        
+          momo_number: "",
         },
-      }
+      };
     });
 
     tablePaging.value = response.pagination[0];
@@ -203,29 +204,30 @@ const filteredTableBody = computed(() =>
   tableBody.value.filter((tx) => {
     const rawDate = tx.raw?.raw_date ? new Date(tx.raw?.raw_date) : null;
     const matchesStatus = selectedStatus.value
-      ? tx.raw?.refund_status.toLowerCase() === selectedStatus.value.toLowerCase()
+      ? tx.raw?.refund_status.toLowerCase() ===
+        selectedStatus.value.toLowerCase()
       : true;
 
     const matchesDate = rawDate
       ? isWithinRange(rawDate, activePeriod.value)
       : true;
 
-      const matchesSearch =
+    const matchesSearch =
       !searchQuery.value ||
       tx.reference.toLowerCase().includes(searchQuery.value);
-      
+
     return matchesStatus && matchesDate && matchesSearch;
   })
 );
 
-const fetchAllPayoutPages = async () => {
+const fetchAllRefundPages = async () => {
   let page = 1;
   let all: any[] = [];
   let totalPages = 1;
 
   do {
     const response = await processAPIRequest({
-      action: fetchAllPayouts,
+      action: fetchAllRefunds,
       payload: { page },
       showAlert: false,
     });
@@ -233,14 +235,13 @@ const fetchAllPayoutPages = async () => {
     if (response?.code !== 200) break;
 
     const mapped = response.data.map((data: any) => {
-
       return {
-   date_initiated: `${getDateCreated(data.created_at)} - ${useDate.formatTime(data.created_at)}`,
-          raw_date: new Date(data.created_at), 
+        date_initiated: `${getDateCreated(data.created_at)} - ${useDate.formatTime(data.created_at)}`,
+        raw_date: new Date(data.created_at),
         refund_amount: `${formatNumber(data.amount)}`,
-       refund_status: data.status ?? "-",
+        refund_status: data.status ?? "-",
         reason_for_failure: data.reason_for_failure ?? "-",
-        momo_number:"",
+        momo_number: "",
         reference: data.reference ?? "-",
       };
     });
@@ -249,23 +250,24 @@ const fetchAllPayoutPages = async () => {
 
     totalPages = response.pagination[0]?.total_pages ?? 1;
     page++;
-
   } while (page <= totalPages);
 
   return all;
 };
 
 const exportToExcel = async () => {
-  const allPayouts = await fetchAllPayoutPages();
+  const allRefunds = await fetchAllRefundPages();
 
-  const filtered = allPayouts.filter((tx) => {
+  const filtered = allRefunds.filter((tx) => {
     const status = tx.refund_status.toLowerCase();
     const date = tx.raw_date ? new Date(tx.raw_date) : null;
 
-    const matchesStatus = selectedStatus.value ? status === selectedStatus.value : true;
+    const matchesStatus = selectedStatus.value
+      ? status === selectedStatus.value
+      : true;
     const matchesDate = date ? isWithinRange(date, activePeriod.value) : true;
 
-    return  matchesStatus && matchesDate;
+    return matchesStatus && matchesDate;
   });
 
   const cleanData = filtered.map((tx) => ({
@@ -278,11 +280,11 @@ const exportToExcel = async () => {
 
   const worksheet = XLSX.utils.json_to_sheet(cleanData);
   const workbook = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(workbook, worksheet, "Merchant Payouts");
+  XLSX.utils.book_append_sheet(workbook, worksheet, "Merchant Refunds");
   XLSX.writeFile(workbook, "Merchant_Refunds.xlsx");
 };
 
-fetchPayouts();
+fetchRefunds();
 </script>
 
 <style lang="scss" scoped></style>

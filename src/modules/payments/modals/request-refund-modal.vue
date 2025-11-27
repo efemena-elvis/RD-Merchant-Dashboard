@@ -8,11 +8,11 @@
     </template>
 
     <template #modal-cover-body>
-      <div class="modal-cover-body mt-3">
+      <div class="mt-3 modal-cover-body">
         <!-- REFUND AMOUNT -->
         <TextFieldInput
           labelId="refundAmount"
-          labelTitle="refund amount"
+          labelTitle="Refund Amount"
           :inputType="IInputType.Number"
           inputPlaceholder="Enter a refund amount"
           isRequired
@@ -51,14 +51,90 @@
             message: 'Please provide a refund request reason',
           }"
         />
+
+            <!-- TRANSFER TO DROPDOWN -->
+      <SelectFieldInput
+          labelId="transferTo"
+          labelTitle="Transfer To"
+          :inputType="IInputType.Text"
+          inputPlaceholder="Select where to transfer to"
+          isRequired
+          :selectData="[
+            { value: 'bank', name: 'Bank Account' },
+            { value: 'mobile_number', name: 'MoMo Phone Number' },
+          ]"
+          
+          @onSelectionChange="refundPayload.transfer_to = $event"
+          :inputValue="refundPayload.transfer_to"
+          
+          :errorHandler="{
+            validator: 'validateRequired',
+            message: 'Please provide a transfer destination',
+          }"
+        />
+
+    <!-- MOMO PHONE NUMBER -->
+   <TextFieldInput
+   v-if="refundPayload.transfer_to === 'mobile_number'"
+          labelId="momo_phone_number"
+          labelTitle="MoMo Phone Number"
+          :inputType="IInputType.Number"
+          inputPlaceholder="Enter a MoMo phone number"
+          isRequired
+          isTextArea
+          @inputChanged="refundPayload.momo_phone_number = $event"
+          :errorHandler="{
+            validator: 'validateRequired',
+            message: 'Please provide a MoMo phone number',
+          }"
+        />
+
+        <!-- Bank -->
+      <div v-if="refundPayload.transfer_to === 'bank'">
+        <SelectFieldInput
+            labelId="bank_id"
+            labelTitle="Bank Name"
+            :inputType="IInputType.Text"
+            inputPlaceholder="Select bank name"
+            isRequired
+            :selectData="[
+              { value: 'bank', name: 'Bank Account' },
+              { value: 'mobile_number', name: 'MoMo Phone Number' },
+            ]"
+        
+            @onSelectionChange="refundPayload.bank_id = $event"
+            :inputValue="refundPayload.bank_id" 
+            :errorHandler="{
+              validator: 'validateRequired',
+              message: 'Please provide a bank name',
+            }"
+          />
+            <TextFieldInput
+          
+            labelId="account_number"
+            labelTitle="Account Number"
+            :inputType="IInputType.Text"
+            inputPlaceholder="Enter an account number"
+            isRequired
+            isTextArea
+            @inputChanged="refundPayload.account_number = $event"
+            :errorHandler="{
+              validator: 'validateRequired',
+              message: 'Please provide an account number',
+            }"
+          />
       </div>
+      </div>
+   
+
+ 
     </template>
 
     <!-- MODAL COVER FOOTER -->
     <template #modal-cover-footer>
-      <div class="modal-cover-footer -mt-4">
+      <div class="-mt-4 modal-cover-footer">
         <button
-          class="btn btn-primary w-full"
+          class="w-full btn btn-primary"
           ref="requestRefundBtnRef"
           :disabled="isActionReady"
           @click="handleRefundRequest"
@@ -78,12 +154,16 @@ import TextFieldInput from "@/shared/components/form-comps/text-field-input.vue"
 import useEvents from "@/shared/composables/useEvents";
 import { useString } from "@/shared/composables/useString";
 import { usePaymentStore } from "../store";
+import SelectFieldInput from "@/shared/components/form-comps/select-field-input.vue";
 
 type IRefundType = {
-  amount: number;
- payment_reference: string;
+amount: number;
+payment_reference: string;
 reason: string;
-  
+transfer_to: string;
+account_number?: string;
+momo_phone_number?: string;
+bank_id?: string;
 };
 
 const emits = defineEmits(["closeTriggered", "reloadRefunds"]);
@@ -95,8 +175,12 @@ const { requestRefund } = usePaymentStore();
 
 const refundPayload = ref<IRefundType>({
   amount: 0,
- payment_reference: "",
+  payment_reference: "",
   reason: "",
+  transfer_to: "",
+  // account_number: "",
+  momo_phone_number: "",
+  // bank_id: "",
 });
 
 const requestRefundBtnRef = ref(null);
@@ -108,14 +192,6 @@ const isActionReady = computed(() => {
 });
 
 const handleRefundRequest = async () => {
-  if (refundPayload.value.amount < 100) {
-    pushToastAlert({
-      message: "Refund Request failed",
-      description: "Please provide a minimum refund amount of ZMW100.",
-      type: "error",
-    });
-    return;
-  }
 
   const response = await processAPIRequest({
     action: requestRefund,

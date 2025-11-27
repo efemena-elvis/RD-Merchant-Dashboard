@@ -44,12 +44,12 @@ export const sidebarRoutes: ISidebarRouteType = {
       icon: "icon-export",
       active: true,
     },
-    //   {
-    //  link: "/payments/refunds",
-    //  title: "Refunds",
-    // icon: "icon-rotate-left",
-    // active: true,
-    // },
+      {
+     link: "/payments/refunds",
+     title: "Refunds",
+    icon: "icon-rotate-left",
+    active: true,
+    },
     // {
     //   link: "/payments/disputes",
     //   title: "Disputes",

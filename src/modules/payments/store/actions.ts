@@ -48,9 +48,22 @@ export const getPayouts = async (payload: any) => {
     requiresPublicKey: true,
   });
 };
+export const getRefunds = async (payload: any) => {
+  return await $api.fetch(`${paymentRoutes.getAllRefunds}?page=${payload.page}`, {
+    resolve: true,
+    requiresPublicKey: true,
+  });
+};
 
 export const fetchAllPayouts = async () => {
   return await $api.fetch(`${paymentRoutes.getAllPayouts}?limit=100000`, {
+    resolve: true,
+    requiresPublicKey: true,
+  });
+};
+
+export const fetchAllRefunds = async () => {
+  return await $api.fetch(`${paymentRoutes.getAllRefunds}?limit=100000`, {
     resolve: true,
     requiresPublicKey: true,
   });

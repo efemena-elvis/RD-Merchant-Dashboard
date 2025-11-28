@@ -110,7 +110,7 @@ const tableHeader = ref<TableHeaderType[]>([
   { title: "Amount Requested", slug: "amount_requested" },
   { title: "Status", slug: "status" },
   { title: "Reason", slug: "reason_for_failure" },
-  { title: "Customer's Number", slug: "momo_number" },
+  // { title: "Customer's Number", slug: "momo_number" },
   { title: "Payout Reference", slug: "reference" },
 ]);
 
@@ -194,7 +194,7 @@ const fetchPayouts = async (page = 1) => {
           amount: formattedAmount,
           status: data.status ?? "-",
           reference: data.reference ?? "-",
-          momo_number: "",
+          // momo_number: "",
         },
       };
     });
@@ -243,7 +243,8 @@ const fetchAllPayoutPages = async () => {
         amount: `${formatNumber(data.amount)}`,
         status: data.status ?? "-",
         reason_for_failure: data.reason_for_failure ?? "-",
-        momo_number: "",
+        // momo_number: "",
+        currency: data.currency,
         reference: data.reference ?? "-",
       };
     });
@@ -275,10 +276,13 @@ const exportToExcel = async () => {
   const cleanData = filtered.map((tx) => ({
     "Date Created": tx.date_created,
     Amount: tx.amount || "-",
+    Currency: tx.currency,
     Status: tx.status,
     Reference: tx.reference,
     Reason: tx.reason_for_failure ?? "-",
-  }));
+ 
+  })
+  )
 
   const worksheet = XLSX.utils.json_to_sheet(cleanData);
   const workbook = XLSX.utils.book_new();

@@ -36,7 +36,7 @@
           class="absolute text-[16px] text-teal-800 -translate-y-1/2 pointer-events-none icon icon-caret-down right-4 top-1/2"
         ></div>
       </div>
-
+<!-- 
       <div class="">
         <button
           @click="toggleInitiatePayoutModal"
@@ -44,7 +44,8 @@
         >
           Initiate a Payout
         </button>
-      </div>
+      </div> -->
+      
     </div>
 
     <TableContainer
@@ -55,7 +56,7 @@
         title: 'No payout initiated yet',
         description:
           'You haven\'t initiated any payout yet. This is where you\'ll be able to see all your  initiated payout transactions',
-        actionText: 'Initiate a payout',
+    
       }"
       @onActionClicked="toggleInitiatePayoutModal"
     >

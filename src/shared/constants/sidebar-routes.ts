@@ -2,13 +2,13 @@ import { ISidebarRouteType, ISideNavType } from "../../models/route-type";
 
 export const sidebarRoutes: ISidebarRouteType = {
   home: [
-    // {
-    //   slug: "overview",
-    //   link: "/overview",
-    //   title: "Overview",
-    //   icon: "icon-home",
-    //   active: true,
-    // },
+    {
+      slug: "overview",
+      link: "/overview",
+      title: "Overview",
+      icon: "icon-home",
+      active: true,
+    },
     {
       slug: "compliance",
       link: "/compliance/documents",
@@ -19,12 +19,12 @@ export const sidebarRoutes: ISidebarRouteType = {
   ],
 
   payments: [
-    {
-      link: "/transfers/balance",
-      title: "Balance",
-      icon: "icon-empty-wallet",
-      active: true,
-    },
+    // {
+    //   link: "/transfers/balance",
+    //   title: "Balance",
+    //   icon: "icon-empty-wallet",
+    //   active: true,
+    // },
     {
       link: "/payments/transactions",
       title: "Transactions",

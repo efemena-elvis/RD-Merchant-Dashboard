@@ -219,8 +219,7 @@ const fetchPaymentTransactions = async (page = 1) => {
       const formattedAmount = `${formatNumber(amountValue)}`;
       const chargeAmount = `Charge: ${currencyValue} ${formatNumber(chargeValue)}`;
       const createdDate = new Date(Date.parse(data.created_at));
-      const customerName = data.customer
-        ? `${data.customer.firstname ?? ""} ${data.customer.lastname ?? ""}`.trim()
+      const customerName = data.customer ? `${data.customer.firstname ?? ""} ${data.customer.lastname ?? ""}`.trim()
         : "No customer info";
       const customerEmail = data.customer?.email ?? "";
 
@@ -248,8 +247,7 @@ const fetchPaymentTransactions = async (page = 1) => {
           },
         }),
         status: getStatus(data.status ?? "-", data.status ?? "-"),
-        reason_f:
-        data.reason_for_failure.length > 0 ? data.reason_for_failure : "-",
+        reason_for_failure: data.reason_for_failure.length > 0 ? data.reason_for_failure : "-",
         reference: data.reference ?? "-",
         raw: {
           raw_date: createdDate,

@@ -247,7 +247,7 @@ const fetchPaymentTransactions = async (page = 1) => {
           },
         }),
         status: getStatus(data.status ?? "-", data.status ?? "-"),
-        reason_for_failure: data.reason_for_failure.length > 0 ? data.reason_for_failure : "-",
+        reason_for_failure: capitalizeFirstLetter(data.reason_for_failure.toLowerCase() || "-"),
         reference: data.reference ?? "-",
         raw: {
           raw_date: createdDate,
@@ -292,7 +292,7 @@ const fetchAllTransactions = async () => {
         amount: formatNumber(data.amount),
         payment_details: capitalizeFirstLetter(data.method),
         status: data.status,
-        reason: data.reason_for_failure || "-",
+        reason: capitalizeFirstLetter(data.reason_for_failure.toLowerCase() || "-"),
         reference: data.reference,
         currency: data.currency
       };

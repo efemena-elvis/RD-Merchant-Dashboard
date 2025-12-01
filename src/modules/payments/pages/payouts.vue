@@ -91,7 +91,7 @@ import TableContainer from "@/shared/components/table-comps/table-container.vue"
 import TableContainerBody from "@/shared/components/table-comps/table-container-body.vue";
 import TableDoubleColumn from "@/shared/components/table-comps/table-double-column.vue";
 
-const { getBoldTableText, formatNumber, getStatus } = useString();
+const { getBoldTableText, formatNumber, getStatus, capitalizeFirstLetter} = useString();
 
 const { getPayouts, fetchAllPayouts } = usePaymentStore();
 const { processAPIRequest } = useEvents();
@@ -187,7 +187,7 @@ const fetchPayouts = async (page = 1) => {
         ),
 
         status: getStatus(data.status, data.status),
-        reason_for_failure: data.reason_for_failure ?? "-",
+        reason_for_failure: capitalizeFirstLetter(data.reason_for_failure.toLowerCase() || "-"),
         momo_number: "-",
         raw: {
           raw_date: new Date(data.created_at),
@@ -280,7 +280,7 @@ const exportToExcel = async () => {
     Currency: tx.currency,
     Status: tx.status,
     Reference: tx.reference,
-    Reason: tx.reason_for_failure ?? "-",
+    Reason: capitalizeFirstLetter(data.reason_for_failure.toLowerCase() || "-"),
  
   })
   )

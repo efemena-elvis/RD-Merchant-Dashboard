@@ -54,7 +54,6 @@
         title: 'No refund request',
         description:
           'We haven\'t received any refund request on this account. This is where you\'ll be able to see all initiated refund requests',
-    
       }"
     >
       <TableContainerBody
@@ -87,7 +86,8 @@ import TableContainerBody from "@/shared/components/table-comps/table-container-
 import TableDoubleColumn from "@/shared/components/table-comps/table-double-column.vue";
 // import RequestRefundModal from "../modals/request-refund-modal.vue";
 
-const { getBoldTableText, formatNumber, getStatus } = useString();
+const { getBoldTableText, formatNumber, getStatus, capitalizeFirstLetter } =
+  useString();
 
 const { getRefunds, fetchAllRefunds } = usePaymentStore();
 const { processAPIRequest } = useEvents();
@@ -182,8 +182,11 @@ const fetchRefunds = async (page = 1) => {
         ),
 
         refund_status: getStatus(data.status, data.status),
-        reason_for_failure: data.reason_for_failure ?? "-",
-        momo_number: "",
+        reason_for_failure: capitalizeFirstLetter(
+          (data.reason_for_failure || "-").toString().toLowerCase()
+        ),
+
+        // momo_number: "",
         raw: {
           date_initiated: `${getDateCreated(data.created_at)} - ${useDate.formatTime(data.created_at)}`,
           raw_date: new Date(data.created_at),
@@ -239,8 +242,11 @@ const fetchAllRefundPages = async () => {
         raw_date: new Date(data.created_at),
         refund_amount: `${formatNumber(data.amount)}`,
         refund_status: data.status ?? "-",
-        reason_for_failure: data.reason_for_failure ?? "-",
-        momo_number: "",
+        reason_for_failure: capitalizeFirstLetter(
+          (data.reason_for_failure || "-").toString().toLowerCase()
+        ),
+
+        // momo_number: "",
         reference: data.reference ?? "-",
       };
     });

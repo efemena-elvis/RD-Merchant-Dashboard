@@ -36,7 +36,7 @@
           class="absolute text-[16px] text-teal-800 -translate-y-1/2 pointer-events-none icon icon-caret-down right-4 top-1/2"
         ></div>
       </div>
-
+<!-- 
       <div class="">
         <button
           @click="toggleInitiatePayoutModal"
@@ -44,7 +44,8 @@
         >
           Initiate a Payout
         </button>
-      </div>
+      </div> -->
+      
     </div>
 
     <TableContainer
@@ -55,7 +56,7 @@
         title: 'No payout initiated yet',
         description:
           'You haven\'t initiated any payout yet. This is where you\'ll be able to see all your  initiated payout transactions',
-        actionText: 'Initiate a payout',
+    
       }"
       @onActionClicked="toggleInitiatePayoutModal"
     >
@@ -90,7 +91,7 @@ import TableContainer from "@/shared/components/table-comps/table-container.vue"
 import TableContainerBody from "@/shared/components/table-comps/table-container-body.vue";
 import TableDoubleColumn from "@/shared/components/table-comps/table-double-column.vue";
 
-const { getBoldTableText, formatNumber, getStatus } = useString();
+const { getBoldTableText, formatNumber, getStatus, capitalizeFirstLetter} = useString();
 
 const { getPayouts, fetchAllPayouts } = usePaymentStore();
 const { processAPIRequest } = useEvents();
@@ -186,7 +187,7 @@ const fetchPayouts = async (page = 1) => {
         ),
 
         status: getStatus(data.status, data.status),
-        reason_for_failure: data.reason_for_failure ?? "-",
+        reason_for_failure: capitalizeFirstLetter(data.reason_for_failure?.toLowerCase() || "-"),
         momo_number: "-",
         raw: {
           raw_date: new Date(data.created_at),
@@ -279,7 +280,7 @@ const exportToExcel = async () => {
     Currency: tx.currency,
     Status: tx.status,
     Reference: tx.reference,
-    Reason: tx.reason_for_failure ?? "-",
+    Reason: capitalizeFirstLetter(data.reason_for_failure.toLowerCase() || "-"),
  
   })
   )

@@ -187,7 +187,7 @@ const fetchPayouts = async (page = 1) => {
         ),
 
         status: getStatus(data.status, data.status),
-        reason_for_failure: capitalizeFirstLetter(data.reason_for_failure.toLowerCase() || "-"),
+        reason_for_failure: capitalizeFirstLetter(data.reason_for_failure?.toLowerCase() || "-"),
         momo_number: "-",
         raw: {
           raw_date: new Date(data.created_at),

@@ -7,7 +7,7 @@
     :pageKeys="{ green: 'Successful logs' }"
     @searchEntered="processSearchEntry"
     @filterSelected="processFilterSelection"
-    :hasPayload="tableBody.length > 0"
+    :hasPayload="true"
     :fetchDataByPage="fetchAuditLogs"
   >
     <TableContainer

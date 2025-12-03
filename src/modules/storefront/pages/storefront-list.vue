@@ -7,7 +7,7 @@
     :pagingData="tablePaging"
     :pageKeys="{ green: 'Successful', yellow: 'Pending', red: 'Failed' }"
     :showFilterSelection="false"
-    :hasPayload="tableBody.length > 0"
+    :hasPayload="true"
     :showCustomActionBtn="true"
     :customActionBtnText="'Create a storefront'"
     @customActionBtnClicked="toggleCreateStorefrontModal"

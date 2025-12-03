@@ -2,7 +2,7 @@ import $api from "@/shared/composables/useServiceAPI";
 import { paymentRoutes } from "./payment-routes";
 
 export const getTransactions = async (payload: any) => {
-  return await $api.fetch(`${paymentRoutes.getPaymentTransactions}?page=${payload.page}`, {
+  return await $api.fetch(`${paymentRoutes.getPaymentTransactions}${payload.filters ? payload.filters : `?page=${payload.page}`}`, {
     resolve: true,
     requiresPublicKey: true,
   });
@@ -23,7 +23,7 @@ export const getSingleTransaction = async (payload: any) => {
 };
 
 export const getCustomers = async (payload: any) => {
-  return await $api.fetch(`${paymentRoutes.getCustomers}?page=${payload.page}`, {
+  return await $api.fetch(`${paymentRoutes.getCustomers}${payload.filters ? payload.filters : `?page=${payload.page}`}`, {
     resolve: true,
     requiresPublicKey: true,
   });
@@ -43,13 +43,13 @@ export const requestRefund = async (payload: any) => {
 };
 
 export const getPayouts = async (payload: any) => {
-  return await $api.fetch(`${paymentRoutes.getAllPayouts}?page=${payload.page}`, {
+  return await $api.fetch(`${paymentRoutes.getAllPayouts}${payload.filters ? payload.filters : `?page=${payload.page}`}`, {
     resolve: true,
     requiresPublicKey: true,
   });
 };
 export const getRefunds = async (payload: any) => {
-  return await $api.fetch(`${paymentRoutes.getAllRefunds}?page=${payload.page}`, {
+  return await $api.fetch(`${paymentRoutes.getAllRefunds}${payload.filters ? payload.filters : `?page=${payload.page}`}`, {
     resolve: true,
     requiresPublicKey: true,
   });

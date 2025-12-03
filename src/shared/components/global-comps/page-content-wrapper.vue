@@ -25,6 +25,7 @@
           :activePeriod="filterActiveValue"
           :periodList="filterListValue"
           @onFilterSelected="handleFilterSelection"
+          
         />
 
         <template  v-if="showCustomActionBtn">
@@ -50,7 +51,7 @@
         :pageDescription="pageDescription"
         :pagingData="pagingData"
         :pageKeys="pageKeys"
-        @page-change="(page) => fetchDataByPage(page)"
+         @page-change="(page) => handlePageChange(page)"
         
       />
     </template>
@@ -74,7 +75,7 @@ interface IPageContentType {
   hasPayload: boolean;
   showCustomActionBtn?: boolean;
   customActionBtnText?: string;
-  fetchDataByPage?: (page: number) => void;
+
 }
 
 const props = withDefaults(defineProps<IPageContentType>(), {
@@ -95,7 +96,14 @@ const emits = defineEmits([
   "filterSelected",
   "searchEntered",
   "customActionBtnClicked",
+  "updatePage"
 ]);
+
+
+const handlePageChange = (page: number) => {
+  emits("updatePage", page);
+};
+
 
 
 const handleSearchEntry = (searchValue: string) => {

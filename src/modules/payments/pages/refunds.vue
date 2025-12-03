@@ -4,11 +4,11 @@
     :filterActiveValue="activePeriod"
     pageDescription="All requested refunds"
     :pagingData="tablePaging"
-    :hasPayload="tableBody.length > 0"
+    :hasPayload="true"
     :showCustomActionBtn="true"
     :customActionBtnText="'Export'"
     @customActionBtnClicked="exportToExcel"
-    :fetchDataByPage="fetchRefunds"
+   @updatePage="(currentPage) => (page = currentPage)"
     :pageCount="10"
     :pageKeys="{ green: 'Refunded', yellow: 'Pending', red: 'Declined' }"
     @searchEntered="processSearchEntry"
@@ -16,7 +16,7 @@
   >
     <div
       class="flex items-center justify-between mb-4"
-      v-if="tableBody.length > 0 && !isLoading"
+      v-if="!isLoading"
     >
       <div class="relative">
         <select
@@ -48,7 +48,7 @@
     </div>
     <TableContainer
       :tableHeader="tableHeader"
-      :tableBody="filteredTableBody"
+      :tableBody="tableBody"
       :isLoading="isLoading"
       :emptyData="{
         title: 'No refund request',
@@ -57,7 +57,7 @@
       }"
     >
       <TableContainerBody
-        v-for="(payload, index) in filteredTableBody"
+        v-for="(payload, index) in tableBody"
         :key="index"
         :tableHeader="tableHeader"
         :tableData="payload"
@@ -73,7 +73,7 @@
 </template>
 
 <script lang="ts" setup>
-import { computed, ref, h } from "vue";
+import { computed, ref, h, watch, onMounted} from "vue";
 import { useString } from "@/shared/composables/useString";
 import { TableHeaderType } from "@/models/dashboard-type";
 import { usePaymentStore } from "../store";
@@ -109,6 +109,9 @@ const selectedStatus = ref("");
 const activePeriod = ref<[Date, Date] | null>(null);
 const isLoading = ref<boolean>(true);
 const searchQuery = ref<string>("");
+const page = ref<number>(1);
+
+
 // const showRequestRefundModal = ref(false);
 
 // const toggleRequestRefundModal = () => {
@@ -141,6 +144,19 @@ const isWithinRange = (date: Date, range: [Date, Date] | null): boolean => {
   return target >= start && target <= end;
 };
 
+const filters = computed(
+  () =>
+    `?page=${page.value}&status=${selectedStatus.value}&from=${
+      activePeriod.value
+        ? activePeriod.value[0].toISOString().split("T")[0]
+        : ""
+    }&to=${
+      activePeriod.value
+        ? activePeriod.value[1].toISOString().split("T")[0]
+        : ""
+    }`
+);
+
 const processFilterSelection = (
   selectedRange: [Date | string, Date | string]
 ) => {
@@ -155,11 +171,12 @@ const processFilterSelection = (
   }
 };
 
-const fetchRefunds = async (page = 1) => {
+const fetchRefunds = async (filters: string) => {
+  isLoading.value = true;
   tablePaging.value.current_page = page;
   const response = await processAPIRequest({
     action: getRefunds,
-    payload: { page },
+    payload: {filters, page: page.value },
     showAlert: false,
   });
 
@@ -202,25 +219,7 @@ const fetchRefunds = async (page = 1) => {
   }
 };
 
-const filteredTableBody = computed(() =>
-  tableBody.value.filter((tx) => {
-    const rawDate = tx.raw?.raw_date ? new Date(tx.raw?.raw_date) : null;
-    const matchesStatus = selectedStatus.value
-      ? tx.raw?.refund_status.toLowerCase() ===
-        selectedStatus.value.toLowerCase()
-      : true;
 
-    const matchesDate = rawDate
-      ? isWithinRange(rawDate, activePeriod.value)
-      : true;
-
-    const matchesSearch =
-      !searchQuery.value ||
-      tx.reference.toLowerCase().includes(searchQuery.value);
-
-    return matchesStatus && matchesDate && matchesSearch;
-  })
-);
 
 const fetchAllRefundPages = async () => {
   let page = 1;
@@ -289,7 +288,15 @@ const exportToExcel = async () => {
   XLSX.writeFile(workbook, "Merchant_Refunds.xlsx");
 };
 
-fetchRefunds();
+watch([selectedStatus, activePeriod], () => {
+  page.value = 1;
+});
+
+watch(filters, (newFilters) => {
+  fetchRefunds(newFilters);
+});
+
+onMounted(fetchRefunds);
 </script>
 
 <style lang="scss" scoped></style>

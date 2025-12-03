@@ -6,17 +6,17 @@
     pageDescription="All payouts"
     :pagingData="tablePaging"
     :pageKeys="{ green: 'Successful', yellow: 'Pending', red: 'Failed' }"
-    :hasPayload="tableBody.length > 0"
+    :hasPayload="true"
     :showCustomActionBtn="true"
     :customActionBtnText="'Export'"
     @customActionBtnClicked="exportToExcel"
     @searchEntered="processSearchEntry"
     @filterSelected="processFilterSelection"
-    :fetchDataByPage="fetchPayouts"
+     @updatePage="(currentPage) => (page = currentPage)"
   >
     <div
       class="flex items-center justify-between mb-4"
-      v-if="tableBody.length > 0 && !isLoading"
+      v-if="!isLoading"
     >
       <div class="relative">
         <select
@@ -50,7 +50,7 @@
 
     <TableContainer
       :tableHeader="tableHeader"
-      :tableBody="filteredTableBody"
+      :tableBody="tableBody"
       :isLoading="isLoading"
       :emptyData="{
         title: 'No payout initiated yet',
@@ -61,7 +61,7 @@
       @onActionClicked="toggleInitiatePayoutModal"
     >
       <TableContainerBody
-        v-for="(payload, index) in filteredTableBody"
+        v-for="(payload, index) in tableBody"
         :key="index"
         :tableHeader="tableHeader"
         :tableData="payload"
@@ -78,7 +78,7 @@
 </template>
 
 <script lang="ts" setup>
-import { computed, ref, h } from "vue";
+import { computed, ref, h, watch, onMounted } from "vue";
 import { useString } from "@/shared/composables/useString";
 import { TableHeaderType } from "@/models/dashboard-type";
 import { usePaymentStore } from "../store";
@@ -101,10 +101,8 @@ const searchQuery = ref<string>("");
 const showInitiatePayoutModal = ref(false);
 
 const activePeriod = ref<[Date, Date] | null>(null);
+const page = ref<number>(1);
 
-const toggleInitiatePayoutModal = () => {
-  showInitiatePayoutModal.value = !showInitiatePayoutModal.value;
-};
 
 const tableHeader = ref<TableHeaderType[]>([
   { title: "Date Initiated", slug: "date_created" },
@@ -119,6 +117,12 @@ const tableBody = ref<any[]>([]);
 const tablePaging = ref<any>({});
 const selectedStatus = ref("");
 const statusOptions = ["Successful", "Pending", "Failed"];
+
+
+
+const toggleInitiatePayoutModal = () => {
+  showInitiatePayoutModal.value = !showInitiatePayoutModal.value;
+};
 
 const processSearchEntry = (searchValue: string) => {
   searchQuery.value = searchValue.toLocaleLowerCase().trim();
@@ -160,11 +164,16 @@ const processFilterSelection = (
   }
 };
 
-const fetchPayouts = async (page = 1) => {
+const filters = computed(
+  () =>
+    `?page=${page.value}&status=${selectedStatus.value}&from=${activePeriod.value ? activePeriod.value[0].toISOString().split("T")[0] : ""}&to=${activePeriod.value ? activePeriod.value[1].toISOString().split("T")[0] : ""}`
+);
+
+const fetchPayouts = async (filters: string) => {
   tablePaging.value.current_page = page;
   const response = await processAPIRequest({
     action: getPayouts,
-    payload: { page },
+     payload: { filters, page: page.value },
     showAlert: false,
   });
 
@@ -204,24 +213,7 @@ const fetchPayouts = async (page = 1) => {
   }
 };
 
-const filteredTableBody = computed(() =>
-  tableBody.value.filter((tx) => {
-    const rawDate = tx.raw?.raw_date ? new Date(tx.raw?.raw_date) : null;
-    const matchesStatus = selectedStatus.value
-      ? tx.raw?.status.toLowerCase() === selectedStatus.value.toLowerCase()
-      : true;
 
-    const matchesDate = rawDate
-      ? isWithinRange(rawDate, activePeriod.value)
-      : true;
-
-    const matchesSearch =
-      !searchQuery.value ||
-      tx.reference.toLowerCase().includes(searchQuery.value);
-
-    return matchesStatus && matchesDate && matchesSearch;
-  })
-);
 
 const fetchAllPayoutPages = async () => {
   let page = 1;
@@ -280,7 +272,7 @@ const exportToExcel = async () => {
     Currency: tx.currency,
     Status: tx.status,
     Reference: tx.reference,
-    Reason: capitalizeFirstLetter(data.reason_for_failure.toLowerCase() || "-"),
+    Reason: capitalizeFirstLetter(tx.reason_for_failure.toLowerCase() || "-"),
  
   })
   )
@@ -291,7 +283,15 @@ const exportToExcel = async () => {
   XLSX.writeFile(workbook, "Merchant_Payouts.xlsx");
 };
 
-fetchPayouts();
+watch([selectedStatus, activePeriod], () => {
+  page.value = 1;
+});
+
+watch(filters, (newFilters) => {
+  fetchPayouts(newFilters);
+});
+
+onMounted(fetchPayouts);
 </script>
 
 <style lang="scss" scoped></style>

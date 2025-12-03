@@ -12,7 +12,7 @@
 </template>
 
 <script lang="ts" setup>
-import { ref } from "vue";
+import { ref, watch} from "vue";
 import useClickOutside from "@/shared/composables/useClickOutside";
 import VueDatePicker from "@vuepic/vue-datepicker";
 import "@vuepic/vue-datepicker/dist/main.css";
@@ -34,7 +34,6 @@ const props = withDefaults(defineProps<IFilterType>(), {
 const emits = defineEmits(["onFilterSelected"]);
 
 
-
 const handleDateChange = (value: [Date, Date] | null) => {
   dateRange.value = value;
 
@@ -53,6 +52,14 @@ const togglerRef = ref<HTMLElement | null>(null);
 const toggleDropdown = (state: boolean) => (showDropdown.value = state);
 
 useClickOutside(dialogRef, togglerRef, toggleDropdown);
+
+watch(
+  () => props.activePeriod,
+  (newVal) => {
+    dateRange.value = newVal;
+  },
+  { immediate: true }
+);
 </script>
 
 <style lang="scss" scoped>

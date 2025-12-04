@@ -25,7 +25,7 @@
           <option value="">Payment Method</option>
           <option
             v-for="(method, index) in paymentMethods"
-            :value="method"
+            :value="method.toLowerCase()"
             :key="index"
           >
             {{ method }}

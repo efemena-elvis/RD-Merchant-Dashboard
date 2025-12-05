@@ -266,10 +266,11 @@ const exportToExcel = async () => {
     return matchesStatus && matchesDate;
   });
 
+
   const cleanData = filtered.map((tx) => ({
     "Date Created": tx.date_created,
-    Amount: tx.amount || "-",
     Currency: tx.currency,
+    Amount: tx.amount || "-",
     Status: tx.status,
     Reference: tx.reference,
     Reason: capitalizeFirstLetter(tx.reason_for_failure.toLowerCase() || "-"),

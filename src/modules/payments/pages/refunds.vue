@@ -241,6 +241,7 @@ const fetchAllRefundPages = async () => {
         raw_date: new Date(data.created_at),
         refund_amount: `${formatNumber(data.amount)}`,
         refund_status: data.status ?? "-",
+        currency: data.currency ?? "-",
         reason_for_failure: capitalizeFirstLetter(
           (data.reason_for_failure || "-").toString().toLowerCase()
         ),
@@ -276,12 +277,12 @@ const exportToExcel = async () => {
 
   const cleanData = filtered.map((tx) => ({
     "Date Initiated": tx.date_initiated,
+    Currency: tx.currency,
     Amount: tx.refund_amount || "-",
     Status: tx.refund_status,
     Reference: tx.reference,
-    Reason: tx.reason_for_failure ?? "-",
+    Reason: tx.reason_for_failure || "-",
   }));
-
   const worksheet = XLSX.utils.json_to_sheet(cleanData);
   const workbook = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(workbook, worksheet, "Merchant Refunds");

@@ -60,9 +60,7 @@
         :inputValue="urlPayload.callback_url"
         @inputChanged="urlPayload.callback_url = $event"
         @inputValidated="payloadValidity.callback_url = $event"
-        :errorHandler="{
-          validator: 'validateURL',
-        }"
+       
       />
 
       <TextFieldInput
@@ -75,9 +73,7 @@
         :inputValue="urlPayload.webhook_url"
         @inputChanged="urlPayload.webhook_url = $event"
         @inputValidated="payloadValidity.webhook_url = $event"
-        :errorHandler="{
-          validator: 'validateURL',
-        }"
+     
       />
     </div>
   </SettingsDisplayBlock>

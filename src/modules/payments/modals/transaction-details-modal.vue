@@ -46,10 +46,10 @@
                 :class="[
                   'font-semibold rounded-full p-1 text-center text-white w-24 mt-1',
                   transactionData.status === 'successful'
-                    ? 'bg-green-100 text-green-800'
+                    ? 'bg-green-400 text-green-100'
                     : transactionData.status === 'pending'
-                      ? 'bg-yellow-100 text-yellow-800'
-                      : 'bg-red-100 text-red-800',
+                      ? 'bg-yellow-400 text-yellow-100'
+                      : 'bg-red-400 text-red-100',
                 ]"
               >
                 {{ capitalize(transactionData.status) }}

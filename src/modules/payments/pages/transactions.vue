@@ -36,7 +36,7 @@
         ></div>
       </div>
 
-      <div class="relative w-44">
+      <div class="relative w-48">
         <select
           v-model="selectedStatus"
           class="p-4 text-sm font-semibold text-teal-800 border rounded-md appearance-none cursor-pointer w-44 focus:outline-none"
@@ -51,7 +51,7 @@
           </option>
         </select>
         <div
-          class="absolute text-[16px] text-teal-800 -translate-y-1/2 pointer-events-none icon icon-caret-down right-4 top-1/2"
+          class="absolute text-[16px] text-teal-800 -translate-y-1/2 pointer-events-none icon icon-caret-down right-8 top-1/2"
         ></div>
       </div>
     </div>

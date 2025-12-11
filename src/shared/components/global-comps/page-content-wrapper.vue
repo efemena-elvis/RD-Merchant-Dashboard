@@ -2,8 +2,8 @@
   <div class="page-content-wrapper">
     <!-- TOP ROW -->
     <div class="top-row" v-if="hasPayload">
-      <div class="top-row--left">
-        <div class="search-block">
+      <div class="top-row--left" v-if="searchInputPlaceholder">
+        <div class="search-block" >
           <TextFieldInput
             labelId="searchInput"
             labelTitle=""

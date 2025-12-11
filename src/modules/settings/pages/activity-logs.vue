@@ -64,7 +64,7 @@ const page = ref(1);
 
 const filters = computed(
   () =>
-    `?page=${page.value}&from=${activePeriod.value ? activePeriod.value[0].toISOString().split("T")[0] : ""}&to=${activePeriod.value ? activePeriod.value[1].toISOString().split("T")[0] : ""}`
+    `?page=${page.value}&from=${activePeriod.value ? activePeriod.value[0].toISOString().split("T")[0] : ""}&to=${activePeriod.value ? activePeriod.value[1].toISOString().split("T")[0] : ""}&search=${searchQuery.value.toLowerCase().trim()}`
 );
 
 
@@ -133,7 +133,7 @@ const fetchAuditLogs = async (filters: string) => {
   }
 };
 
-watch(activePeriod, () => {
+watch([activePeriod, searchQuery], () => {
   page.value = 1;
 });
 

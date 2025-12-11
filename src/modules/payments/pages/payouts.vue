@@ -166,7 +166,7 @@ const processFilterSelection = (
 
 const filters = computed(
   () =>
-    `?page=${page.value}&status=${selectedStatus.value}&from=${activePeriod.value ? activePeriod.value[0].toISOString().split("T")[0] : ""}&to=${activePeriod.value ? activePeriod.value[1].toISOString().split("T")[0] : ""}`
+    `?page=${page.value}&status=${selectedStatus.value}&from=${activePeriod.value ? activePeriod.value[0].toISOString().split("T")[0] : ""}&to=${activePeriod.value ? activePeriod.value[1].toISOString().split("T")[0] : ""}&search=${searchQuery.value.toLowerCase().trim()}`
 );
 
 const fetchPayouts = async (filters: string) => {
@@ -284,7 +284,7 @@ const exportToExcel = async () => {
   XLSX.writeFile(workbook, "Merchant_Payouts.xlsx");
 };
 
-watch([selectedStatus, activePeriod], () => {
+watch([selectedStatus, activePeriod, searchQuery], () => {
   page.value = 1;
 });
 

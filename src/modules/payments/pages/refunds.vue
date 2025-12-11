@@ -154,7 +154,7 @@ const filters = computed(
       activePeriod.value
         ? activePeriod.value[1].toISOString().split("T")[0]
         : ""
-    }`
+    }&search=${searchQuery.value.toLowerCase().trim()}`
 );
 
 const processFilterSelection = (
@@ -289,7 +289,7 @@ const exportToExcel = async () => {
   XLSX.writeFile(workbook, "Merchant_Refunds.xlsx");
 };
 
-watch([selectedStatus, activePeriod], () => {
+watch([selectedStatus, activePeriod, searchQuery], () => {
   page.value = 1;
 });
 

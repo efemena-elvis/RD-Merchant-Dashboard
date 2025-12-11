@@ -26,7 +26,7 @@
 
       <TextFieldInput
         labelId="textSecretKey"
-        labelTitle="Test Secret Key"
+        :labelTitle="getBusinessMode === `test` ? 'Test Secret Key' : 'Live Secret Key'"
         :inputType="IInputType.Password"
         :inputValue="getKeys.secret"
         inputPlaceholder="Secret key"
@@ -39,7 +39,7 @@
 
       <TextFieldInput
         labelId="textPublicKey"
-        labelTitle="Test Public Key"
+        :labelTitle="getBusinessMode === `test` ? 'Test Public Key' : 'Live Public Key'"
         :inputType="IInputType.Text"
         :inputValue="getKeys.public"
         inputPlaceholder="Public key"
@@ -52,7 +52,7 @@
 
       <TextFieldInput
         labelId="textCallbackURL"
-        labelTitle="Test Callback URL"
+        :labelTitle="getBusinessMode === `test` ? 'Test Callback URL' : 'Live Callback URL'"
         :inputType="IInputType.Text"
         inputPlaceholder="Callback URL"
         inputBaseColor="bg-grey-10"
@@ -65,7 +65,7 @@
 
       <TextFieldInput
         labelId="textWebhookURL"
-        labelTitle="Test Webhook URL"
+        :labelTitle="getBusinessMode === `test` ? 'Test Webhook URL' : 'Live Webhook URL'"
         :inputType="IInputType.Text"
         inputPlaceholder="Webhook URL"
         inputBaseColor="bg-grey-10"
@@ -130,6 +130,10 @@ const getKeys = computed(() => {
   if (getBusinessProfile.value.businessMode === "test") {
     return getAPIProfile.value.test;
   } else return getAPIProfile.value?.live;
+});
+
+const getBusinessMode = computed(() => {
+return getBusinessProfile.value?.businessMode || "test";
 });
 
 const isActionReady = computed(() => {

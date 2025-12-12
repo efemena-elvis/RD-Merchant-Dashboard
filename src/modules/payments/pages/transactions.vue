@@ -4,18 +4,18 @@
     :filterActiveValue="activePeriod"
     pageDescription="All transactions"
     :pagingData="tablePaging"
-    :hasPayload="tableBody.length > 0"
+    :hasPayload="true"
     :pageKeys="{ green: 'Successful', yellow: 'Pending', red: 'Failed' }"
     :showCustomActionBtn="true"
     :customActionBtnText="'Export'"
     @customActionBtnClicked="exportToExcel"
     @searchEntered="processSearchEntry"
     @filterSelected="processFilterSelection"
-    :fetchDataByPage="fetchPaymentTransactions"
+    @updatePage="(currentPage) => (page = currentPage)"
   >
     <div
       class="flex items-center gap-4 mb-4"
-      v-if="tableBody.length > 0 && !isLoading"
+      v-if="!isLoading"
     >
       <div class="relative w-52">
         <select
@@ -25,7 +25,7 @@
           <option value="">Payment Method</option>
           <option
             v-for="(method, index) in paymentMethods"
-            :value="method"
+            :value="method.toLowerCase()"
             :key="index"
           >
             {{ method }}
@@ -36,7 +36,7 @@
         ></div>
       </div>
 
-      <div class="relative w-44">
+      <div class="relative w-48">
         <select
           v-model="selectedStatus"
           class="p-4 text-sm font-semibold text-teal-800 border rounded-md appearance-none cursor-pointer w-44 focus:outline-none"
@@ -51,14 +51,14 @@
           </option>
         </select>
         <div
-          class="absolute text-[16px] text-teal-800 -translate-y-1/2 pointer-events-none icon icon-caret-down right-4 top-1/2"
+          class="absolute text-[16px] text-teal-800 -translate-y-1/2 pointer-events-none icon icon-caret-down right-8 top-1/2"
         ></div>
       </div>
     </div>
 
     <TableContainer
       :tableHeader="tableHeader"
-      :tableBody="filteredTableBody"
+      :tableBody="tableBody"
       :isLoading="isLoading"
       :emptyData="{
         title: 'No transaction yet',
@@ -67,7 +67,7 @@
       }"
     >
       <TableContainerBody
-        v-for="(payload, index) in filteredTableBody"
+        v-for="(payload, index) in tableBody"
         :key="index"
         :tableHeader="tableHeader"
         :tableData="payload"
@@ -107,6 +107,7 @@ const selectedStatus = ref("");
 const tableBody = ref<any[]>([]);
 const tablePaging = ref<any>({});
 const searchQuery = ref<string>("");
+const page = ref(1);
 
 const activePeriod = ref<[Date, Date] | null>(null);
 const selectedTransaction = ref(null);
@@ -124,6 +125,11 @@ const tableHeader = ref<TableHeaderType[]>([
   { title: "Reason", slug: "reason_for_failure" },
   { title: "Transaction Reference", slug: "reference" },
 ]);
+
+const filters = computed(
+  () =>
+`?page=${page.value}&method=${selectedMethod.value}&status=${selectedStatus.value}&from=${activePeriod.value ? activePeriod.value[0].toISOString().split("T")[0] : ""}&to=${activePeriod.value ? activePeriod.value[1].toISOString().split("T")[0] : ""}&search=${searchQuery.value.toLowerCase().trim()}`
+);
 
 const openTransactionLog = (row: any) => {
   selectedTransaction.value = row.raw;
@@ -156,31 +162,6 @@ const isWithinRange = (date: Date, range: [Date, Date] | null): boolean => {
   return target >= start && target <= end;
 };
 
-const filteredTableBody = computed(() => {
-  return tableBody.value.filter((tx) => {
-    const method = tx.raw?.payment_details;
-    const status = tx.raw?.status;
-    const rawDate = tx.raw?.raw_date ? new Date(tx.raw?.raw_date) : null;
-
-    const matchesMethod = selectedMethod.value
-      ? method === selectedMethod.value
-      : true;
-
-    const matchesStatus = selectedStatus.value
-      ? status === selectedStatus.value
-      : true;
-
-    const matchesDate = rawDate
-      ? isWithinRange(rawDate, activePeriod.value)
-      : true;
-
-    const matchesSearch =
-      !searchQuery.value ||
-      tx.reference.toLowerCase().includes(searchQuery.value);
-
-    return matchesMethod && matchesStatus && matchesDate && matchesSearch;
-  });
-});
 
 const processFilterSelection = (
   selectedRange: [Date | string, Date | string]
@@ -200,11 +181,12 @@ const processSearchEntry = (searchValue: string) => {
   searchQuery.value = searchValue.toLocaleLowerCase().trim();
 };
 
-const fetchPaymentTransactions = async (page = 1) => {
+const fetchPaymentTransactions = async (filters: string) => {
+  isLoading.value = true;
   tablePaging.value.current_page = page;
   const response = await processAPIRequest({
     action: getTransactions,
-    payload: { page },
+    payload: { filters, page: page.value },
     showAlert: false,
   });
 
@@ -329,8 +311,8 @@ const exportToExcel = async () => {
   const cleanData = filtered.map((tx) => ({
     "Date Created": tx.date_created,
     "Customer Details": tx.customer_details,
-    Amount: tx.amount,
     Currency: tx.currency,
+    Amount: tx.amount,
     "Payment Method": tx.payment_details,
     Status: tx.status,
     Reason: tx.reason,
@@ -345,9 +327,15 @@ const exportToExcel = async () => {
 };
 
 
-onMounted(() => {
-  fetchPaymentTransactions();
+watch([selectedMethod, selectedStatus, activePeriod, searchQuery], () => {
+  page.value = 1;
 });
+
+watch(filters, (newFilters) => {
+  fetchPaymentTransactions(newFilters);
+});
+
+onMounted(fetchPaymentTransactions);
 </script>
 
 <style lang="scss" scoped></style>

@@ -46,10 +46,10 @@
                 :class="[
                   'font-semibold rounded-full p-1 text-center text-white w-24 mt-1',
                   transactionData.status === 'successful'
-                    ? 'bg-green-100 text-green-800'
+                    ? 'bg-green-400 text-green-100'
                     : transactionData.status === 'pending'
-                      ? 'bg-yellow-100 text-yellow-800'
-                      : 'bg-red-100 text-red-800',
+                      ? 'bg-yellow-400 text-yellow-100'
+                      : 'bg-red-400 text-red-100',
                 ]"
               >
                 {{ capitalize(transactionData.status) }}
@@ -99,6 +99,8 @@ const props = defineProps<{ transaction: any }>();
 
 const displayFields = [
   { label: "Amount Paid", key: "amount" },
+  { label: "Charge", key: "charge" },
+  { label: "Currency", key: "currency" },
   { label: "Reference ID", key: "reference" },
   { label: "Date", key: "created_at" },
   { label: "Time", key: "created_at_time" },
@@ -107,10 +109,10 @@ const displayFields = [
   { label: "Email", key: "email" },
   { label: "MOMO Number", key: "phone_number" },
   { label: "Operator", key: "operator" },
-  { label: "Currency", key: "currency" },
   { label: "Business ID", key: "business_id" },
+  { label: "Redirect URL", key: "redirect_url" },
+  { label: "Environment", key: "environment" },
   { label: "Type", key: "type" },
-  { label: "Charge", key: "charge" },
   { label: "Attempts", key: "attempts" },
   { label: "Status", key: "status" },
 ];
@@ -152,9 +154,8 @@ const formatValue = (key: string) => {
     case "charge":
       return `${transactionData.value.currency}${formatNumber(transactionData.value.charge).toLocaleString()}`;
     default:
-      return transactionData.value[key].length > 0
-        ? transactionData.value[key]
-        : "—";
+     const value = transactionData.value[key];
+     return value || value === 0 ? value : "—";
   }
 };
 

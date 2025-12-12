@@ -5,7 +5,7 @@ import { settingsRoutes } from "./settings-routes";
 const { mutateProfile } = useSettingsMutations();
 
 export const getAuditLogs = async (payload: any) => {
-  return await $api.fetch(`${settingsRoutes.auditLogs}?page=${payload.page}`, {
+  return await $api.fetch(`${settingsRoutes.auditLogs}${payload.filters ? payload.filters : `?page=${payload.page}`}`, {
     resolve: true,
     requiresPublicKey: true,
   });

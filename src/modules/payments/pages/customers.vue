@@ -6,15 +6,15 @@
     pageDescription="All customers"
     :pagingData="tablePaging"
     :pageKeys="{ green: 'Active', red: 'Blacklisted' }"
-    :hasPayload="tableBody.length > 0"
+    :hasPayload="true"
     :showCustomActionBtn="false"
     @searchEntered="processSearchEntry"
     @filterSelected="processFilterSelection"
-    :fetchDataByPage="fetchCustomers"
+     @updatePage="(currentPage) => (page = currentPage)"  
   >
     <div
       class="flex items-center gap-4 mb-4"
-      v-if="tableBody.length > 0 && !isLoading"
+      v-if="!isLoading"
     >
       <div class="relative">
         <select
@@ -24,10 +24,10 @@
           <option value="">Status</option>
           <option
             v-for="(status, index) in statusOptions"
-            :value="status.toLowerCase()"
+            :value="status.value.toLowerCase()"
             :key="index"
           >
-            {{ status }}
+            {{ status.key }}
           </option>
         </select>
         <div
@@ -37,7 +37,7 @@
     </div>
     <TableContainer
       :tableHeader="tableHeader"
-      :tableBody="filteredTableBody"
+      :tableBody="tableBody"
       :isLoading="isLoading"
       :emptyData="{
         title: 'No customers yet',
@@ -46,7 +46,7 @@
       }"
     >
       <TableContainerBody
-        v-for="(payload, index) in filteredTableBody"
+        v-for="(payload, index) in tableBody"
         :key="index"
         :tableHeader="tableHeader"
         :tableData="payload"
@@ -56,7 +56,7 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, onMounted, reactive, h } from "vue";
+import { ref, onMounted, h, watch } from "vue";
 import { useString } from "@/shared/composables/useString";
 import { TableHeaderType } from "@/models/dashboard-type";
 import { usePaymentStore } from "../store";
@@ -80,6 +80,7 @@ const tableBody = ref<any[]>([]);
 const tablePaging = ref<any>({});
 const searchQuery = ref<string>("");
 const activePeriod = ref<[Date, Date] | null>(null);
+const page = ref<number>(1);
 
 const tableHeader = ref<TableHeaderType[]>([
   { title: "Added On", slug: "date_created" },
@@ -89,27 +90,12 @@ const tableHeader = ref<TableHeaderType[]>([
   { title: "Status", slug: "status" },
 ]);
 
-const statusOptions = ["Active", "Blacklisted"];
+const statusOptions = [{key:"Active", value:"false"}, {key:"Blacklisted", value:"true"}];
 
-const normalizeDate = (date: Date) => {
-  const d = new Date(date);
-  d.setHours(0, 0, 0, 0);
-  return d;
-};
-
-const isWithinRange = (date: Date, range: [Date, Date] | null): boolean => {
-  if (!range || !range[0] || !range[1]) return true;
-
-  const start = normalizeDate(new Date(range[0]));
-  const end = new Date(range[1]);
-  end.setHours(23, 59, 59, 999);
-
-  const target = new Date(date);
-  return target >= start && target <= end;
-};
-
-
-
+const filters = computed(
+  () =>
+    `?page=${page.value}&blacklisted=${selectedStatus.value}&from=${activePeriod.value ? activePeriod.value[0].toISOString().split("T")[0] : ""}&to=${activePeriod.value ? activePeriod.value[1].toISOString().split("T")[0] : ""}&search=${searchQuery.value.toLowerCase().trim()}`
+);
 
 const processSearchEntry = (searchValue: string) => {
   searchQuery.value = searchValue.toLocaleLowerCase().trim();
@@ -120,11 +106,11 @@ const getDateAdded = (date: string) => {
   return `${w2}, ${d3} ${m3}, ${y1}`;
 };
 
-const fetchCustomers = async (page = 1) => {
-   tablePaging.value.current_page = page;
+const fetchCustomers = async (filters: string) => {
+   tablePaging.value.current_page = page.value;
   const response = await processAPIRequest({
     action: getCustomers,
-    payload: {page},
+    payload: {filters, page: page.value},
     showAlert: false,
   });
 
@@ -180,31 +166,17 @@ const processFilterSelection = (
   }
 };
 
-const filteredTableBody = computed(() => {
-  return tableBody.value.filter((tx) => {
-    const status = tx.raw?.status;
-    const rawDate = tx.raw?.raw_date ? new Date(tx.raw.raw_date) : null;
 
-    const matchesStatus = selectedStatus.value
-      ? status === selectedStatus.value
-      : true;
 
-    const matchesDate = rawDate
-      ? isWithinRange(rawDate, activePeriod.value)
-      : true;
-
-    const matchesSearch =
-      !searchQuery.value ||
-      tx.customer_email?.toLowerCase().includes(searchQuery.value);
-
-    return matchesStatus && matchesDate && matchesSearch;
-  });
+watch([searchQuery, selectedStatus, activePeriod, searchQuery], () => {
+  page.value = 1;
 });
 
-
-onMounted(() => {
-  fetchCustomers();
+watch(filters, (newFilters) => {
+  fetchCustomers(newFilters);
 });
+
+onMounted(fetchCustomers);
 </script>
 
 <style lang="scss" scoped></style>

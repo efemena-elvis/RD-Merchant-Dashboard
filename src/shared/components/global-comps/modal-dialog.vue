@@ -51,7 +51,7 @@ export default {
       type: Object,
       default: () => ({
         shape: "rounded-lg",
-        size: "modal-sm", 
+        size: "modal-md", 
         background: "bg-neutral-10",
       }),
     },

@@ -7,12 +7,12 @@
     :pageKeys="{ green: 'Successful logs' }"
     @searchEntered="processSearchEntry"
     @filterSelected="processFilterSelection"
-    :hasPayload="tableBody.length > 0"
-    :fetchDataByPage="fetchAuditLogs"
+    :hasPayload="true"
+    @updatePage="(currentPage) => page = currentPage"
   >
     <TableContainer
       :tableHeader="tableHeader"
-      :tableBody="filteredTableBody"
+      :tableBody="tableBody"
       :isLoading="isLoading"
       :emptyData="{
         title: 'No activity yet',
@@ -21,7 +21,7 @@
       }"
     >
       <TableContainerBody
-        v-for="(payload, index) in filteredTableBody"
+        v-for="(payload, index) in tableBody"
         :key="index"
         :tableHeader="tableHeader"
         :tableData="payload"
@@ -42,6 +42,7 @@ import TableContainer from "@/shared/components/table-comps/table-container.vue"
 import TableContainerBody from "@/shared/components/table-comps/table-container-body.vue";
 import TableDoubleColumn from "@/shared/components/table-comps/table-double-column.vue";
 import { h } from "vue";
+import { watch } from "vue";
 
 const { getStatus } = useString();
 const { getAuditLogs } = useSettingsStore();
@@ -59,21 +60,14 @@ const tableBody = ref<any[]>([]);
 const tablePaging = ref<any>({});
 const searchQuery = ref("");
 const activePeriod = ref<[Date, Date] | null>(null);
+const page = ref(1);
 
-const normalizeDate = (date: Date) => {
-  const d = new Date(date);
-  d.setHours(0, 0, 0, 0);
-  return d;
-};
+const filters = computed(
+  () =>
+    `?page=${page.value}&from=${activePeriod.value ? activePeriod.value[0].toISOString().split("T")[0] : ""}&to=${activePeriod.value ? activePeriod.value[1].toISOString().split("T")[0] : ""}&search=${searchQuery.value.toLowerCase().trim()}`
+);
 
-const isWithinRange = (date: Date, range: [Date, Date] | null) => {
-  if (!range) return true;
-  const start = normalizeDate(new Date(range[0]));
-  const end = new Date(range[1]);
-  end.setHours(23, 59, 59, 999);
-  const target = new Date(date);
-  return target >= start && target <= end;
-};
+
 
 const processSearchEntry = (searchValue: string) => {
   searchQuery.value = searchValue.trim();
@@ -100,29 +94,11 @@ const getActivityDate = (date: string) => {
   return `${w2}, ${d3} ${m3}, ${y1}`;
 };
 
-const filteredTableBody = computed(() => {
-  return tableBody.value.filter((tx) => {
-    const rawDate = tx.raw?.raw_date ? new Date(tx.raw.raw_date) : null;
-
-    const matchesDate = rawDate
-      ? isWithinRange(rawDate, activePeriod.value)
-      : true;
-
-    const matchesSearch =
-      !searchQuery.value ||
-      (tx.activity || "")
-        .toLowerCase()
-        .includes(searchQuery.value.toLowerCase());
-
-    return matchesDate && matchesSearch;
-  });
-});
-
-const fetchAuditLogs = async (page = 1) => {
+const fetchAuditLogs = async (filters: string) => {
   tablePaging.value.current_page = page;
   const response = await processAPIRequest({
     action: getAuditLogs,
-    payload: { page },
+    payload: { filters, page: page.value },
     showAlert: false,
   });
 
@@ -134,7 +110,7 @@ const fetchAuditLogs = async (page = 1) => {
 
       return {
         status: getStatus(data.status ?? "-", data.status ?? "-"),
-         date_created: h(TableDoubleColumn, {
+        date_created: h(TableDoubleColumn, {
           entry: {
             primaryText: getActivityDate(data.created_at),
             secondaryText: useDate.formatTime(data.created_at),
@@ -157,9 +133,15 @@ const fetchAuditLogs = async (page = 1) => {
   }
 };
 
-onMounted(() => {
-  fetchAuditLogs();
+watch([activePeriod, searchQuery], () => {
+  page.value = 1;
 });
+
+watch(filters, (newFilters) => {
+  fetchAuditLogs(newFilters);
+});
+
+onMounted(fetchAuditLogs);
 </script>
 
 <style lang="scss" scoped></style>

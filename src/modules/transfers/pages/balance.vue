@@ -10,21 +10,22 @@
   <PageContentWrapper
     searchInputPlaceholder=""
     :showFilterSelection="false"
-    pageDescription="Recent Transactions"
+    pageDescription="Balance History"
+    :filterActiveValue="activePeriod"
     :pagingData="tablePaging"
-    :hasPayload="false"
-    :pageKeys="{ green: 'Successful', yellow: 'Pending', red: 'Failed' }"
+    :hasPayload="true"
+    :pageKeys="{ green: 'Inflow', red: 'Outflow' }"
     :showCustomActionBtn="false"
-    :fetchDataByPage="fetchPaymentTransactions"
+    @updatePage="(currentPage) => (page = currentPage)"
   >
     <TableContainer
       :tableHeader="tableHeader"
       :tableBody="tableBody"
       :isLoading="isLoading"
       :emptyData="{
-        title: 'No transaction yet',
+        title: 'No balance history yet',
         description:
-          'You haven\'t performed any transaction at the moment. This is where you\'ll be able to see your recent transactions',
+          'You haven\'t performed any transaction at the moment. This is where you\'ll be able to see your balance history on all outflow and inflow.',
       }"
     >
       <TableContainerBody
@@ -38,7 +39,7 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, reactive, onMounted, h } from "vue";
+import { ref, onMounted, h, watch} from "vue";
 import { useString } from "@/shared/composables/useString";
 import { useTransferStore } from "@/modules/transfers/store/";
 import useDate from "@/shared/composables/useDate";
@@ -56,33 +57,24 @@ const {
   transactionFlowIcon,
   capitalizeFirstLetter,
   formatNumber,
-  getStatus
 } = useString();
 
 const { getBalanceHistory, getTransactionStats } = useTransferStore();
-const { getTransactions, getAllTransactions } = usePaymentStore();
 const { processAPIRequest } = useEvents();
 const isLoading = ref<boolean>(true);
 const transactionStats = ref(null);
+const activePeriod = ref<[Date, Date] | null>(null);
+const page = ref<number>(1);
 
 const tableHeader = ref<TableHeaderType[]>([
-  { title: "Created On", slug: "date_created" },
-  { title: "Customer Details", slug: "customer_details" },
-  { title: "Amount", slug: "amount" },
-  { title: "Payment Method", slug: "payment_details" },
-  { title: "Status", slug: "status" },
-
+  { title: "", slug: "status" },
+  { title: "Date Created", slug: "date_created" },
+  { title: "Transaction Summary", slug: "summary" },
+  { title: "Balance Before", slug: "balance_before" },
+  { title: "Change", slug: "change" },
+  { title: "Balance After", slug: "balance_after" },
+  { title: "Reference", slug: "reference" },
 ]);
-
-// const tableHeader = ref<TableHeaderType[]>([
-//   { title: "", slug: "status" },
-//   { title: "Date Created", slug: "date_created" },
-//   { title: "Transaction Summary", slug: "summary" },
-//   { title: "Balance Before", slug: "balance_before" },
-//   { title: "Change", slug: "change" },
-//   { title: "Balance After", slug: "balance_after" },
-//   { title: "Reference", slug: "reference" },
-// ]);
 
 const tableBody = ref<any[]>([]);
 const tablePaging = ref<any>({});
@@ -92,45 +84,40 @@ const getTransactionDate = (date: string) => {
   return `${w2}, ${d3} ${m3}, ${y1}`;
 };
 
+const fetchBalanceHistory = async (page = 1) => {
+  isLoading.value = true;
 
+  const response = await processAPIRequest({
+    action: getBalanceHistory,
+    payload: { page },
+    showAlert: false,
+  });
 
-// const fetchBalanceHistory = async (page = 1) => {
-//   tablePaging.value.current_page = page;
-//   const response = await processAPIRequest({
-//     action: getBalanceHistory,
-//     payload: { page },
-//     showAlert: false,
-//   });
+  isLoading.value = false;
 
-//   isLoading.value = false;
+  if (response.code === 200) {
+    tableBody.value = response.data.map((data: any) => ({
+      raw_date: data.balance_at,
+      status: transactionFlowIcon(data.type === "credit" ? "receive" : "send"),
+      date_created: h(TableDoubleColumn, {
+        entry: {
+          primaryText: getTransactionDate(data.balance_at),
+          secondaryText: useDate.formatTime(data.balance_at),
+        },
+      }),
+      summary: capitalizeFirstLetter(data.action.split("-").join(" ")),
+      balance_before: `${data.currency_code} ${formatNumber(data.balance_before)}`,
+      change: getBoldTableText(
+        `${data.currency_code} ${formatNumber(data.amount)}`,
+        data.type === "credit" ? "text-green-600" : "text-red-600"
+      ),
+      balance_after: `${data.currency_code} ${formatNumber(data.balance_after)}`,
+      reference: data.reference,
+    }));
 
-//   if (response.code === 200) {
-//     response.data.map((data: any) => {
-//       tableBody.push({
-//         raw_date: data.balance_at,
-//         status: transactionFlowIcon(
-//           data.type === "credit" ? "receive" : "send"
-//         ),
-//         date_created: h(TableDoubleColumn, {
-//           entry: {
-//             primaryText: getTransactionDate(data.balance_at),
-//             secondaryText: useDate.formatTime(data.balance_at),
-//           },
-//         }),
-//         summary: capitalizeFirstLetter(data.action.split("-").join(" ")),
-//         balance_before: `${data.currency_code} ${formatNumber(data.balance_before)}`,
-//         change: getBoldTableText(
-//           `${data.currency_code} ${formatNumber(data.amount)}`,
-//           data.type === "credit" ? "text-green-600" : "text-red-600"
-//         ),
-//         balance_after: `${data.currency_code} ${formatNumber(data.balance_after)}`,
-//         reference: data.reference,
-//       });
-//     });
-
-//     tablePaging.value = response.pagination[0];
-//   }
-// };
+    tablePaging.value = response.pagination[0];
+  }
+};
 
 const fetchTransactionStats = async () => {
   const response = await processAPIRequest({
@@ -144,67 +131,13 @@ const fetchTransactionStats = async () => {
   }
 };
 
-const fetchPaymentTransactions = async (page = 1) => {
-  tablePaging.value.current_page = page;
-  const response = await processAPIRequest({
-    action: getTransactions,
-    payload: { page },
-    showAlert: false,
-  });
-
-  isLoading.value = false;
-
-  if (response?.code === 200 && Array.isArray(response.data)) {
-    tableBody.value = response.data.map((data: any) => {
-      const amountValue = data?.amount ?? 0;
-      const chargeValue = data?.charge ?? 0;
-      const currencyValue = data?.currency ?? "";
-
-      const formattedAmount = `${formatNumber(amountValue)}`;
-      const chargeAmount = `Charge: ${currencyValue} ${formatNumber(chargeValue)}`;
-      const createdDate = new Date(Date.parse(data.created_at));
-      const customerName = data.customer ? `${data.customer.firstname ?? ""} ${data.customer.lastname ?? ""}`.trim()
-        : "No customer info";
-      const customerEmail = data.customer?.email ?? "";
-
-      return {
-        date_created: h(TableDoubleColumn, {
-          entry: {
-            primaryText: getTransactionDate(data.created_at),
-            secondaryText: useDate.formatTime(data.created_at),
-          },
-        }),
-        customer_details: h(TableDoubleColumn, {
-          entry: { primaryText: customerName, secondaryText: customerEmail },
-        }),
-        amount: h(TableDoubleColumn, {
-          entry: { primaryText: `${currencyValue} ${formattedAmount}`, secondaryText: chargeAmount },
-        }),
-        payment_details: h(TableDoubleColumn, {
-          entry: {
-            primaryText: capitalizeFirstLetter(data.method ?? "-"),
-            secondaryText: `Type: ${
-              data.redirect_url?.startsWith("https://store.redstonepgs.com/")
-                ? "Storefront"
-                : "Third party"
-            }`,
-          },
-        }),
-        status: getStatus(data.status ?? "-", data.status ?? "-"),
-     
-      };
-    });
-
-    tablePaging.value = response.pagination?.[0] || {};
-  } else {
-    tableBody.value = [];
-  }
-};
-
 onMounted(() => {
-  // fetchBalanceHistory();
-  fetchPaymentTransactions();
+  fetchBalanceHistory();
   fetchTransactionStats();
+});
+
+watch(page, () => {
+  fetchBalanceHistory(page.value);
 });
 </script>
 

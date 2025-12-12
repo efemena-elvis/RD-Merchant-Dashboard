@@ -10,10 +10,10 @@ export interface IComplianceBusiness {
   facebook_username?: string | null;
   twitter_username?: string | null;
   instagram_username?: string | null;
-  first_address: string;
+  first_address?: string;
   second_address?: string | null;
-  city: string;
-  state: string;
+  city?: string;
+  state?: string;
   doc_type: string;
   doc_url: string;
 }

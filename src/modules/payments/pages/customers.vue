@@ -94,7 +94,7 @@ const statusOptions = [{key:"Active", value:"false"}, {key:"Blacklisted", value:
 
 const filters = computed(
   () =>
-    `?page=${page.value}&blacklisted=${selectedStatus.value}&from=${activePeriod.value ? activePeriod.value[0].toISOString().split("T")[0] : ""}&to=${activePeriod.value ? activePeriod.value[1].toISOString().split("T")[0] : ""}&search=${searchQuery.value.toLowerCase().trim()}`
+    `?page=${page.value}&blacklisted=${selectedStatus.value}&from=${activePeriod.value ? activePeriod.value[0].toISOString().split("T")[0] : ""}&to=${activePeriod.value ? activePeriod.value[1].toISOString().split("T")[0] : ""}&email=${searchQuery.value.toLowerCase().trim()}`
 );
 
 const processSearchEntry = (searchValue: string) => {

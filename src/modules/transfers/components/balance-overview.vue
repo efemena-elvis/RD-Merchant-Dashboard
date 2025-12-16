@@ -1,7 +1,19 @@
 <template>
   <div class="overview-card">
     <div class="bottom-row">
-     
+    <div class="column-wrapper">
+          <div class = "flex flex-col gap-2">
+            <p class = "text-teal-800 text-[16px] font-semibold"> Wallet Balance</p>
+         
+          <span class="text-[18px] font-semibold">ZMW{{ formatNumber(wallet?.balance ?? 0) }}</span>
+        </div>
+        <!--
+        <BalanceOverviewColumn
+          title="Available Collection Balance"
+          :amountList="[80, 220, 200]" 
+        />
+        -->
+      </div>
 
       <div class="column-wrapper">
           <div class = "flex flex-col gap-2">
@@ -52,8 +64,18 @@ interface ITransactionStats {
   total_payouts_value: number;
 }
 
+interface IWallet {
+  id: string;
+  balance: number;
+ [key: string]: any;
+}
+
+
+
+
 const props = defineProps<{
   transactionStats: ITransactionStats | null;
+  wallet: IWallet | null
 }>();
 
 </script>

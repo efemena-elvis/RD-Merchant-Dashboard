@@ -61,7 +61,7 @@
         @onSelectionChange="businessPayload.state = $event"
       />
     </div>
-      <div class="text-neutral-500 font-semibold mt-4 text-sm">
+      <div class="mt-4 text-sm font-semibold text-neutral-500">
         <span>Address not available? </span>
         <button @click="router.push({ name: 'RedstoneBusinessConfirm' })" class="text-green-500">Skip</button>
       </div>

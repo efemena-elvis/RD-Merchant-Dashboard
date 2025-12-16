@@ -14,3 +14,10 @@ export const getTransactionStats = async (payload: any) => {
     requiresPublicKey: true,
   });
 };
+
+export const getWallet = async (payload: any) => {
+  return await $api.fetch(transferRoutes.getWallet, {
+    resolve: true,
+    requiresPublicKey: true,
+  });
+};

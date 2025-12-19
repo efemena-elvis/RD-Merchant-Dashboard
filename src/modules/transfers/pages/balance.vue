@@ -3,6 +3,7 @@
   <div class="balance-area">
     <BalanceOverview
       v-if="transactionStats"
+      :wallet=wallet
       :transactionStats="transactionStats"
     />
   </div>
@@ -59,17 +60,18 @@ const {
   formatNumber,
 } = useString();
 
-const { getBalanceHistory, getTransactionStats } = useTransferStore();
+const { getBalanceHistory, getTransactionStats, getWallet } = useTransferStore();
 const { processAPIRequest } = useEvents();
 const isLoading = ref<boolean>(true);
 const transactionStats = ref(null);
+const wallet = ref(null);
 const activePeriod = ref<[Date, Date] | null>(null);
 const page = ref<number>(1);
 
 const tableHeader = ref<TableHeaderType[]>([
   { title: "", slug: "status" },
   { title: "Date Created", slug: "date_created" },
-  { title: "Transaction Summary", slug: "summary" },
+  { title: "Action", slug: "action" },
   { title: "Balance Before", slug: "balance_before" },
   { title: "Change", slug: "change" },
   { title: "Balance After", slug: "balance_after" },
@@ -105,7 +107,7 @@ const fetchBalanceHistory = async (page = 1) => {
           secondaryText: useDate.formatTime(data.balance_at),
         },
       }),
-      summary: capitalizeFirstLetter(data.action.split("-").join(" ")),
+      action: capitalizeFirstLetter(data.action.split("-").join(" ")),
       balance_before: `${data.currency_code} ${formatNumber(data.balance_before)}`,
       change: getBoldTableText(
         `${data.currency_code} ${formatNumber(data.amount)}`,
@@ -131,9 +133,22 @@ const fetchTransactionStats = async () => {
   }
 };
 
+const fetchWallet = async () => {
+  const response = await processAPIRequest({
+    action: getWallet,
+    payload: {},
+    showAlert: false,
+  });
+
+  if (response.code === 200) {
+    wallet.value = response.data[0];
+  }
+};
+
 onMounted(() => {
   fetchBalanceHistory();
   fetchTransactionStats();
+  fetchWallet()
 });
 
 watch(page, () => {

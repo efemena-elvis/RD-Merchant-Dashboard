@@ -10,6 +10,7 @@
           header.tableDataClass,
           renderLogicClass(header, tableData[header.slug]),
         ]"
+         class="break-all whitespace-normal max-w-[200px]"
       >
         <template v-if="isVNode(tableData[header.slug])">
    

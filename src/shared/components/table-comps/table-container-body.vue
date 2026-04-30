@@ -4,6 +4,7 @@
       v-for="(header, index) in tableHeader"
       :key="index"
       @click="header?.tableAction"
+      class = "px-4"
     >
       <div
         :class="[

@@ -3,7 +3,7 @@
     <!-- TOP ROW -->
     <div class="top-row" v-if="hasPayload">
       <div class="top-row--left" v-if="searchInputPlaceholder">
-        <div class="search-block" >
+        <div class="search-block">
           <TextFieldInput
             labelId="searchInput"
             labelTitle=""
@@ -18,20 +18,17 @@
       </div>
 
       <div class="top-row--right">
-        
         <OverviewFilter
           v-if="showFilterSelection"
           filterSize="lg"
           :activePeriod="filterActiveValue"
           :periodList="filterListValue"
           @onFilterSelected="handleFilterSelection"
-          
         />
 
-        <template  v-if="showCustomActionBtn">
-
+        <template v-if="showCustomActionBtn">
           <button
-            class="p-[1.1rem] rounded-lg btn-primary "
+            class="p-[1.1rem] rounded-lg btn-primary"
             @click="$emit('customActionBtnClicked')"
           >
             {{ customActionBtnText }}
@@ -51,8 +48,7 @@
         :pageDescription="pageDescription"
         :pagingData="pagingData"
         :pageKeys="pageKeys"
-         @page-change="(page) => handlePageChange(page)"
-        
+        @page-change="(page) => handlePageChange(page)"
       />
     </template>
   </div>
@@ -66,7 +62,7 @@ import Pagination from "@/shared/components/global-comps/pagination.vue";
 
 interface IPageContentType {
   searchInputPlaceholder: string;
-  filterActiveValue?:[Date, Date ] | null ;
+  filterActiveValue?: [Date, Date] | null;
   filterListValue?: string[];
   showFilterSelection?: boolean;
   pageDescription: string;
@@ -75,7 +71,6 @@ interface IPageContentType {
   hasPayload: boolean;
   showCustomActionBtn?: boolean;
   customActionBtnText?: string;
-
 }
 
 const props = withDefaults(defineProps<IPageContentType>(), {
@@ -89,27 +84,23 @@ const props = withDefaults(defineProps<IPageContentType>(), {
   hasPayload: false,
   showCustomActionBtn: false,
   customActionBtnText: "",
-  fetchDataByPage: () => {}
+  fetchDataByPage: () => {},
 });
 
 const emits = defineEmits([
   "filterSelected",
   "searchEntered",
   "customActionBtnClicked",
-  "updatePage"
+  "updatePage",
 ]);
-
 
 const handlePageChange = (page: number) => {
   emits("updatePage", page);
 };
 
-
-
 const handleSearchEntry = (searchValue: string) => {
   emits("searchEntered", searchValue);
 };
-
 
 const handleFilterSelection = (filterValue: string) => {
   emits("filterSelected", filterValue);
@@ -133,8 +124,6 @@ const handleFilterSelection = (filterValue: string) => {
 
     &--right {
       @apply flex justify-end items-center gap-3 sm:w-full;
-
-     
     }
   }
 
